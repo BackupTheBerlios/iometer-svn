@@ -17,7 +17,7 @@ ToDo:
    schema).
  - IOPerformanceLinux.cpp: Cut out all the _WIN32 and _WIN64 related methods
    (like Extract_CPU_Counters, Calculate_Stat,...).
- - IOTime.h / IOTime.cpp / rdtsc.c: Merge the files into a common one.
+ - IOTime.h / IOTime.cpp: Merge the files into a common one.
  - IOVersion.h: Drop all the unneeded defines like IOVER_FILE and IOVER_PRODUCT
  - <All>: Check if it is possible to move the reorder() function calls into the
    Send() / Receive() methods (eases code and makes it more solid).
