@@ -12,7 +12,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the NDEBUG check to the generic _DEBUG.     ## */
+/* ##               2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Cut out the Windows Pipes support for               ## */
 /* ##                 communication efforts.                              ## */
 /* ##                                                                     ## */
@@ -148,7 +150,7 @@ BOOL CGalileoApp::InitInstance()
 	// Check to see if the end user license agreement should be displayed.
 	// If the current version is not stored in the registry, disply the EULA.
 	//
-#ifdef	NDEBUG
+#ifndef	_DEBUG
 	if ( GetProfileString( "Settings", "Version" ) != m_pVersionString )
 	{
 		CLegalBox legalDlg;					// Display EULA.
@@ -270,7 +272,7 @@ BOOL CGalileoApp::InitInstance()
 
 	if ( cmdline.GetConfigFile().IsEmpty() )
 	{
-#if NDEBUG
+#ifndef	_DEBUG
 		// If the default config file exists, load it.
 		if ( ::GetFileAttributes(DEFAULT_CONFIG_FILE) != 0xFFFFFFFF )
 		{
