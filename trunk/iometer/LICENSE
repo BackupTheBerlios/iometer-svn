@@ -7,17 +7,24 @@ is a graphical user interface - named Iometer - that is acting as a server
 coordinating the workers. The workers are doing the real I/O and are named
 Dynamo.
 
-The project is using different licenses due to the history of the project:
+Due to the history of the project, the project is using different licenses
+for the different components:
 
- - Intel Open Source License
+ o Intel Open Source License
  
-   The native Windows based GUI as well as the Dynamo binary are distributed
-   under the Intel Open Source License.
- 
- - GNU Public License
+   - The native Windows based GUI
+     (its sources as well as the Iometer.exe binary)
 
-   The new platform independent Java GUI on the other hand gets distributed
-   under the GNU Public License.
+   - The Dynamo manager/workers process
+     (its sources as well as the Dynamo.exe binary)
+
+ o GNU Public License
+
+   - The native Linux iomtr_kstat kernel module
+     (its sources as well as the iomtr_kstat.o module)
+
+   - The new platform independent Java GUI
+     (its sources as well as the Iomter.jar file)
 
 Both licenses are attached in full length to this document - see next chapter.
 

@@ -9,7 +9,7 @@ You can run iometer without iomtr_kstat. So iomtr_kstat is only an option. Becau
 on Linux, whenever it wants to gather any performance related data including CPU,
 NI, TCP data, it has to open and read certain file from /proc file system, parse
 the file content. This is not a big deal on current fast speed CPU. But when you
-want to run IoMeter more perfectly, or run dynamo on some low speed embedded CPU,
+want to run IoMeter more precisely, or run dynamo on some low speed embedded CPU,
 then you have to think about this. With iomtr_kstat, any data acquire only needs
 one system call overhead.
 
@@ -19,6 +19,8 @@ Please see INSTALL under the same directory.
 * Which platforms does iomtr_kstat run on?
 Currently it only support Linux.
 
+* Which cpu architecture does iomtr_kstat run on?
+Currently it only support IA32, IOP321, and IOP331.
+
 * Who I should blame if I meet problem?
 Ming Zhang (mingz@ele.uri.edu), a not so good programmer.
-

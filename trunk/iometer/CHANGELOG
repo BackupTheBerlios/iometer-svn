@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-121603ds2-iomtrkstat-xscale.patch by Ming Zhang (adds
+     Linux on XSacle support for Intel IQ80321 and IQ80331 to the
+     iomtr_kstat module).
    - iometer-121603ds2-xscale.patch by Ming Zhang (adds Linux on 
      XScale support for Intel IQ80321 and IQ80331).
    - iometer-121603-ds2-report_tcp.patch by Ming Zhang (rewrite of the
@@ -43,6 +46,7 @@ ChangeLog (2003.nn.nn):
 - Documentation:
    - Added first comments about the coding style to the Developers Guide.
 - Others:
+   - Changed the license of the iomtr_kstat module to the GPL.
    - Added md5sum's for each package to the project homepage.
    - Extended the build environment with capabilities to handle Java.
 

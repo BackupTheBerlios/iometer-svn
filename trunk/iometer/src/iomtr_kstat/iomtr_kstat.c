@@ -12,39 +12,20 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Intel Open Source License                                          ## */
+/* ##  This program is free software; you can redistribute it and/or      ## */
+/* ##  modify it under the terms of the GNU General Public License        ## */
+/* ##  as published by the Free Software Foundation; either version 2     ## */
+/* ##  of the License, or (at your option) any later version.             ## */
 /* ##                                                                     ## */
-/* ##  Copyright (c) 2001 Intel Corporation                               ## */
-/* ##  All rights reserved.                                               ## */
-/* ##  Redistribution and use in source and binary forms, with or         ## */
-/* ##  without modification, are permitted provided that the following    ## */
-/* ##  conditions are met:                                                ## */
+/* ##  This program is distributed in the hope that it will be useful,    ## */
+/* ##  but WITHOUT ANY WARRANTY; without even the implied warranty of     ## */
+/* ##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       ## */
+/* ##  GNU General Public License for more details.                       ## */
 /* ##                                                                     ## */
-/* ##  Redistributions of source code must retain the above copyright     ## */
-/* ##  notice, this list of conditions and the following disclaimer.      ## */
-/* ##                                                                     ## */
-/* ##  Redistributions in binary form must reproduce the above copyright  ## */
-/* ##  notice, this list of conditions and the following disclaimer in    ## */
-/* ##  the documentation and/or other materials provided with the         ## */
-/* ##  distribution.                                                      ## */
-/* ##                                                                     ## */
-/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
-/* ##  contributors may be used to endorse or promote products derived    ## */
-/* ##  from this software without specific prior written permission.      ## */
-/* ##                                                                     ## */
-/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
-/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
-/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
-/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
-/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
-/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
-/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
-/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
-/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
-/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
-/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
-/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
-/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##  You should have received a copy of the GNU General Public License  ## */
+/* ##  along with this program; if not, write to the Free Software        ## */
+/* ##  Foundation, Inc., 59 Temple Place - Suite 330, Boston,             ## */
+/* ##  MA  02111-1307, USA.                                               ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -55,7 +36,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-04 (mingz(at)ele.uri.edu)                     ## */
+/* ##  Changes ...: 2004-04-08 (daniel@scheibli.com)                      ## */
+/* ##               - Changed K24 and K26 to IOMTR_OSVERSION_LINUX24      ## */
+/* ##                 and IOMTR_OSVERSION_LINUX246.                       ## */
+/* ##               - Changed the license to GPL (after consulting Ming). ## */
+/* ##               2004-02-04 (mingz(at)ele.uri.edu)                     ## */
 /* ##               - Initital code. Export all kernel status value       ## */
 /* ##                 dynamo need                                         ## */
 /* ##                                                                     ## */
@@ -89,19 +74,23 @@
 #define DEBUG
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
-#define K26
+#define IOMTR_OSVERSION_LINUX26
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
-#define K24
+#define IOMTR_OSVERSION_LINUX24
 #endif
 
 #include "iomtr_kstat.h"
+
+#if defined(CONFIG_ARCH_IOP3XX)
+extern unsigned long cpu_khz(void);
+#endif
 
 int imkstat_major = 0;
 
 int imkstat_ioctl(struct inode *inode, struct file *filp,
                  unsigned int cmd, unsigned long arg)
 {
-	int err = 0, tmp, i;
+	int err = 0, tmp, i, x;
 	unsigned long khz;
 	unsigned long sum = 0;
 	unsigned long long jf;
@@ -110,7 +99,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 	struct tcp_data_type t;
 	struct net_device *dev;
 	struct net_device_stats *stats;
-#ifdef K26
+#ifdef IOMTR_OSVERSION_LINUX26
 	unsigned long seq;
 #endif
 
@@ -134,10 +123,10 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 	switch (cmd) {
 	case IM_IOC_GETCPUNUM:
 		tmp = 0;
-#ifdef K24
+#ifdef IOMTR_OSVERSION_LINUX24
 		tmp = smp_num_cpus;
 #endif
-#ifdef K26
+#ifdef IOMTR_OSVERSION_LINUX26
 		for (i = 0; i < NR_CPUS; i++) {
 			if (cpu_online(i))
 				tmp++;
@@ -153,7 +142,8 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 		break;
 
 	case IM_IOC_GETCPUKHZ:
-#if defined(CONFIG_ARM)
+#if defined(CONFIG_ARCH_IOP3XX)
+		khz = cpu_khz();
 #endif
 #if defined(CONFIG_X86)
 		khz = cpu_khz;
@@ -165,10 +155,10 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case IM_IOC_GETCURJIFFIES:
 		/* 2.4 only have 32 bit value and 2.6 has a 64 bit jiffies, iometer need 64 bit value */
-#ifdef K24
+#ifdef IOMTR_OSVERSION_LINUX24
 		jf = jiffies;
 #endif
-#ifdef K26
+#ifdef IOMTR_OSVERSION_LINUX26
 		/* Atomically read jiffies */ 
 		do {
 			seq = read_seqbegin(&xtime_lock);
@@ -182,7 +172,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case IM_IOC_GETCPUDATA:
 		memset(&c, 0, sizeof(struct cpu_data_type));
-#ifdef K24
+#ifdef IOMTR_OSVERSION_LINUX24
 		for (i = 0 ; i < smp_num_cpus && i < MAX_CPUS; i++) {
 			int cpu = cpu_logical_map(i), j;
 			c.user_time[i] = kstat.per_cpu_user[cpu] + kstat.per_cpu_nice[cpu];
@@ -197,22 +187,22 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 		}
 		printk("intr %llu\n", c.intr);
 #endif
-#endif	/* K24 */
-#ifdef K26
+#endif	/* IOMTR_OSVERSION_LINUX24 */
+#ifdef IOMTR_OSVERSION_LINUX26
+		x = 0;
 		for (i = 0; i < NR_CPUS && i < MAX_CPUS; i++) {
 			int j;
 			if (!cpu_online(i)) 
 				continue;
-			c.user_time[i] = kstat_cpu(i).cpustat.user + kstat_cpu(i).cpustat.nice;
-			c.system_time[i] = kstat_cpu(i).cpustat.system;
+			c.user_time[x] = kstat_cpu(i).cpustat.user + kstat_cpu(i).cpustat.nice;
+			c.system_time[x] = kstat_cpu(i).cpustat.system;
 			for (j = 0 ; j < NR_IRQS ; j++)
 				sum += kstat_cpu(i).irqs[j];
+			x++;
 		}
 		c.intr = sum;
 #ifdef DEBUG
-		for (i = 0; i < NR_CPUS && i < MAX_CPUS; i++) {
-			if (!cpu_online(i)) 
-				continue;
+		for (i = 0; i < x; i++) {
 			printk("cpu %d: system time %llu, user time %llu\n", i, c.system_time[i], c.user_time[i]);
 		}
 		printk("intr %llu\n", c.intr);
@@ -247,7 +237,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 		break;
 	case IM_IOC_GETTCPDATA:
 		memset(&t, 0, sizeof(struct tcp_data_type));
-#ifdef K24
+#ifdef IOMTR_OSVERSION_LINUX24
 		for (i = 0; i < smp_num_cpus; i++) {
 			t.insegs += tcp_statistics[ 2 * cpu_logical_map(i)].TcpInSegs;
 			t.insegs += tcp_statistics[ 2 * cpu_logical_map(i) + 1].TcpInSegs;
@@ -257,7 +247,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 			t.retranssegs += tcp_statistics[ 2 * cpu_logical_map(i) + 1].TcpRetransSegs;
 		}
 #endif
-#ifdef K26
+#ifdef IOMTR_OSVERSION_LINUX26
 		for (i = 0; i < NR_CPUS; i++) {
 			if (!cpu_possible(i))
 				continue;
@@ -282,7 +272,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 
 int imkstat_open(struct inode *inode, struct file *filp)
 {
-#ifdef K24
+#ifdef IOMTR_OSVERSION_LINUX24
 	MOD_INC_USE_COUNT;
 #endif
 	return 0;
@@ -290,7 +280,7 @@ int imkstat_open(struct inode *inode, struct file *filp)
 
 int imkstat_release(struct inode *inode, struct file *filp)
 {
-#ifdef K24
+#ifdef IOMTR_OSVERSION_LINUX24
 	MOD_DEC_USE_COUNT;
 #endif
 	return 0;
@@ -309,7 +299,7 @@ int imkstat_init(void)
 {
 	int result;
 
-#if !defined(K24) && !defined(K26)
+#if !defined(IOMTR_OSVERSION_LINUX24) && !defined(IOMTR_OSVERSION_LINUX26)
 	printk("iomtr_kstat: can not decide what kernel you use.\n");
 	return -EINVAL;
 #endif
