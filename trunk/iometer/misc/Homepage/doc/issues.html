@@ -74,6 +74,20 @@
 	  <td class="block" valign="top">2003.12.16 only</td>
 	</tr>
         <tr>
+	  <td class="block" valign="top">Windows / IA32</td>
+          <td class="block"><i>wizard.mdb complains about Excel version</i><BR>
+	                    <font size="-3">&#160;</font><BR>
+	                    <i>Issue:</i> The wizard.mdb is checking for a
+			    minimum version of Excel when creating the graphs.
+			    The original code didn't had a two digit version
+			    number (coming with MS Access 2000) in mind.<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <i>Workaround:</i> Download the latest wizard.mdb
+			    (revision 1.3 or higher) directly from the CVS server
+			    that can be accessed via the sourceforge.net page.</td>
+	  <td class="block" valign="top">2003.12.16 only</td>
+	</tr>
+        <tr>
 	  <td class="block" valign="top">Linux / IA32</td>
           <td class="block"><i>Segmentation fault with Red Hat 9</i><BR>
 	                    <font size="-3">&#160;</font><BR>
