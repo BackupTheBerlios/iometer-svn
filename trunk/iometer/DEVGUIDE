@@ -14,6 +14,7 @@ Iometer Developer's Guide
 
    * 1     Introduction
    * 1.1   Coding style
+   * 1.2   Creating a patch
 
    * 2     Building Iometer
    * 2.1   Makefile issues
@@ -111,6 +112,33 @@ consolidation. But you should at least considere the following:
    is doing that and listing Netware before Unix (as this all gets
    interpreted by the preprocessor, there is no need to tune - in
    terms of most likely first - here).
+
+  ------------------------------------------------------------------------
+
+1.2 Creating a patch
+
+If you are going to develope some extension to Iometer or provide a new
+port, you soon or later will have to create a patch. Therefore it helps
+all involved parties enormously if you keep the following things in mind:
+
+ o First of all before starting coding it is a good idea to ask within the
+   iometer-devel@lists.sourceforge.net mailing list if someone is already
+   working on the changes you wanna go for.
+   
+ o While coding it is wise to comply with the points outlined in the Coding
+   Style section above. One of the most important things here is that you
+   document (within the code) what you have changed (and of course why).
+   
+ o Once you are finished and carefully tested what you did, you might
+   go for sending your patch into the free world. The best location for
+   submitting a patch is the Patch area of the
+   http://sourceforge.net/projects/iometer page. Another alternative is
+   to sent this patch to the already mentioned
+   iometer-devel@lists.sourceforge.net mailing list. If you are going to
+   sent the patch to one of the project managers, then at least CC the
+   iometer-devel@lists.sourceforge.net mailing list as well (except there
+   is some very good reason for not doing so - can't think of such a
+   reason).
 
   ------------------------------------------------------------------------
 
