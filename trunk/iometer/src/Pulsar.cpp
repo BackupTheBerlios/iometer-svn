@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added a check to enforce that -m has to be          ## */
+/* ##                 specified if -i was given.                          ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -415,10 +418,10 @@ void Syntax( const char* errmsg /*=NULL*/ )
 #endif
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-	cout << "dynamo [-i iometer_computer_name] [-n manager_name] [-m manager_computer_name]" << endl;
+	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type]" << endl;
 #elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_computer_name]" << endl;
+	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -479,6 +482,9 @@ void ParseParam(
 	// Local variables
 	
 	char cSwitchKey;
+	
+	BOOL bParamIometer = FALSE;
+	BOOL bParamDynamo  = FALSE;
 
 	// Walk through the parameter list
 
@@ -519,7 +525,7 @@ void ParseParam(
 		
 		switch( cSwitchKey ) {
 			case 'I':
-				if ( iometer[0] != '\0' ) {
+				if ( bParamIometer == TRUE ) {
 					Syntax("Iometer address was specified more than once.");
 					return;
 				}
@@ -528,6 +534,7 @@ void ParseParam(
 					return;
 				}
 				strcpy( iometer, argv[I] );
+				bParamIometer = TRUE;
 				break;
 			case 'N':
 				if ( manager_name[0] != '\0' ) {
@@ -547,6 +554,7 @@ void ParseParam(
 					return;
 				}
 				strcpy( manager_computer_name, argv[I] );
+				bParamDynamo = TRUE;
 				break;
 			case 'X':
 				if ( ( strlen( argv[I] ) + strlen( manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
@@ -575,6 +583,12 @@ void ParseParam(
 				break;
 		}
 	}
+
+	// Enforce switch combinations
+	if( bParamIometer && !bParamDynamo ) {
+		Syntax( "When specifying the Iometer address, the Manager network name parameter is mandatory." );
+	}
+	
 	return;
 }
 
