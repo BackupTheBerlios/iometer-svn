@@ -10,8 +10,8 @@ ChangeLog (2003.nn.nn):
 - Applied patches:
    - iometer-2003.05.10-IoMtrGlobalDefines4.patch by Daniel Scheibli
      (Last of the IOMTR_* global defines patches)
-   - iometer_large_work_file.patch.txt by Russell Redd (promises to
-     brings full >2GB file support for 32 bit platform).
+   - iometer_large_work_file.patch.txt by Russell Redd (fixes the GUI 
+     to ensure that "Maximum Disk Size" values are handled propably)
    - iometer-2003.05.10-IoMtrGlobalDefines3.patch by Daniel Scheibli
      (introduces the IOMTR_* global defines to consolidate the different
      global defines coming with the different platforms - ease future

@@ -32,6 +32,31 @@
 	  <td class="block"><b>scope</b></td>
 	</tr>
         <tr>
+	  <td class="block" valign="top"><i>all</i></td>
+          <td class="block"><i>iobw.tst doesn't match the given
+	                    &quot;Maximum Disk Size&quot; value</i><BR>
+	                    <font size="-3">&#160;</font><BR>
+	                    <i>Issue:</i> When preparing a new filesystem
+			    with an value for &quot;Maximum Disk Size&quot;
+			    (field in the Target tab of the Iometer GUI) other
+			    then zero and bigger then 2 GB, then there is an
+			    variable overflow. This overflow results in another
+			    size of the iobw.tst file which then might be much
+			    smaller.<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <i>Workaround:</i><BR>
+                            a.) Before starting your test, create the iobw.tst
+			        file (with the wished size) yourself using a
+				tool (e.g. the dd tool under Unix). Then use
+				zero as &quot;Maximum Disk Size&quot; - that
+				way the worker uses the existing iobw.tst file
+				and adapt to its size.<BR>
+			    b.) Download the Iometer sources and apply the
+			        iometer_large_work_file patch (#821482) which
+				was provided by Russell Reed.</td>
+	  <td class="block" valign="top">2003.05.10 and older</td>
+	</tr>
+        <tr>
 	  <td class="block" valign="top">Linux / IA32</td>
           <td class="block"><i>Segmentation fault with Red Hat 9</i><BR>
 	                    <font size="-3">&#160;</font><BR>
@@ -58,10 +83,11 @@
 			    have multiple swap devices configured, the Dynamo
 			    crashes with a segmentation fault.<BR>
 	                    <font size="-3">&#160;</font><BR>
-			    <i>Workaround:</i>
+			    <i>Workaround:</i><BR>
 			    a.) Configure only one swap device<BR>
-			    b.) Apply the needed changes on source code
-			    level (file IOManagerSolaris.cpp line 1198):<BR>
+			    b.) Apply the needed changes (provided by Robert
+			    H. Creecy) on source code level (file
+			    IOManagerSolaris.cpp line 1198):<BR>
 	                    <font size="-3">&#160;</font><BR>
 			    wrong: <tt>strs = (char *)malloc(num+1 * MAX_NAME);</tt><BR>
 			    correct: <tt>strs = (char *)malloc((num+1) * MAX_NAME);</tt></td>
