@@ -50,7 +50,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Make sure the current access spec is visible        ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -1069,12 +1071,18 @@ void CPageAccess::MarkAccesses( int current_access )
 {
 	for ( int i = 0; i < m_LAssignedAccess.GetItemCount(); i++ )
 	{
-		if ( (theApp.test_state == TestIdle) || (theApp.test_state == TestPreparing) || i > current_access )
+		if ( (theApp.test_state == TestIdle) || (theApp.test_state == TestPreparing) || i > current_access ) {
 			MarkAccess( i, BLUE );
-		else if ( i == current_access )
-			MarkAccess( i, GREEN );
-		else
-			MarkAccess( i, RED );
+		}
+		else {
+			if ( i == current_access ) {
+				MarkAccess( i, GREEN );
+				m_LAssignedAccess.EnsureVisible( i, FALSE );
+			}
+			else {
+				MarkAccess( i, RED );
+			}
+		}
 	}
 }
 
