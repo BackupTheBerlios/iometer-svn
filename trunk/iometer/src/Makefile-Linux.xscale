@@ -45,7 +45,13 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-08-07 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2004-08-21 (daniel.scheibli@edelbyte.org)                   ##
+##               - Removed old global defines that are no longer used /      ##
+##                 named different, like DYNAMO_DESTRUCTIVE and NO_DYNAMO_VI ##
+##               - Removed IOPerformance.o from the list of objects to       ##
+##                 be linked, as for Linux only IOPerformanceLinux.o is      ##
+##                 relevant.                                                 ##
+##               2004-08-07 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Added iometer target and explained that there is no       ##
 ##                 Iometer GUI for non MS Windows platforms so far.          ##
 ##               2004-02-13 (mingz@ele.uri.edu)                              ##
@@ -72,16 +78,13 @@ STRIP=/usr/bin/strip
 
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
-# Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
-# Note 3) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
+# Note 2) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
 CFLAGS=	-O3 \
 	-Wall \
 	-D_GNU_SOURCE \
 	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_LINUX \
 	-DIOMTR_CPU_XSCALE \
 	-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
-	-DDYNAMO_DESTRUCTIVE \
-	-DNO_DYNAMO_VI \
 	-D_REENTRANT \
  	-static
 #	-ggdb
@@ -105,7 +108,7 @@ OBJECTS= IOGlobals.o \
 	 IOPort.o IOPortTCP.o \
 	 Network.o NetTCP.o \
 	 ByteOrder.o \
-	 IOPerformance.o IOPerformanceLinux.o \
+	 IOPerformanceLinux.o \
 	 IOTime.o \
 	 IOCQAIO.o IOCompletionQ.o \
 	 IOAccess.o
