@@ -14,6 +14,8 @@ Iometer User's Guide
 
    * 1.3   What's new? (remarks about comparability)
    
+   * 3     Running Iometer (remarks about Linux)
+   
    * 13.5  Selecting a Statistic for Display (remarks about Linux)
 
    * 19.3b Specifying a Manager Network Name (new)
@@ -51,6 +53,21 @@ NOTE: It is important to keep in mind, that results might not be
       comparable between two different Iometer versions. For example
       if there was an error in the older version you will see this
       effect.
+
+  ------------------------------------------------------------------------
+
+3 Running Iometer
+
+NOTE: If you are running Dynamo on a Linux machine with a glibc (GNU
+      libc) version 2.3 or higher (having NPTL support) - a prominent
+      candidate is Red Hat 9 - it might come to segmentation faults
+      after ending a test.
+      This happens due to the shift from LinuxThreads to NPTL (Native
+      POSIX Thread Library) and the incompatibilities coming with that.
+      To get around that issue the following command before starting
+      Dynamo:
+      
+      export LD_ASSUME_KERNEL=2.4.1
 
   ------------------------------------------------------------------------
 

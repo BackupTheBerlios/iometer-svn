@@ -3,10 +3,13 @@
 ----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|
 
 
+
 ChangeLog (2003.nn.nn):
 =======================
 
-- ...
+- Documentation:
+   - Added a remark into the .../README file (containing additions for
+     running Dynamo on a Linux machine with NTPL support).
 
 
 
