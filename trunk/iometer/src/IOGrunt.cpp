@@ -47,7 +47,10 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-04 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Suggested by Ming Zhang, I removed an old left      ## */
+/* ##                 over _DETAIL code.                                  ## */
+/* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT    ## */
 /* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
@@ -723,12 +726,6 @@ void Grunt::Record_IO( Transaction *transaction, DWORDLONG end_IO )
 	Raw_Result	*result = &(worker_performance.target_results.result[transaction->target_id]);
 	Raw_Result	*prev_result = &(prev_worker_performance.target_results.result[transaction->target_id]);
 
-
-	#if _DETAIL
-		cout << "Asynchronous I/O recorded for : " << targets[transaction->target_id]->name 
-			<< " bytes transferred = " << bytes_transferred << endl;
-	#endif
-	
 	// Update the target's number of outstanding I/Os.
 	targets[transaction->target_id]->outstanding_ios--;
 

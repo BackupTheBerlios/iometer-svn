@@ -32,6 +32,9 @@ ChangeLog (2003.nn.nn):
    - iometer-2003.12.16-SwitchesNowRequired.patch by Daniel Scheibli
      (code cleanup of the dynamo parameter handling; switches are no
      longer option but required now)
+- Cleanup:
+   - Removed an old left over _DETAIL define depended code (for debugging)
+     in IOGrunt.cpp.
 - Documentation:
    - Added first comments about the coding style to the Developers Guide.
 - Others:
