@@ -9,6 +9,9 @@ ChangeLog (2003.nn.nn):
 
 
 - Applied patches:
+  - iometer-2003.02.15-ResultEndTime.patch by Daniel Scheibli (modifies
+    the result file output to append the current timestamp after each
+    block of results).
   - iometer-2003.02.15-HandleDummy0.patch by Daniel Scheibli (modifies the
     Get_NI_Counter function to handle interfaces without leading blanks
     (like dummy0) as well).

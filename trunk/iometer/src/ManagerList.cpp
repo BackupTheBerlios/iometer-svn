@@ -4,7 +4,8 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Job .......: <to be set>                                           ## */
+/* ##  Job .......: Represents the list of managers associated to the     ## */
+/* ##               Iometer GUI itself.                                   ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -12,7 +13,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-05-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added output of current timestamp after each list   ## */
+/* ##                 of results (in the result file - CSV format).       ## */
+/* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Updated the global debug flag (_DEBUG) handling     ## */
 /* ##                 of the source file (check for platform etc.).       ## */
 /* ##               2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
@@ -450,6 +454,7 @@ void ManagerList::SaveResults( ostream* file, int access_index, int result_type 
 {
 	char specname[MAX_WORKER_NAME];
 	int stat = 0;
+	time_t		current_time;
 
 	// Writing result header information.
 	(*file) << "'Results" << endl
@@ -543,6 +548,18 @@ void ManagerList::SaveResults( ostream* file, int access_index, int result_type 
 	{
 		for ( int i = 0; i < ManagerCount(); i++ )
 			GetManager(i)->SaveResults( file, access_index, result_type );
+	}
+
+	// Write current timestamp into the result file
+	(*file) << "'Time Stamp" << endl;
+	time( &current_time );
+	if ( current_time >= 0 )
+	{
+		(*file) << ctime( &current_time );
+	}
+	else
+	{
+		(*file) << "Time not available." << endl;
 	}
 }
 

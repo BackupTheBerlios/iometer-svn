@@ -153,8 +153,7 @@ find important global defines (-D<key>[=<value>]):
 	 _DEBUG is defined, so we have to stick with it. Another option
 	 is to use our own DEBUG define and then activate _DEBUG using
 	 a #ifdef statement (something for the IOCommon.h file).
-
-...
+ ...
 
   ------------------------------------------------------------------------
 
@@ -174,16 +173,30 @@ A.1 Iometer
       (IOVER_FILEVERSION) as well as other descriptive stuff.
 
       Keep in mind, that once you have changed the version string, you
-      have to compile both Iometer and Dynamo - otherwise the login
-      (which is done at Dynamo startup) will fail.
+      have to compile both Iometer and Dynamo - otherwise the login (which
+      is done at Dynamo startup) will fail.
 
  o Core code
 
     - GalileoApp.h             (CGalileoApp)
     - GalileoApp.cpp           (CGalileoApp)
 
-      The CGalileoApp class is THE central class of Iometer - it is
-      simular to the main() function of traditional C programs.
+      The CGalileoApp class is THE central class of Iometer - it is simular
+      to the main() function of traditional C programs.
+
+    - ManagerList.h 
+    - ManagerList.cpp 
+
+      The ManagerList class gets instantited by the CGalileoApp class. It
+      represents a list of Manager class instances.
+
+    - Manager.h 
+    - Manager.cpp 
+
+      The Manager class represents a single instance of an single manager
+      (which is a running instance of the Dynamo executable). Do not get
+      confused, due to the fact, that Dynamo has an Manager class as well.
+      Both are talking about the same subject, but contains different coding.
       
  o Helping code (User Interface)
 
@@ -192,6 +205,13 @@ A.1 Iometer
 
     - GalileoView.h            (CGalileoView)
     - GalileoView.cpp          (CGalileoView)
+    
+      This class manages and contains the overall GUI stuff. It is a large
+      file containing a mixture of GUI handling and core functionality.
+      Beside other things, it contains the AddDefaultWorkers() method which
+      is responsible to add the number of disk and network workers (the
+      numbers are specified in the "Test setup" tab of the Iometer GUI).
+    
     - MainFrm.h                (CMainFrame)
     - MainFrm.cpp              (CMainFrame)    
 
@@ -204,8 +224,16 @@ A.1 Iometer
     - PageAccess.cpp           (CPageAccess)
     - PageDisplay.h            (CPageDisplay)
     - PageDisplay.cpp          (CPageDisplay)
+      ...
+
     - PageSetup.h              (CPageSetup)
     - PageSetup.cpp            (CPageSetup)
+
+      Responsible for the "Test Setup" tab of the Iometer GUI. Beside the
+      coding for user interaction, you find the default settings within the
+      OnInitDialog() method.
+      The number of disk and network workers per manager is defined here
+      too. The defaults differ between debug code and release code.      
 
     - AccessDialog.h           (CAccessDialog)
     - AccessDialog.cpp         (CAccessDialog)
@@ -247,10 +275,6 @@ A.1 Iometer
     - IOTime.cpp 
     - IOTransfer.h 
     - ISTREAM 
-    - Manager.h 
-    - Manager.cpp 
-    - ManagerList.h 
-    - ManagerList.cpp 
     - ManagerMap.h 
     - ManagerMap.cpp 
     - OSTREAM 

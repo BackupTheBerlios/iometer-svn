@@ -178,7 +178,7 @@ BOOL CPageSetup::OnInitDialog()
 
 	SetDlgItemInt( EDiskWorkerCount, 0 ); // Display a number.
 	SetDlgItemInt( ENetWorkerCount, 0 ); // Display a number.
-	disk_worker_count = -1;	// default number of disk workers
+		disk_worker_count = -1;	// default number of disk workers		
 	#if _DEBUG
 		net_worker_count = -1;	// create network workers for debug
 	#else
