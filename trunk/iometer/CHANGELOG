@@ -8,35 +8,40 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
-  - iometer-2003.05.10-Win64OnAmd64.patch by Daniel Scheibli (Integrates
-    the changes contributed by Vedran Degoricija to ensure, that the
-    executables can be build for Windows 64 Bit on AMD64).
-  - Patch provided by Robert H Creecy to fix the segmentation fault which
-    happened when running on Solaris while having multiple swap devices
-    configured.
-  - Patch provided by Sander Pool to get the Iometer "truly batch
-    oriented".
-  - iometer-2003.05.10-UsingDdkAndWin64.patch by Daniel Scheibli
-    (Integrates the changes contributed by Vedran Degoricija to
-    ensure, that the executables can be build using the MS DDK
-    on i386 and IA64 as well).
-  - iometer-2003.05.10-IoMtrGlobalDefines2.patch by Daniel Scheibli
-    (introduces the IOMTR_* global defines to consolidate the different
-    global defines coming with the different platforms - ease future
-    ports).
-  - iometer-2003.05.10-IsBigEndianFunction.patch by Daniel Scheibli
-    (Does endian type detection for CPU during runtime. This function
-    replaces the [BIG|LITTLE]_ENDIAN_ARCH global defines).
-  - iometer-2003.05.10-Solaris9onI386.patch by Daniel Scheibli
-    (Assimilates the patch submitted by Robert Jones to build with
-    Solaris 9 on x86 (i386)).
-  - iometer-2003.05.10-IoTimeConsolidation.patch by Daniel Scheibli
-    (Cleanup for the IOTime.* files - getting rid of IOTime.h also).
-  - iometer-2003.05.10-IoMtrGlobalDefines1.patch by Daniel Scheibli
-    (introduces the IOMTR_* global defines to consolidate the different
-    global defines coming with the different platforms - ease future
-    ports).
+   - iometer-2003.05.10-Win64OnAmd64.patch by Daniel Scheibli (Integrates
+     the changes contributed by Vedran Degoricija to ensure, that the
+     executables can be build for Windows 64 Bit on AMD64).
+   - Patch provided by Robert H Creecy to fix the segmentation fault which
+     happened when running on Solaris while having multiple swap devices
+     configured.
+   - Patch provided by Sander Pool to get the Iometer "truly batch
+     oriented".
+   - iometer-2003.05.10-UsingDdkAndWin64.patch by Daniel Scheibli
+     (Integrates the changes contributed by Vedran Degoricija to
+     ensure, that the executables can be build using the MS DDK
+     on i386 and IA64 as well).
+   - iometer-2003.05.10-IoMtrGlobalDefines2.patch by Daniel Scheibli
+     (introduces the IOMTR_* global defines to consolidate the different
+     global defines coming with the different platforms - ease future
+     ports).
+   - iometer-2003.05.10-IsBigEndianFunction.patch by Daniel Scheibli
+     (Does endian type detection for CPU during runtime. This function
+     replaces the [BIG|LITTLE]_ENDIAN_ARCH global defines).
+   - iometer-2003.05.10-Solaris9onI386.patch by Daniel Scheibli
+     (Assimilates the patch submitted by Robert Jones to build with
+     Solaris 9 on x86 (i386)).
+   - iometer-2003.05.10-IoTimeConsolidation.patch by Daniel Scheibli
+     (Cleanup for the IOTime.* files - getting rid of IOTime.h also).
+   - iometer-2003.05.10-IoMtrGlobalDefines1.patch by Daniel Scheibli
+     (introduces the IOMTR_* global defines to consolidate the different
+     global defines coming with the different platforms - ease future
+     ports).
+- Cleanup:
+   - Modified the EULA (End User License Agreement) to reflect the
+     Open Source status.
 - Documentation:
+   - Moved to Open Office as the official editing tool for the 
+     documentation (especially for the Iometer User's Guide).
    - Added a remark into the .../README file (containing additions for
      running Dynamo on a Linux machine with NTPL support).
 - Others:
