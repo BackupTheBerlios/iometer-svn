@@ -8,66 +8,68 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Replaced the license claimed in the EULA to the     ## */
+/* ##                 Intel Opem Source License as this the current       ## */
+/* ##                 under which the Source Code and Binaries are        ## */
+/* ##                 distributed.                                        ## */
+/* ##                 EULA sections which are obsolet or stays in         ## */
+/* ##                 contrast to that (namely LIMITED MEDIA WARRANTY,    ## */         
+/* ##                 TERMINATION OF THIS LICENSE and U.S. GOVERNMENT     ## */
+/* ##                 RESTRICTED RIGHTS) has been blanked out.            ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Updated the global debug flag (_DEBUG) handling     ## */
 /* ##                 of the source file (check for platform etc.).       ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##                                                                     ## */
-/* ######################################################################### */
-/*
-Intel Open Source License 
-
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// LegalBox.cpp: Implementation of the CLegalBox class, which is
-// responsible for the "Intel Software License Agreement" dialog.
-//
-//////////////////////////////////////////////////////////////////////
 /* ######################################################################### */
 
 
 #include "stdafx.h"
 #include "GalileoApp.h"
 #include "LegalBox.h"
+
 
 
 // Needed for MFC Library support for assisting in finding memory leaks
@@ -80,11 +82,11 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined (_WIN32) || defined (_WIN64)
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+ #ifdef _DEBUG
+  #define new DEBUG_NEW
+  #undef THIS_FILE
+  static char THIS_FILE[] = __FILE__;
+ #endif
 #endif
 
 
@@ -127,7 +129,6 @@ BOOL CLegalBox::OnInitDialog()
 
 	CString legal;
 
-
 	legal = "INTEL SOFTWARE LICENSE AGREEMENT\x0d\x0a\
 IMPORTANT - READ BEFORE COPYING, INSTALLING OR USING\x0d\x0a \x0d\x0a";
 
@@ -137,6 +138,7 @@ following terms and conditions.  By loading or using the Software, you \
 agree to the terms of this Agreement.  If you do not wish to so agree, \
 do not install or use the Software.\x0d\x0a \x0d\x0a";
 
+/*
 	legal += "LICENSE:  You may copy the Software onto your organization's computers \
 or file servers and may make one back-up copy of the Software, subject \
 to these conditions:\x0d\x0a \x0d\x0a";
@@ -153,7 +155,39 @@ more than one user.\x0d\x0a \x0d\x0a";
 
 	legal += "4.  The Software may include portions offered on terms in addition to \
 those set out here, as set out in a license accompanying those portions.\x0d\x0a \x0d\x0a";
+*/
+
+	legal += "LICENSE: \x0d\x0a \x0d\x0a";
+	
+	legal += "Intel Open Source License \x0d\x0a \x0d\x0a";
+
+	legal += "Copyright (c) 2001 Intel Corporation \
+All rights reserved. \
+Redistribution and use in source and binary forms, with or without \
+modification, are permitted provided that the following conditions are met:\x0d\x0a \x0d\x0a";
+
+	legal += "   Redistributions of source code must retain the above copyright notice, \
+   this list of conditions and the following disclaimer.\x0d\x0a \x0d\x0a";
+
+	legal += "   Redistributions in binary form must reproduce the above copyright notice, \
+   this list of conditions and the following disclaimer in the documentation \
+   and/or other materials provided with the distribution.\x0d\x0a \x0d\x0a";
+
+	legal += "   Neither the name of the Intel Corporation nor the names of its contributors \
+   may be used to endorse or promote products derived from this software \
+   without specific prior written permission.\x0d\x0a \x0d\x0a";
  
+	legal += "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' \
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE \
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE \
+ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE \
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL \
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR \
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER \
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, \
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE \
+USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\x0d\x0a \x0d\x0a";
+
 	legal += "OWNERSHIP AND COPYRIGHT OF SOFTWARE:  Title to the Software and all \
 copies thereof remains with Intel or its suppliers.  The Software is \
 copyrighted and is protected by the laws of the United States and other \
@@ -163,15 +197,7 @@ Software, or to items referenced therein, at any time without notice, \
 but is not obligated to support or update the Software.  Except as \
 otherwise expressly provided, Intel grants no express or implied rights \
 under Intel patents, copyrights, trademarks, or other intellectual \
-property rights.  You may transfer the Software only if the recipient \
-agrees to be fully bound by these terms and if you retain no copies of \
-the Software.\x0d\x0a \x0d\x0a";
-
-	legal += "LIMITED MEDIA WARRANTY:  If the  Software has been delivered by Intel on \
-physical media, Intel warrants the media to be free from material \
-physical defects for a period of ninety days after delivery by Intel. \
-If such a defect is found, return the media to Intel for replacement or \
-alternate delivery of the Software as Intel may select.\x0d\x0a \x0d\x0a";
+property rights.\x0d\x0a \x0d\x0a";
 
 	legal += "EXCLUSION OF OTHER WARRANTIES:  EXCEPT AS PROVIDED ABOVE, THE SOFTWARE \
 IS PROVIDED \"AS IS\" WITHOUT ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND, \
@@ -198,18 +224,6 @@ evaluate the performance of systems or components they are considering \
 purchasing.  You agree to defend, indemnify and hold Intel harmless from \
 and against any and all actions, claims, damages, expenses (including \
 attorney’s fees) and liabilities arising from your use of the Software.\x0d\x0a \x0d\x0a";
-
-	legal += "TERMINATION OF THIS LICENSE:  Intel may terminate this Agreement at any \
-time if you violate its terms.  Upon termination, you will immediately \
-destroy the Software or return all copies of the Software to Intel.\x0d\x0a \x0d\x0a";
-
-	legal += "U.S. GOVERNMENT RESTRICTED RIGHTS:  The Software is provided with \
-\"RESTRICTED RIGHTS.\"  Use, duplication, or disclosure by the Government \
-is subject to restrictions as set forth in FAR 52.227-14 and DFAR \
-252.227-7013 et seq.  or its successor.  Use of the Software by the \
-Government constitutes acknowledgment of Intel’s proprietary rights \
-therein.  Contractor or Manufacturer is Intel Corporation, 2200 Mission \
-College Blvd., Santa Clara, CA 95052.\x0d\x0a \x0d\x0a";
 
 	legal += "APPLICABLE LAW: Claims arising under this Agreement shall be governed by \
 the laws of California, excluding its principles of conflict of laws and \
