@@ -8,6 +8,9 @@ ChangeLog (IOMETER 1 - 2004.nn.nn):
 ===================================
 
 - Applied patches:
+   - IOGrunt.patch by Lamont Cranston (Prevents a shifting queue for
+     the transaction slots in IOGrunt and that way ensures that two
+     runs of the same test are closer together).
    - invalid_spec.patch by Lamont Cranston (Allows the user to set any
      request sizes, sector allignment etc. - even if it doesn't match the
      storage devices block size. While in interactive mode, the user

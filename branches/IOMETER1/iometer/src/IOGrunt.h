@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##               - conditionalize vinic.h include; Add cur_trans_slots ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -73,7 +75,10 @@
 #include "IOAccess.h"
 #include "IOTest.h"
 #include "IOTransfers.h"
-#include "VINic.h"
+
+#if defined(IOMTR_SETTING_VI_SUPPORT)
+ #include "VINic.h"
+#endif
 
 
 // Wrappers for Grunt member functions, used by _beginthread()
@@ -141,12 +146,12 @@ public:
 		
 	volatile TestState	grunt_state;	// Grunt's status within the test
 
-	int			target_count;			// Number of disks/networks.
-	Access		access_spec;			// Access specs for a test.
-	void*		read_data;				// Pointer to general data memory area for reading and writing.
+	int			target_count;	// Number of disks/networks.
+	Access		access_spec;		// Access specs for a test.
+	void*		read_data;		// Pointer to general data memory area for reading and writing.
 	void*		write_data;
-	int			data_size;				// Size of currently allocated data buffers.
-										// This is 0 when the grunt is using the manager's buffer.
+	int		data_size;		// Size of currently allocated data buffers.
+						// This is 0 when the grunt is using the manager's buffer.
 
 	BOOL		critical_error;
 
@@ -156,7 +161,6 @@ public:
 	
 	// Indicates the grunt was assigned an idle access spec.
 	BOOL		idle;
-
 
 private:
 	void		Initialize_Results();
@@ -185,7 +189,8 @@ private:
 	// Related I/O request arrays.
 	//
 	Transaction		*trans_slots;
-	int				total_trans_slots;
+	int			total_trans_slots;
+	int             	cur_trans_slots;
 	//
 	//
 	// Queue of I/O requests which are available for transmitting.
