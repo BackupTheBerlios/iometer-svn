@@ -28,7 +28,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-03-20 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2004-03-24 (daniel.scheibli@edelbyte.org)                   ##
+##               - Do not install Iometer.ico any more as the new icon       ##
+##                 is now part of the executable itself.                     ##
+##               2004-03-20 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Initial setup of this script.                             ##
 ##                                                                           ##
 ###############################################################################
@@ -97,7 +100,6 @@ SubSection /e "Components"
 		SectionIn RO
 		SetOutPath $INSTDIR
 		
-		File .\iometer.ico
 		File ..\..\src\Release\Iometer.exe
 		File ..\..\src\Release\Dynamo.exe
 
@@ -123,7 +125,7 @@ SubSectionEnd
 Section "Start Menu Shortcuts" SectionStartMenu
 
 	CreateDirectory "$SMPROGRAMS\Iometer 2003.12.16"
-	CreateShortCut  "$SMPROGRAMS\Iometer 2003.12.16\Iometer.lnk"                     "$INSTDIR\iometer.exe"   "" "$INSTDIR\iometer.ico"   0
+	CreateShortCut  "$SMPROGRAMS\Iometer 2003.12.16\Iometer.lnk"                     "$INSTDIR\iometer.exe"   "" "$INSTDIR\iometer.exe"   0
         IfFileExists "$INSTDIR\iometer.pdf"   "" +2
 		CreateShortCut "$SMPROGRAMS\Iometer 2003.12.16\Iometer Users Guide.lnk"  "$INSTDIR\iometer.pdf"   "" "$INSTDIR\iometer.pdf"   0
 	CreateShortCut  "$SMPROGRAMS\Iometer 2003.12.16\Import Wizard for MS Access.lnk" "$INSTDIR\Wizard.mdb"    "" "$INSTDIR\Wizard.mdb"    0

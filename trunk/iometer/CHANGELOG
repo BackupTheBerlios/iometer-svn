@@ -52,6 +52,8 @@ ChangeLog (2004.nn.nn):
      Guide.
    - Added first comments about the coding style to the Developers Guide.
 - Others:
+   - Modified the Iometer icon to use the new black one instead of the
+     old color lightning/spectrum thing.
    - Added an installer for Iometer on Windows (based on the Nullsoft
      Scriptable Install System - NSIS).
    - Changed the Registry Key for the Windows GUI to "iometer.org".
