@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -175,8 +178,8 @@ public:
 	void		UpAccessSpec( int index );
 	//
 	BOOL		SetAccess( int spec_index );
-	BOOL		InvalidSetup();
-	int			GetMaxAccessSpecCount();
+	BOOL		InvalidSetup( BOOL &invalidSpecOK );
+	int		GetMaxAccessSpecCount();
 	void		AssignDefaultAccessSpecs();
 	//
 	// Returns TRUE if all of the workers (on all managers) have

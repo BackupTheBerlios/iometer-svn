@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -1083,7 +1086,7 @@ int ManagerList::GetMaxAccessSpecCount()
 //
 // Verify that all assigned configuration parameters are valid.
 //
-BOOL ManagerList::InvalidSetup()
+BOOL ManagerList::InvalidSetup( BOOL &invalidSpecOK )
 {
 	int		m, w;
 	Manager	*mgr;
@@ -1104,8 +1107,9 @@ BOOL ManagerList::InvalidSetup()
 	for ( m = 0; m < ManagerCount(); m++ )
 	{
 		mgr = GetManager( m );
-		if ( mgr->InvalidSetup() )
+		if ( mgr->InvalidSetup( invalidSpecOK ) ) {
 			return TRUE;
+		}
 
 		// Verify that at least one worker has targets assigned with a
 		// non-idle spec or all specs are idle.

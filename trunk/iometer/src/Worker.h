@@ -51,7 +51,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -258,7 +261,7 @@ public:
 					= IOERROR );
 	//
 	// Determines if all assigned test parameters are valid for this worker.
-	BOOL		InvalidSetup();
+	BOOL		InvalidSetup( BOOL &invalidSpecOK );
 	//
 	// Assigns all the specs from the global list that match the  worker's type.
 	void		AssignDefaultAccessSpecs();

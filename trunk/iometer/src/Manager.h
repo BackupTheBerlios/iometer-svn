@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -241,7 +244,7 @@ public:
 	// Gets the name of the current access spec for all managers.
 	char*		GetCommonAccessSpec( int spec_index, char * const specname );
 	//
-	BOOL		InvalidSetup();
+	BOOL		InvalidSetup( BOOL &invalidSpecOK );
 	//
 	///////////////////////////////////////////////////////////////////////////
 

@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -582,6 +585,8 @@ void CGalileoView::OnBStart()
 
 void CGalileoView::Go() 
 {
+	BOOL invalidSpecOK;
+
 	// Show hour glass cursor.
 	CWaitCursor wait;
 
@@ -589,9 +594,19 @@ void CGalileoView::Go()
 	// to whoever has the focus, possibly causing an update of the GUI data.
 	::SetFocus( NULL );
 
+	// If in batch mode, assume the user knows what specs are
+	// running and that they are setup properly.
+	if ( theApp.IsBatchMode() ) {
+		invalidSpecOK = TRUE;
+	}
+	else {
+		invalidSpecOK = FALSE;
+	}
+
 	// Verify that all tests were defined correctly.
-	if ( theApp.manager_list.InvalidSetup() )
+	if ( theApp.manager_list.InvalidSetup( invalidSpecOK ) ) {
 		return;
+	}
 
 	// Disable displays to prevent user access.
 	EnableWindow( FALSE );
