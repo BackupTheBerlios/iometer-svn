@@ -83,6 +83,8 @@ ChangeLog (IOMETER 1 - 2004.07.30):
      (code cleanup of the dynamo parameter handling; switches are no
      longer option but required now)
 - Cleanup:
+   - Modified an #ifdef in IOPerformanceLinux.cpp to make it work for
+     the XScale processor as well.
    - Added a check for null pointers in case a Manager could not be
      added to his list in Galileo[App|Globals].cpp
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
