@@ -36,6 +36,8 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
+   - Addded the IOManagerWin.cpp file to the Iometer.dsp project file
+     to make Dynamo build with MS VC++.
    - Added a check for null pointers in case a Manager could not be
      added to his list in Galileo[App|Globals].cpp
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h

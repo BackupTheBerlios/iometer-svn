@@ -43,11 +43,11 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386" /D "_MBCS" /YX /FD /c /D "_GALILEO_" 
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386" /D "_MBCS" /D "_GALILEO_" /YX /FD /c
 # ADD BASE MTL /nologo /mktyplib203 /win32
 # ADD MTL /nologo /mktyplib203 /win32
-# ADD BASE RSC /l 0x409 
-# ADD RSC /l 0x409 /d "_GALILEO_" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386"
+# ADD BASE RSC /l 0x409
+# ADD RSC /l 0x409 /d "_GALILEO_" /d "IOMTR_OSFAMILY_WINDOWS" /d "IOMTR_OS_WIN32" /d "IOMTR_CPU_I386"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -70,12 +70,12 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386" /D "_MBCS" /D "_DETAILS" /FR /FD /GZ /c /D "_GALILEO_" 
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386" /D "_MBCS" /D "_DETAILS" /D "_GALILEO_" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
-# ADD RSC /l 0x409 /d "_DEBUG" /d "_GALILEO_" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "_GALILEO_" /d "IOMTR_OSFAMILY_WINDOWS" /d "IOMTR_OS_WIN32" /d "IOMTR_CPU_I386"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -144,6 +144,10 @@ SOURCE=.\IOAccess.cpp
 # Begin Source File
 
 SOURCE=.\IOGlobals.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IOManagerWin.cpp
 # End Source File
 # Begin Source File
 
