@@ -188,11 +188,11 @@ find important global defines (-D<key>[=<value>]):
 
    This are global defines to identify the Processor / CPU itself: 
    IOMTR_CPU_ALPHA          Alpa CPU (Digital->Compaq->HP) *
+   IOMTR_CPU_AMD64          AMD x86 with 64 bit extention (Opteron) *
    IOMTR_CPU_I386           Intel x86 processors (32 bit)
    IOMTR_CPU_IA64           Intel Itanium family (64 bit)
    IOMTR_CPU_MIPS           MIPS CPU (used in SGI machines etc.) *
    IOMTR_CPU_SPARC          Sun Sparc processor (64 bit)
-   IOMTR_CPU_X86_64         AMD x86 with 64 bit extention (Opteron) *
    
    * = Not yet implemented / supported.
    
