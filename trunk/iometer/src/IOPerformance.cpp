@@ -523,12 +523,12 @@ PERF_DATA_BLOCK: A simple header for all of the performance data returned.
 //
 void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 {
-#if defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64) 
 	long	query_result;			// Value returned trying to query performance data.
 	DWORD	perf_object_size;		// Size of buffer allocated to storing performance data.
 	char	perf_data_type_name[10];	// ASCII representation of performance data index.
 	_int64	perf_update_freq;		// Frequency that performance counters are updated.
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64) 
+#elif defined(IOMTR_OS_LINUX)
  // nop
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!

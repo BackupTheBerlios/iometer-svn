@@ -124,12 +124,12 @@
 #endif
 // ----------------------------------------------------------------------------
 // Check the Processor mapping
-#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
-    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_X86-64))
+#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86_64)) || \
+    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86_64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86_64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86_64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86_64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_X86_64))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
