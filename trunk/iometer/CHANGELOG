@@ -8,6 +8,8 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
 ==================================
 
 - Applied patches:
+   - iometer-2003.12.16-post.DS3-netware.patch by Thayne Harmon (Fixes
+     the detection of the volumens - for the NetWare port).
    - IOGrunt.patch by Lamont Cranston (Prevents a shifting queue for
      the transaction slots in IOGrunt and that way ensures that two
      runs of the same test are closer together).

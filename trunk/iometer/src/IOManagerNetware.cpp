@@ -49,7 +49,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-mm-dd (thayneharmon@users.sourceforge.net)       ## */
+/* ##  Changes ...: 2004-07-02 (thayneharmon@users.sourceforge.net)       ## */
+/* ##               - fixed error in collecting volumes where the         ## */
+/* ##                 netware_vol_info() automacticlly increments the     ## */
+/* ##                 sequence											  ## */
+/* ##               2004-01-01 (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - Initial code.                                       ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
@@ -81,9 +85,9 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	int		count = 0;
 	struct volume_info vInfo;
 	struct IOObjectGenericInfoDef info;
-	int length;
+	int length, volNum;
 	DWORD ret = 0;
-	DWORD volNum, next;
+	DWORD next;
 	char disk_name[128];
 	#define MM_DIRECT_ACCESS_DEVICE 0
 	cout << "Reporting drive information..." << endl;
@@ -99,31 +103,21 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// First find all virtual disks by returning volumes. Then search for
 	// physical disks using Media Manager.
 	//
-	for (volNum = 0; volNum < 4; volNum++)
+	cout << "  Logical drives (volumes)..." << endl;
+	for (volNum = 0, ret = 0; ret == 0;)	// volNum++
 	{
-		ret = netware_vol_info(&vInfo, (int *)&volNum);
-		if (ret)
-		{
-#ifdef _DEBUG
-			cout << "*** File system type \"" << vInfo.name << "\" excluded.\n";
-#endif
-			continue;
-		}
+		ret = netware_vol_info(&vInfo, &volNum);		// volNum is sequenced by the call - do not touch
+
 		if (strstr("_ADMIN", (char *)vInfo.name) != NULL) 
-			continue;
-		if (strstr("TCDVOL0", (char *)vInfo.name) != NULL) 
 			continue;
 		if (vInfo.mounted != TRUE)
 			continue;
-#ifdef _DEBUG
-		cout << "*** File system found: " << vInfo.name << "\n";
-#endif
+
+		cout << "    Volume [" << vInfo.which << "] \"" << vInfo.name << "\" found.\n";
 		// see if the current volName is an excluded for dynamo.
 		if (strstr(exclude_filesys, (char *)vInfo.name) != NULL) 
 		{
-#ifdef _DEBUG
-			cout << "*** File system type \"" << vInfo.name << "\" excluded.\n";
-#endif
+			cout << "    Volume [" << vInfo.which << "] \"" << vInfo.name << "\" excluded.\n";
 			continue;
 		}
 		length = strlen((char *)vInfo.name);
@@ -131,9 +125,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		disk_name[length] = 0;
 		if ( ! d.Init_Logical( disk_name ) ) 
 		{
-#ifdef _DEBUG
-			cout << "*** " << __FUNCTION__ << ": Init_Logical failed.\n";
-#endif
+			cout << "    * " << __FUNCTION__ << ": Init_Logical failed (RO?).\n";
 			continue;
 		}
 		// Drive exists and ready for use.
@@ -145,10 +137,6 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 //		strcat(disk_spec[count].name, " [");
 //		strcat(disk_spec[count].name, "NSS");
 //		strcat(disk_spec[count].name, "]");
-#ifdef _DEBUG
-			cout << "   Found " << disk_spec[count].name << "." << endl << flush;
-			cout << "   type= << disk_spec[count].type << endl << flush;
-#endif
 		count++;
 		if (count >= MAX_TARGETS)
 			break;
@@ -186,7 +174,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 				d.spec.type = PhysicalDiskType;
 				memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
 #ifdef _DEBUG
-				cout "name=" << disk_spec[count].name << ",type=" << disk_spec[count].type << endl << flush;
+				cout << "name=" << disk_spec[count].name << ",type=" << disk_spec[count].type << endl << flush;
 #endif
 				++count;
 			}
