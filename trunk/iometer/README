@@ -208,6 +208,14 @@ find important global defines (-D<key>[=<value>]):
 	 _DEBUG is defined, so we have to stick with it. Another option
 	 is to use our own DEBUG define and then activate _DEBUG using
 	 a #ifdef statement (something for the IOCommon.h file).
+
+ o _GALILEO_ / _PULSAR_
+
+   This are two global defines to distinguish Iometer (_GALILEO_) from
+   Dynamo (_PULSAR_) parts in the code. For instance this "switches" are
+   used to define if error messages are prompted as Message Box or
+   directly printed to the console.
+   
  ...
 
   ------------------------------------------------------------------------
