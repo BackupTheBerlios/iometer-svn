@@ -9,6 +9,7 @@ BROWSER_INFO=1
 
 INCLUDES=$(SDK_INC_PATH); $(MSSDK)\INCLUDE; ..
 C_DEFINES=$(C_DEFINES) -D_PULSAR_ -DDOSWIN32 -DUSING_DDK
+LINKER_OPTIDATA=$(LINKER_OPTIDATA) /STACK:0xc0000,0x2000
 
 UMTYPE=console
 UMENTRY=main
@@ -37,6 +38,7 @@ SOURCES= ..\ByteOrder.cpp		\
 	..\IOGlobals.cpp		\
 	..\IOGrunt.cpp			\
 	..\IOManager.cpp		\
+	..\IOManagerWin.cpp		\
 	..\IOPerformance.cpp		\
 	..\IOPort.cpp			\
 #	..\IOPortPipe.cpp		\

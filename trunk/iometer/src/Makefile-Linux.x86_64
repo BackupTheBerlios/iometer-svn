@@ -1,10 +1,10 @@
 ###############################################################################
 ##                                                                           ##
-##  Dynamo / iomtr_kstat/Makefile-24                                         ##
+##  Dynamo / Makefile-Linux.x86_64                                           ##
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Job .......: The Makefile for the iomtr_kstat module for 2.4.x kernel    ##
+##  Job .......: The Makefile for the GNU/Linux on x86_64 variant.           ##
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
@@ -45,39 +45,99 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-02-19 (mingz@ele.uri.edu)                              ##
-##               - Support cross compile now.                                ##
+##  Changes ...: 2004-05-27 (henryx.w.tieman@intel.com)                      ##
+##               - Initial drop for building Dynamo for Linux on x86_64.     ##
 ##                                                                           ##
 ###############################################################################
+.MAKE_VERSION: VERSION-1.0
 
-# CROSS_COMPILE   = /opt/crosstool/arm-unknown-linux-gnu/gcc-3.3.1-glibc-2.3.2/bin/arm-unknown-linux-gnu-
-CROSS_COMPILE = /usr/bin/
+# un-comment out .IGNORE to suppress error messages and not stop make on errors.
+#.IGNORE:
+.SUFFIXES: .cpp .c .o
 
-AS              = $(CROSS_COMPILE)as
-LD              = $(CROSS_COMPILE)ld
-CC              = $(CROSS_COMPILE)gcc
-CPP             = $(CC) -E
-AR              = $(CROSS_COMPILE)ar
-NM              = $(CROSS_COMPILE)nm
-STRIP           = $(CROSS_COMPILE)strip
-OBJCOPY         = $(CROSS_COMPILE)objcopy
-OBJDUMP         = $(CROSS_COMPILE)objdump
+RM=/bin/rm -f
+MV=/bin/mv
+TOUCH=/usr/bin/touch
+STRIP=/usr/bin/strip
+CXX=/usr/bin/g++
 
-# the following compiler flags are needed for x86_64
-EXTRA_CFLAGS=-DIOMTR_SETTING_KSTAT_PERCPU -DIOMTR_SETTING_NO_CPU_KHZ -mcmodel=kernel
-# on regular machines is can be empty
-# EXTRA_CFLAGS=
 
-CFLAGS:= -O2 -Wall -D__KERNEL__ -DMODULE $(EXTRA_CFLAGS)
-INCLUDEDIR = /lib/modules/`uname -r`/build/include
 
-CFLAGS += -isystem $(INCLUDEDIR)
+# Some common definitions used.
+# Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
+# Note 2) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
+# Note 3) -DIOMTR_SETTING_GCC_M64 allows for the gcc -m64 flag that makes longs
+#         64 bits and pointers 64 bits. This forces changes in data structures
+#         and type definitions for compatibility with a Win32 Iometer.
+CFLAGS=	-O \
+	-Wall \
+	-D_GNU_SOURCE \
+	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_LINUX \
+	-DIOMTR_CPU_X86_64 \
+	-DIOMTR_SETTING_GCC_M64 \
+	-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
+	-D_REENTRANT
+#	-ggdb
 
-TARGET = iomtr_kstat
-OBJS = $(TARGET).o
-SRC = $(TARGET).c
 
-all: $(TARGET).o
+
+# For older versions of the librt.a it is needed to apply a patch (see the
+# file "Documentation/LinuxReadme.txt" for an explanation of the patch,
+# and "Documentation/linux-rt-2.1.2.patch" for the patch itself).
+# If you have glibc version less then 2.2, the patch is needed; in this
+# case, change this line as follows:
+#
+# LDFLAGS= ../glibc-2.1/rt/librt.a -lpthread
+LDFLAGS= -lrt -lpthread -g
+
+OBJECTS= IOGlobals.o \
+         Pulsar.o \
+         IOManager.o IOManagerLinux.o \
+	 IOGrunt.o \
+	 IOTarget.o IOTargetDisk.o IOTargetTCP.o \
+	 IOPort.o IOPortTCP.o \
+	 Network.o NetTCP.o \
+	 ByteOrder.o \
+	 IOPerformanceLinux.o \
+	 IOTime.o \
+	 IOCQAIO.o IOCompletionQ.o \
+	 IOAccess.o
+		
+
+
+# Make Rules
+help:
+	@echo
+	@echo "Please pick one of the listed targets:"
+	@echo                                                              
+	@echo "   all       Build the binaries"
+	@echo "   dynamo    Build the dynamo binary"
+	@echo "   iometer   Build the iometer binary (not supported) *"
+	@echo "   clean     Remove old binaries and object files"
+	@echo                                                              
+	@echo "   * = The Iometer GUI is so far only available for MS Windows," 
+	@echo "       but you can use it to control dynamo's running on Linux." 
+	@echo                                                              
+
+all: dynamo
+
+dynamo: $(OBJECTS)
+	$(CXX) $(CFLAGS) -o dynamo $(OBJECTS) $(LIBS) $(LDFLAGS)
 
 clean:
-	rm -f *.o *~ core
+	$(RM) $(OBJECTS) dynamo
+
+install:
+	echo "Not Supported."
+
+iometer:
+	echo "Not Supported."
+
+.cpp.o:
+	$(CXX) $(CFLAGS) -c $<
+
+.c.o:
+	$(CXX) $(CFLAGS) -c $<
+
+
+

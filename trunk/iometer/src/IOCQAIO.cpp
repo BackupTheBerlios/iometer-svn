@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - The x86_64 DDK compiler is really touchy about      ## */
+/* ##                 parameter types. This change is for the DDK.        ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -91,7 +94,13 @@ CQAIO::CQAIO()
 ReturnVal CQAIO::GetStatus( int *bytes, int *data, int delay )
 {
 	Transaction	*transaction = NULL;
-	ULONG_PTR	temp; // vld
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+	ULONG_PTR	temp;
+#elif defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+	DWORD		temp;
+#else
+	#error ===> ERROR: You have to do some coding here to get the port done!
+#endif
 	BOOL		result;
 	DWORD		error_no;
 

@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Changed SOCKET to CONNECTION for improved clarity,  ## */
+/* ##                 because SOCKET has a standard meaning outside       ## */
+/* ##                 Iometer.                                            ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -127,9 +131,9 @@ public:
 	SOCKADDR_IN		server_address;		// IP address, port.
 	SOCKADDR_IN		client_address;		// IP address, port.
 
-	SOCKET			server_socket;		// Socket where server listens for 
+	CONNECTION              server_socket;		// Socket where server listens for 
 							// connections.  Not used by client.
-	SOCKET			client_socket;		// Socket used for client/server data 
+	CONNECTION              client_socket;		// Socket used for client/server data 
 							// transmission.
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File		server_fp;			// The actual structures that will hold
@@ -144,10 +148,10 @@ public:
 
 protected:
 	// Member Functions.
-	ReturnVal			CreateSocket( SOCKET *s );
-	ReturnVal			BindSocket( SOCKET *s, SOCKADDR_IN *address );
-	ReturnVal			CloseSocket( SOCKET *s );
-	void				SetOptions( SOCKET *s );
+	ReturnVal			CreateSocket( CONNECTION *s );
+	ReturnVal			BindSocket( CONNECTION *s, SOCKADDR_IN *address );
+	ReturnVal			CloseSocket( CONNECTION *s );
+	void				SetOptions( CONNECTION *s );
 	char *				Error( int error_num );
 
 	// Member Variables.

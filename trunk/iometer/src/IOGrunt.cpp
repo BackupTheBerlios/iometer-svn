@@ -47,7 +47,13 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - The Interlocked functions take different parameters ## */
+/* ##                 in some of the different environments. The x86_64   ## */
+/* ##                 DDK compiler and x86_64 GCC are the two most at     ## */
+/* ##                 odds. Doing a cast in a macro seemed to be the best ## */
+/* ##                 solution.                                           ## */
+/* ##               2004-05-13 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Use cur_trans_slots to prevent shifting transaction ## */
 /* ##                 queue.                                              ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -493,7 +499,7 @@ void Grunt::Record_On()
 	worker_performance.time[FIRST_SNAPSHOT] = rdtsc();
 	prev_worker_performance.time[LAST_SNAPSHOT] = rdtsc();
 
-	InterlockedExchange( (long *) &grunt_state, TestRecording );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(int) &grunt_state, (int)TestRecording );
 }
 
 
@@ -506,7 +512,7 @@ void Grunt::Record_Off()
 	if ( !target_count || idle || critical_error )
 		return;
 
-	InterlockedExchange( (long *) &grunt_state, TestRampingDown );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(int) &grunt_state, (int)TestRampingDown );
 	worker_performance.time[LAST_SNAPSHOT] = rdtsc();
 }
 
@@ -520,8 +526,8 @@ void Grunt::Stop_Test()
 	if ( !target_count || idle || critical_error )
 		return;
 
-	InterlockedExchange( (long *) &not_ready, 1 );
-	InterlockedExchange( (long *) &grunt_state, TestIdle );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready,   1L );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(int)  &grunt_state, (int)TestIdle );
 }
 
 
@@ -660,7 +666,7 @@ BOOL Grunt::Prepare_Disks()
 #endif
 
 	grunt_state = TestPreparing;
-	InterlockedExchange( (long *) &not_ready, target_count );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready, (long)target_count );
 
 	// Creating a thread to prepare each disk.
 	cout << "Preparing disks..." << endl;
@@ -748,7 +754,7 @@ void Grunt::Prepare_Disk( int disk_id )
 	{
 		cout << "*** Could not allocate buffer to prepare disk." << endl;
 		critical_error = TRUE;
-		InterlockedDecrement( (long *) &not_ready );
+		InterlockedDecrement( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready );
 		return;
 	}
 
@@ -799,7 +805,7 @@ void Grunt::Prepare_Disk( int disk_id )
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	cout << "   " << disk->spec.name << " done." << endl;
-	InterlockedDecrement( (long *) &not_ready );
+	InterlockedDecrement( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready );
 }
 
 
@@ -1046,7 +1052,7 @@ void Grunt::Open_Targets()
 	}
 
 	// Signalling that thread is done (successfully or not) opening its targets.
-	InterlockedExchange( (long *) &not_ready, 0 );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready, 0 );
 }
 
 
@@ -1064,7 +1070,7 @@ void Grunt::Close_Targets()
 		if ( !( targets[i]->Close( &grunt_state ) ) )
 			cout << "*** Error closing " << targets[i]->spec.name << endl;
 	}
-	InterlockedExchange( (long *) &not_ready, 0 );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready, 0 );
 }
 
 
@@ -1453,9 +1459,9 @@ void Grunt::Start_Test()
 	Initialize_Transaction_Arrays();
 
 	// The grunt thread will become ready after opening its targets.
-	InterlockedExchange( (long *) &not_ready, 1 );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(long) &not_ready, 1 );
 	// Tell the grunt to begin opening its devices, but not to perform I/O yet.
-	InterlockedExchange( (long *) &grunt_state, TestOpening );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(int) &grunt_state, (int)TestOpening );
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	pthread_create(&newThread, NULL,
 		       (void *(*)(void *))Grunt_Thread_Wrapper, (void *)this);
@@ -1497,7 +1503,7 @@ void Grunt::Begin_IO()
 #endif
 	}
 
-	InterlockedExchange( (long *) &grunt_state, TestRampingUp );
+	InterlockedExchange( IOMTR_MACRO_INTERLOCK_CAST(int) &grunt_state, (int)TestRampingUp );
 }
 
 

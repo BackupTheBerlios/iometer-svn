@@ -54,7 +54,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - X86_64 can get its CPU data the same as i368.       ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied Dan Bar Dov's patch for adding              ## */
 /* ##                 Linux on PPC support.                               ## */
 /* ##               2004-02-15 (mingz@ele.uri.edu)                        ## */
@@ -238,7 +240,7 @@ int Performance::Get_Processor_Count()
 // Note: We just take the first CPU we find and return its CPU speed.
 double Performance::Get_Processor_Speed()
 {
-#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_XSCALE) 
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_X86_64) || defined(IOMTR_CPU_XSCALE)
 	int c;
 	char label[40];
 	int scanDecodes;

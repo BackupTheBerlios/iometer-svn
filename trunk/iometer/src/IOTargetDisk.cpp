@@ -48,7 +48,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-05-27 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Initialize iocq structure member.                   ## */
+/* ##               - Cleanup some function pointer math.                 ## */
+/* ##               - Clean a few comments with non-printing characters.  ## */
+/* ##               - Correct the size of data stored through pointers.   ## */
+/* ##               2004-05-27 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Close files in getSizeOfPhysDisk and                ## */
 /* ##                 getSectorSizeOfPhysDisk for linux                   ## */
 /* ##               - Complete partial I/O properly to prevent disk       ## */
@@ -162,6 +167,9 @@ TargetDisk::TargetDisk()
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	disk_file = (HANDLE)&file_handle;
+#if defined(IOMTR_SETTING_GCC_M64)
+	file_handle.iocq = NULL;
+#endif
 #endif
 
 #if defined(IOMTR_OSFAMILY_NETWARE)
@@ -202,6 +210,9 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 	BOOL retval;
 
 	io_cq = (CQAIO*)cq;
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+	file_handle.iocq = (IOCQ*)io_cq->completion_queue;
+#endif
 	memcpy( &spec, target_info, sizeof( Target_Spec ) );
 
 	// Initializing logical disks.
@@ -253,7 +264,7 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
  #else    			
   #error ===> ERROR: Broken port, advice needed!
  #endif
-#elif defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64) || defined(IOMTR_CPU_PPC)
+#elif defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64) || defined(IOMTR_CPU_PPC) || defined(IOMTR_CPU_X86_64)
 		Set_Starting_Sector( spec.disk_info.starting_sector );
 #elif defined(IOMTR_CPU_XSCALE)
 		// TODO: Need to double check if this is correct for xscale
@@ -973,6 +984,7 @@ BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 			{
 				if ( open_disk )
 					Close( NULL );
+			        cout << "Physical disk \'" << spec.name << "\' contains partition information." << endl;
 				return FALSE;
 			}
 		}
@@ -1111,7 +1123,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 		//     "Even if you have passed the function a file handle associated with 
 		//     a completion port and a valid OVERLAPPED structure, an application  
 		//     can prevent completion port notification. This is done by 
-		//     specifying a valid event handle for the hEvent member of the
+		//     specifying a valid event handle for the hEvent member of the
 		//     OVERLAPPED structure, and setting its low-order bit. A valid event
 		//     handle whose low-order bit is set keeps I/O completion from being 
 		//     queued to the completion port. 
@@ -1292,7 +1304,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 	{
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 		// Reset the handles.
-		olap[i].hEvent = (HANDLE)((unsigned int) olap[i].hEvent ^ 0x1);
+		olap[i].hEvent = (HANDLE)((ULONG_PTR) olap[i].hEvent ^ 0x1);
 #endif
 		CloseHandle( olap[i].hEvent );
 	}
@@ -1361,7 +1373,7 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
-	if ( ((struct File *)disk_file)->fd == (int)INVALID_HANDLE_VALUE )
+	if ( ((struct File *)disk_file)->fd == (int)INVALID_SOCKET )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -1389,7 +1401,7 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 
 	// If testing connection rate, the disk may already be closed.
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
-	if ( ((struct File *)disk_file)->fd == (int)INVALID_HANDLE_VALUE )
+	if ( ((struct File *)disk_file)->fd == (int)INVALID_SOCKET )
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
 #else
@@ -1421,7 +1433,7 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 	}
 	
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
-	((struct File *)disk_file)->fd = (int)INVALID_HANDLE_VALUE;
+	((struct File *)disk_file)->fd = (int)INVALID_SOCKET;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	disk_file = INVALID_HANDLE_VALUE;
 #else
@@ -1938,7 +1950,7 @@ static unsigned long long getSizeOfPhysDisk(const char *devName) {
 		else
 			sz64 = sz32 << 9;
 	}
- 	
+
 	#ifdef _DEBUG
 		cout << "Device " << fullDevName << " size:" << sz64 << "Bytes." << endl;
 	#endif

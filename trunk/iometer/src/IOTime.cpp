@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - The x86_64 architecture can use rdtsc.              ## */
+/* ##               - Switched to the more generic IOMTR_CPU_X86_64.      ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied Dan Bar Dov's patch for adding              ## */
 /* ##                 Linux on PPC support.                               ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -136,7 +139,7 @@
 	}
 	return 0;
  }
- #if defined(IOMTR_CPU_I386)
+ #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_X86_64)
   DWORDLONG rdtsc(void) {
         // Original code (returning the cpu cycle counter)
 	unsigned int lo, hi;
@@ -351,7 +354,7 @@
 
  }
 // ----------------------------------------------------------------------------
-#elif defined(IOMTR_OS_WIN64) && defined(IOMTR_CPU_AMD64)
+#elif defined(IOMTR_OS_WIN64) && defined(IOMTR_CPU_X86_64)
 
  // Same as above, but less comments. Same story; defs are from the ddk.
 

@@ -50,7 +50,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Needed to cast parameters to some functions         ## */
+/* ##                 because latest Visual Studio C++ library has        ## */
+/* ##                 multiple entry points for those functions.          ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -262,9 +266,9 @@ void CMeterCtrl::UpdateScaleInfo()
 	}
 
 	// Calculate the new scale.
-	scale = (int)pow( 10, floor( log10( (double)max_range ) ) );
+	scale = (int)pow( 10, (int)floor( log10( (double)max_range ) ) );
 
-	if ( ( max_range == pow( 10, floor( log10( max_range ) ) ) )  )
+	if ( ( max_range == pow( 10, (int)floor( log10( (double)max_range ) ) ) )  )
 	{
 		// max_range is a power of 10
 		scale /= 10;
@@ -299,14 +303,14 @@ void CMeterCtrl::UpdateLabelInfo()
 
 	// Sets the range that the marker labels will span.
 	range_diff = max_range - min_range;
-	if ( ( range_diff == pow( 10, floor( log10( range_diff ) ) ) ) && ( range_diff != 1 ) )
+	if ( ( range_diff == pow( 10, (int)floor( log10( range_diff ) ) ) ) && ( range_diff != 1 ) )
 	{
 		// range_diff is a power of 10, but is not exactly 1
 		display_range = 10;
 	}
 	else
 	{
-		display_range = range_diff / pow( 10, floor( log10( range_diff ) ) );
+		display_range = range_diff / pow( 10, (int)floor( log10( range_diff ) ) );
 	}
 
 	// Set the increment from one label to the next.
@@ -387,7 +391,7 @@ void CMeterCtrl::SetValue( double new_value )
 		actual_angle  = (int)(value / (max_range - min_range) * NEEDLE_SWEEP);
 
 	// See if the needle would move significantly.  If not, we're done.
-	if ( fabs(actual_angle  - shown_angle) < NEEDLE_SENSITIVITY )
+	if ( fabs((double)actual_angle  - shown_angle) < NEEDLE_SENSITIVITY )
 		return;
 
 	// Update the location and angle of the needle's point.

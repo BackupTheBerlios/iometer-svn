@@ -36,7 +36,13 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Added IOMTR_SETTING_NO_CPU_KHZ because some Linux   ## */ 
+/* ##                 kernels don't export cpu_khz.                       ## */ 
+/* ##               - Added IOMTR_SETTING_KSTAT_PERCPU because some       ## */ 
+/* ##                 Linux versions use an array of structures to        ## */ 
+/* ##                 report the kstat info.                              ## */ 
+/* ##               2004-05-13 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Fix 2.4 build                                       ## */
 /* ##               2004-04-08 (daniel@scheibli.com)                      ## */
 /* ##               - Changed K24 and K26 to IOMTR_OSVERSION_LINUX24      ## */
@@ -144,6 +150,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 			err = __put_user(tmp, (int *)arg);
 		break;
 
+#ifndef IOMTR_SETTING_NO_CPU_KHZ
 	case IM_IOC_GETCPUKHZ:
 #if defined(CONFIG_ARCH_IOP3XX)
 		khz = cpu_khz();
@@ -156,6 +163,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 #endif
 		err = __put_user(khz, (unsigned long *)arg);
 		break;
+#endif
 	case IM_IOC_GETCURJIFFIES:
 		/* 2.4 only have 32 bit value and 2.6 has a 64 bit jiffies, iometer need 64 bit value */
 #ifdef IOMTR_OSVERSION_LINUX24
@@ -176,6 +184,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 	case IM_IOC_GETCPUDATA:
 		memset(&c, 0, sizeof(struct cpu_data_type));
 #ifdef IOMTR_OSVERSION_LINUX24
+#ifndef IOMTR_SETTING_KSTAT_PERCPU
 		for (i = 0 ; i < smp_num_cpus && i < MAX_CPUS; i++) {
 			int cpu = cpu_logical_map(i), j;
 			c.user_time[i] = kstat.per_cpu_user[cpu] + kstat.per_cpu_nice[cpu];
@@ -184,6 +193,17 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 				sum += kstat.irqs[cpu][j];
 		}
 		c.intr = sum;
+#else
+		for (i = 0 ; i < smp_num_cpus && i < MAX_CPUS; i++) {
+			int cpu = cpu_logical_map(i), j;
+			c.user_time[i] = kernel_timeval_to_jiffies( & (kstat_percpu[cpu].user) )
+			               + kernel_timeval_to_jiffies( & (kstat_percpu[cpu].nice) );
+			c.system_time[i] = kernel_timeval_to_jiffies( &(kstat_percpu[cpu].system) );
+			for (j = 0 ; j < NR_IRQS ; j++)
+				sum += kstat_percpu[cpu].irqs[j];
+		}
+		c.intr = sum;
+#endif
 #ifdef DEBUG
 		for (i = 0; i < smp_num_cpus && i < MAX_CPUS; i++) {
 			printk("cpu %d: system time %llu, user time %llu\n", i, c.system_time[i], c.user_time[i]);

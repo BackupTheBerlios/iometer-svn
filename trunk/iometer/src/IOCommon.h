@@ -52,7 +52,15 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Added ifdef's to get Iometer to compile in x86_64   ## */
+/* ##                 environment. See IOMTR_SETTING_GCC_M64.             ## */
+/* ##               - Replaced most use of macro SOCKET with CONNECTION.  ## */
+/* ##               - Created IOMTR_MACRO_INTERLOCK_CAST to get the       ## */
+/* ##                 Interlocked functions and macros to work in with    ## */
+/* ##                 several different compilers.                        ## */
+/* ##               - Switched to more generic IOMTR_CPU_X86_64.          ## */
+/* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added the BLKGETSIZE here.                          ## */
 /* ##               2004-06-10 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Corrected the macro definition for BLKGETSIZE64.    ## */
@@ -162,14 +170,14 @@
 #endif
 // ----------------------------------------------------------------------------
 // Check the Processor mapping
-#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_XSCALE))
+#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_X86_64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_XSCALE))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
@@ -260,6 +268,12 @@ using namespace std;
  #define __int16   short
  #define __int8    char
 
+ #if defined(IOMTR_SETTING_GCC_M64)
+  // in the gcc on x86_64 environment long is 64 bits
+  #undef __int32
+  #define __int32 int
+ #endif
+
  typedef long long	       _int64;
  //typedef long long	       LARGE_INTEGER; 
  typedef unsigned long long    DWORDLONG;
@@ -272,11 +286,19 @@ using namespace std;
    #define WORD	unsigned short
   #endif
  #elif defined(IOMTR_OSFAMILY_UNIX)
+  // This is OK for x86-64 processors because LONG is only used in Netware or
+  // in MeterCtrl.cpp.or safely internally in IOTargetDisk.cpp.
+  // It could cause problems because in the x86-64 environment long is 64 bits.
   typedef long		       LONG;
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
- typedef unsigned long	       DWORD;
+ #if defined(IOMTR_SETTING_GCC_M64)
+  // DWORD is supposed to be an unsigned 32 bit number.
+  typedef unsigned int	       DWORD;
+ #else
+  typedef unsigned long	       DWORD;
+ #endif
  
  typedef int		       INT;
  typedef int		       BOOL;
@@ -293,14 +315,23 @@ using namespace std;
 
  typedef void		      *HANDLE;
  typedef void		      *LPVOID;
- typedef void		      *SOCKET;
+
+ //  The places in the Iometer code that now use CONNECTION used to use
+ //  SOCKET. But SOCKET is a defined type in winsock2.h used for network
+ //  access. Iometer defined a type called SOCKET used in NetTCP.cpp but 
+ //  the original winsock SOCKET was used in IOPortTCP.cpp. Defining
+ //  a new CONNECTION type allows me to separate the two different concepts
+ //  cleanly.
+ typedef void                 *CONNECTION;
+ 
+ typedef int		       SOCKET;
  typedef const void	      *LPCVOID;
 
  typedef DWORD		      *LPDWORD;
  typedef BYTE		      *LPBYTE;
  typedef LPCSTR		       LPCTSTR;
 
- typedef unsigned long         ULONG_PTR;
+ typedef unsigned long         ULONG_PTR, *PULONG_PTR;
  typedef ULONG_PTR             DWORD_PTR;
 #endif 
 // ----------------------------------------------------------------------------
@@ -320,9 +351,28 @@ using namespace std;
    typedef ULONG_PTR        DWORD_PTR;
   #endif
  #endif // USING_DDK
+ //  The places in the Iometer code that now use CONNECTION used to use
+ //  SOCKET. But SOCKET is a defined type in winsock2.h used for network
+ //  access. Iometer defined a type called SOCKET used in NetTCP.cpp but 
+ //  the original winsock SOCKET was used in IOPortTCP.cpp. Defining
+ //  a new CONNECTION type allows me to separate the two different concepts
+ //  cleanly.
+ typedef ULONG_PTR CONNECTION;
 #endif 
 // ----------------------------------------------------------------------------
 
+// Because of some of the memory over writing issues in the 64 bit environment
+// and the typing required by the windows environment, variables need to be cast
+// differently depending on OSFAMILY. this gets the job done... 
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+ #define IOMTR_MACRO_INTERLOCK_CAST(a) (long *)
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OS_FAMILY_NETWARE)
+ #define IOMTR_MACRO_INTERLOCK_CAST(a) (a *)
+#else
+ #error ===> ERROR: You have to do some coding here to get the port done!
+#endif
+
+// ----------------------------------------------------------------------------
 
 
 // Definition of the defines itself
@@ -410,7 +460,7 @@ using namespace std;
  #define FALSE			0
  #define TRUE			1
  #define INVALID_HANDLE_VALUE   (HANDLE)-1
- #define INVALID_SOCKET		(SOCKET)(~0)
+ #define INVALID_SOCKET		(~0L)
  #define PERF_NO_INSTANCES	-1
  #define SOCKET_ERROR		-1
  #define SD_BOTH		2
@@ -578,13 +628,21 @@ struct Results
  	int		aio_flag;
  	int		error;
  	int		returnval;
+#if defined(IOMTR_SETTING_GCC_M64)
+ 	unsigned int	completion_key;
+#else
  	unsigned long	completion_key;
+#endif
  	struct {
  		int sigev_notify;
  		}	aio_sigevent;
 	};
  struct timeb {
+#if defined(IOMTR_SETTING_GCC_M64)
+	int time;
+#else
 	long time;
+#endif
 	unsigned short millitm;
 	short timezone;
 	short dstflag;
@@ -607,7 +665,11 @@ struct Results
 	int	done;
 	int	error;
 	int	completion_key;
+#if defined(IOMTR_SETTING_GCC_M64)
+	long	bytes_transferred;
+#else
 	int	bytes_transferred;
+#endif
  };
  struct IOCQ {
 	CQ_Element      *element_list;
@@ -859,7 +921,6 @@ inline int IsBigEndian( void )
  extern DWORDLONG rdtsc();
 #endif
 // ----------------------------------------------------------------------------
-
 
 
 #endif	// ___IOCOMMON_H_DEFINED___

@@ -190,7 +190,8 @@ find important global defines (-D<key>[=<value>]):
 
    This are global defines to identify the Processor / CPU itself: 
    IOMTR_CPU_ALPHA           Alpa CPU (Digital->Compaq->HP) *
-   IOMTR_CPU_AMD64           AMD x86 with 64 bit extention (Opteron) *
+   IOMTR_CPU_X86_64          AMD x86 with 64 bit extention (Opteron) and
+                             Intel Xeon with EM64T
    IOMTR_CPU_I386            Intel x86 processors (32 bit)
    IOMTR_CPU_IA64            Intel Itanium family (64 bit)
    IOMTR_CPU_MIPS            MIPS CPU (used in SGI machines etc.) *
@@ -217,6 +218,16 @@ find important global defines (-D<key>[=<value>]):
 			       IOMTR_SETTING_OVERRIDE_FS
    IOMTR_SETTING_VI_SUPPORT    Adds VI (Virtual Interface Architecture)
                                support to the dynamo executable.   
+   IOMTR_SETTING_GCC_M64       The GCC compiler used for Linux builds have
+                               a (GCC) build time option to make pointers
+                               and longs 64 bits. Useful only on 64 bit
+                               operating systems.
+   IOMTR_SETTING_KSTAT_PERCPU  For the Linux kernel module. The kstat kernel
+                               structure in some smp Linux version use an
+                               alternative structure called 'percpu'.
+   IOMTR_SETTING_NO_CPU_KHZ    For the Linux kernel module. A few non i386
+                               kernels don't export cpu_khz.
+
 
  o IOMTR_MACRO_...
  
@@ -229,6 +240,11 @@ find important global defines (-D<key>[=<value>]):
    min() / max() for instance. The documentation of the macros that are
    realy implemented, can be found in the close to their definition (in
    the IOCommon.h file).
+
+   IOMTR_MACRO_INTERLOCK_CAST  The different compilers used to build Dynamo
+                               can be senitive about parameter type. This
+                               macro casts the parameters to the interlocked
+                               functions used for thread communication.
    
  o _DEBUG
 

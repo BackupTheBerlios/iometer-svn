@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Cleanup some warnings with type casts.              ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -1051,7 +1053,7 @@ DWORD PortTCP::Peek()
 //
 BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 {
-	if ( *s == INVALID_SOCKET )
+	if ( *s == (int)INVALID_SOCKET )
 	{
 		#if PORT_DETAILS || _DETAILS
 			cout << socket_name << " socket is already closed." << endl;
@@ -1101,6 +1103,6 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 		return FALSE;
 	}
 
-	*s = INVALID_SOCKET;
+	*s = (int)INVALID_SOCKET;
 	return TRUE;
 }

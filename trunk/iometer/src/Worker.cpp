@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - X86_64 is little-endian for VIPL code.              ## */
+/* ##               2004-06-11 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Add code to allow potentially invalid access specs  ## */
 /* ##                 but warn the user.                                  ## */
 /* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
@@ -620,7 +622,7 @@ BOOL Worker::SetTargets()
 			                               target->spec.vi_info.remote_address.DiscriminatorLen );
 			vi_discriminator_length = min( vi_discriminator_length, VI_DISCRIMINATOR_SIZE );
 
-#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64) || defined(IOMTR_CPU_X86_64)
 			// Intel processor (little-endian) -- use the first VI_DISCRIMINATOR_SIZE bytes 
 			// (least significant bytes) of the current 64-bit system time as the discriminator.
 			vi_discriminator = (VI_DISCRIMINATOR_TYPE)rdtsc();

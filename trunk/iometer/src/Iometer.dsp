@@ -147,10 +147,6 @@ SOURCE=.\IOGlobals.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\IOManagerWin.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\IOPort.cpp
 # End Source File
 # Begin Source File

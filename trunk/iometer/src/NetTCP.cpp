@@ -50,7 +50,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Changed SOCKET to CONNECTION for greater clarity,   ## */
+/* ##                 because SOCKET has a standard meaning outside       ## */
+/* ##                 Iometer.                                            ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -115,12 +119,12 @@ NetAsyncTCP::NetAsyncTCP()
 	WSADATA wd;
 #endif
 
-	server_socket = INVALID_SOCKET;
-	client_socket = INVALID_SOCKET;
+	server_socket = (CONNECTION)INVALID_SOCKET;
+	client_socket = (CONNECTION)INVALID_SOCKET;
 #if defined(IOMTR_OSFAMILY_UNIX)
 	server_fp.fd = client_fp.fd = -1;
-	server_socket = (SOCKET) &server_fp;
-	client_socket = (SOCKET) &client_fp;
+	server_socket = (CONNECTION)&server_fp;
+	client_socket = (CONNECTION)&client_fp;
 	maxfd = sysconf(_SC_OPEN_MAX);    // the max # of file descriptors that select() handles.
 
 #ifdef WORKAROUND_LISTEN_BUG
@@ -216,7 +220,7 @@ void NetAsyncTCP::SetAddress( BOOL set_server, const char *ip_address,
 //
 ReturnVal NetAsyncTCP::Create( BOOL create_server )
 {
-	SOCKET		*s;
+	CONNECTION	*s;
 	SOCKADDR_IN	*address;
 	
 	if ( create_server )
@@ -244,7 +248,7 @@ ReturnVal NetAsyncTCP::Create( BOOL create_server )
 //
 // Creates a socket.
 //
-ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
+ReturnVal NetAsyncTCP::CreateSocket( CONNECTION *s )
 {
 	#if NETWORK_DETAILS || _DETAILS
 		cout << "Creating socket." << endl;
@@ -290,7 +294,7 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 // The SOCKADDR_IN structure must have been filled in
 // before calling this function (use SetAddress).
 //
-ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
+ReturnVal NetAsyncTCP::BindSocket( CONNECTION *s, SOCKADDR_IN *address )
 {
 	socklen_t buflen;
 
@@ -821,7 +825,7 @@ DWORD NetAsyncTCP::Peek()
 //
 // Utility function to close a socket.
 //
-ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
+ReturnVal NetAsyncTCP::CloseSocket( CONNECTION *s )
 {
 	#if NETWORK_DETAILS || _DETAILS
 		cout << "Closing socket." << endl;
@@ -878,7 +882,7 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 //
 ReturnVal NetAsyncTCP::Close( BOOL close_server )
 {
-	SOCKET *s;
+	CONNECTION *s;
 
 	if ( close_server )
 	{
@@ -898,7 +902,7 @@ ReturnVal NetAsyncTCP::Close( BOOL close_server )
 //
 // Set socket options.
 //
-void NetAsyncTCP::SetOptions( SOCKET *s )
+void NetAsyncTCP::SetOptions( CONNECTION *s )
 {
 	static BOOL setoption = TRUE;
 	LINGER lstruct = {TRUE, 0};

@@ -52,7 +52,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-05-14 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Added a little more initialization.                 ## */
+/* ##               - Converted casts to fixed size types.                ## */
+/* ##               2004-05-14 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Handle disk full condition in GetOverlappedResult.  ## */
 /* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -126,6 +129,8 @@ BOOL SetQueueSize(HANDLE cqid, int size)
 	memset(this_cqid->element_list, 0, sizeof(struct CQ_Element) * size);
 	memset(this_cqid->aiocb_list, 0, sizeof(struct aiocb64 *) * size );
 	this_cqid->size = size;
+	this_cqid->last_freed = -1;
+	this_cqid->position = 0;
 
 #ifdef _DEBUG
 	cout << "allocated a completion queue of size " << size << " for handle : " << this_cqid << endl;
@@ -317,7 +322,7 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 			
 			cqid->aiocb_list[i] = 0;
 
-			if( (long )*bytes_transferred < 0 ) {
+			if( (DWORD )*bytes_transferred < (DWORD)0 ) {
 				*bytes_transferred = 0;
 				// TODO: Here - and in the other locations where SetLastError()
 				// is called in this method - we have the problem, that it is
@@ -443,7 +448,7 @@ BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD 
 	// function.
 	//
 	// get a handle to the current event queue.
-	eventqid = (IOCQ *)((unsigned int)lpOverlapped->hEvent ^ 0x1);
+	eventqid = (IOCQ *)((ULONG_PTR)lpOverlapped->hEvent ^ 0x1);
 
 	// Call aio_suspend() now.
 	if (aio_suspend64(eventqid->aiocb_list, eventqid->size, timeoutp) < 0)
@@ -481,7 +486,7 @@ BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD 
 				{
 					DWORD bytes_expected;
 
-					*bytes_transferred = aio_return64(eventqid->aiocb_list[i]);
+					*bytes_transferred = (DWORD)aio_return64(eventqid->aiocb_list[i]);
 
 					bytes_expected = eventqid->aiocb_list[i]->aio_nbytes;
 
@@ -504,7 +509,7 @@ BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD 
 						}
 					}
 
-					if ((long)*bytes_transferred < 0)
+					if ((DWORD)*bytes_transferred < 0)
 					{
 						*bytes_transferred = 0;
 						if (aio_error_return)
@@ -553,11 +558,11 @@ BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD byt
 	//
 	// At this point we have to decide whether to place this in the Completion queue
 	// or the event queue.
-	if ((unsigned int)lpOverlapped->hEvent & 0x00000001)
+	if ((ULONG_PTR)lpOverlapped->hEvent & 0x00000001)
 	{
 		// forcibly place this on the event queue even though a completion queue is associated
 		// with the file. Well, thats what you asked for.
-		this_cq = (IOCQ *)((unsigned int)lpOverlapped->hEvent ^ 0x1);
+		this_cq = (IOCQ *)((ULONG_PTR)lpOverlapped->hEvent ^ 0x1);
 	}
 	else
 		this_cq = filep->iocq;
@@ -625,7 +630,7 @@ BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD byt
 	// Check if the aio_read completed successfully.
 	if ((aio_error_return = aio_error64(&this_cq->element_list[free_index].aiocbp)) != EINPROGRESS)
 	{
-		*bytes_read = aio_return64(&this_cq->element_list[free_index].aiocbp);
+		*bytes_read = (DWORD)aio_return64(&this_cq->element_list[free_index].aiocbp);
 		if ((long)*bytes_read < 0)
 		{
 			*bytes_read = 0;
@@ -678,11 +683,11 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 	//
 	// At this point we have to decide whether to place this in the Completion queue
 	// or the event queue.
-	if ((unsigned int)lpOverlapped->hEvent & 0x00000001)
+	if ((ULONG_PTR)lpOverlapped->hEvent & 0x00000001)
 	{
 		// forcibly place this on the event queue even though a completion queue is associated
 		// with the file. Well, thats what you asked for.
-		this_cq = (IOCQ *)((unsigned int)lpOverlapped->hEvent ^ 0x1);
+		this_cq = (IOCQ *)((ULONG_PTR)lpOverlapped->hEvent ^ 0x1);
 	}
 	else
 		this_cq = filep->iocq;
@@ -748,7 +753,7 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 	// Check if the aio_write completed successfully.
 	if ((aio_error_return = aio_error64(&this_cq->element_list[free_index].aiocbp)) != EINPROGRESS)
 	{
-		*bytes_written = aio_return64(&this_cq->element_list[free_index].aiocbp);
+		*bytes_written = (DWORD)aio_return64(&this_cq->element_list[free_index].aiocbp);
 		if ((long)*bytes_written < 0)
 		{
 			*bytes_written = 0;

@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tiemam@intel.com)                ## */
+/* ##               - Switched to more generic IOMTR_CPU_X86_64.          ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -360,7 +362,7 @@ double Performance::Get_Processor_Speed()
 
 	if ( !rdtsc_supported )
 	{
-#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_AMD64)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_X86_64)
 		cout << "*** Processor does not support RDTSC instruction!"    << endl <<
 			"    Dynamo requires this for high-resolution timing." << endl;
 #elif defined(IOMTR_CPU_IA64)

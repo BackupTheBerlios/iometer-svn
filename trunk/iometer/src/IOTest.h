@@ -51,7 +51,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Type change to make structure size stable across    ## */
+/* ##                 platforms.                                          ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -220,7 +223,7 @@ struct Target_Spec
 	// Target independent test specifications.
 	int		queue_depth;
 	BOOL		test_connection_rate;
-	long		trans_per_conn;
+	int		trans_per_conn;
 
 	char		padding[4];	// xscale and ia32 arch difference. need this padding.
 	
