@@ -1,3 +1,23 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer) / AccessDialog.cpp                                       ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This file is responsible for allowing the access      ## */
+/* ##                  specifications to be edited (the little dialog)    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...:                                                       ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-02 (joe@eiler.net)                            ## */
+/* ##               - Changed LONG_PTR to ULONG_PTR, which is what it is  ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -944,7 +964,7 @@ BOOL CAccessDialog::InsertLine( Access_Spec *access_spec, int line_no )
 	item_being_changed = line_no;
 	m_LAccess.InsertItem( LVIF_IMAGE | LVIF_STATE | LVIF_PARAM,
 		item_being_changed, NULL, LVIS_SELECTED | LVIS_FOCUSED, 
-		LVIS_SELECTED | LVIS_FOCUSED, 1, (LONG_PTR) access_spec );
+		LVIS_SELECTED | LVIS_FOCUSED, 1, (ULONG_PTR) access_spec );
 
 	// Update the controls to reflect the newly inserted line.
 	SetAll( access_spec );

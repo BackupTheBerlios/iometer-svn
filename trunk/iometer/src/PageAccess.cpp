@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer) / PageAccess.cpp                                         ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This file implements the Access Specifications tab    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...:                                                       ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-02 (joe@eiler.net)                            ## */
+/* ##               - Changed LONG_PTR to ULONG_PTR, which is what it is  ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -176,7 +195,7 @@ void CPageAccess::ShowGlobalAccess()
 			spec->name,
 			NULL, LVIS_SELECTED,
 			spec->default_assignment,
-			(LONG_PTR)spec );						
+			(ULONG_PTR)spec );						
 	}
 }
 
@@ -208,7 +227,7 @@ void CPageAccess::OnBNew()
 	m_LGlobalAccess.InsertItem( LVIF_STATE | LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE,
 		theApp.access_spec_list.IndexByRef( spec ), spec->name,
 		LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED,
-		AssignNone, (LONG_PTR)spec );
+		AssignNone, (ULONG_PTR)spec );
 
 	// Automatically call the edit function for the new spec.
 	// Deletes the spec if editing was cancelled.
@@ -541,7 +560,7 @@ void CPageAccess::ShowAssignedAccess()
 		// worker's access spec list.
 		m_LAssignedAccess.InsertItem( LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE,
 			s, spec->name, NULL, LVIS_SELECTED, BLUE, 
-			(LONG_PTR)spec );
+			(ULONG_PTR)spec );
 	}
 }
 
@@ -1151,7 +1170,7 @@ void CPageAccess::OnBEditCopy()
 		LVNI_SELECTED ), NULL, LVIS_SELECTED );
 	m_LGlobalAccess.InsertItem( LVIF_STATE | LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE,
 		m_LGlobalAccess.GetItemCount(), spec->name,
-		LVIS_SELECTED, LVIS_SELECTED, AssignNone, (LONG_PTR)spec );						
+		LVIS_SELECTED, LVIS_SELECTED, AssignNone, (ULONG_PTR)spec );						
 
 	// Automatically call the edit function for the new spec.
 	// Deletes the spec if editing was cancelled.

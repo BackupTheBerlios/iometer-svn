@@ -16,7 +16,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-02 (joe@eiler.net)                            ## */
+/* ##               - Changed LONG_PTR to ULONG_PTR, which is what it is  ## */
+/* ##               2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added the implementation of the Strip() function    ## */
 /* ##                 which removes leading and trailing blanks.          ## */
 /* ##               2003-02-26 (joe@eiler.net)                            ## */
@@ -26,7 +28,7 @@
 /* ##               - Different changes to support compilation with       ## */
 /* ##                 gcc 3.2 (known as cout << hex error).               ## */
 /* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
-/* ##               - Added LONG_PTR and DWORD_PTR typedef to the Windows ## */
+/* ##               - Added ULONG_PTR and DWORD_PTR typedef to the Windows## */
 /* ##                 part to get compiled.                               ## */
 /* ##               2003-02-04 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied proc-speed-fix.txt patch file               ## */
@@ -126,8 +128,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 using namespace std;
 
-typedef unsigned long   LONG_PTR;
-typedef unsigned long   DWORD_PTR;
+typedef unsigned long   ULONG_PTR;
+typedef ULONG_PTR   DWORD_PTR;
 
 #endif // !UNIX
 
