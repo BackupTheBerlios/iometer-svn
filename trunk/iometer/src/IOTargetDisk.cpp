@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied the large_work_file patch from              ## */
+/* ##                 Russell Reed (for files >2GB on 32 bit).            ## */
+/* ##               2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -904,10 +907,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 			{
 				// Check to see if we've reached the end of the disk
 				if (spec.disk_info.maximum_size &&
-						((*prepare_offset + bytes) 
-						 > (unsigned)((spec.disk_info.starting_sector +
-													 spec.disk_info.maximum_size)
-													* spec.disk_info.sector_size)))
+				    ((*prepare_offset + bytes) > ((spec.disk_info.starting_sector + (DWORDLONG)spec.disk_info.maximum_size) * spec.disk_info.sector_size)))
 				{
 					// A maximum disk size was specified by the user, and the next write 
 					// would go past the specified maximum size.  

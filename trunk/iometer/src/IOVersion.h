@@ -70,7 +70,7 @@
 #define _IOVERSION
 
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
  #include <winver.h>
 #endif /* !UNIX */
 

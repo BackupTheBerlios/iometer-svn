@@ -8,6 +8,12 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer_large_work_file.patch.txt by Russell Redd (promises to
+     brings full >2GB file support for 32 bit platform).
+   - iometer-2003.05.10-IoMtrGlobalDefines3.patch by Daniel Scheibli
+     (introduces the IOMTR_* global defines to consolidate the different
+     global defines coming with the different platforms - ease future
+     ports).
    - iometer-2003.05.10-Win64OnAmd64.patch by Daniel Scheibli (Integrates
      the changes contributed by Vedran Degoricija to ensure, that the
      executables can be build for Windows 64 Bit on AMD64).
