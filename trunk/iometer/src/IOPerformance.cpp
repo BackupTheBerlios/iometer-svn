@@ -53,7 +53,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Corrected the CPU speed detection output as it      ## */
+/* ##                 was proposed Kenneth Morse.                         ## */
+/* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the Windows 64 Bit on AMD64.                        ## */
@@ -449,7 +452,7 @@ double Performance::Get_Processor_Speed()
 			}
 			else
 			{
-				cout << "Processor speed: " << speed/1000 << " GHz." << endl;
+				cout << "Processor speed: " << speed / 1000.0 << " GHz." << endl;
 			}
 			return (double) (speed * 1000000);
 		}
@@ -462,7 +465,7 @@ double Performance::Get_Processor_Speed()
 	}
 	else
 	{
-		cout << "Processor speed: " << speed/1000 << " GHz." << endl;
+		cout << "Processor speed: " << speed / 1000.0 << " GHz." << endl;
 	}
 	return (double) (speed * 1000000);
 }
