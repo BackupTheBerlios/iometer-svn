@@ -16,7 +16,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-04 (joe@eiler.net)                            ## */
 /* ##               - Made a change for Solaris to work, I had to extern  ## */
 /* ##                 processor_speed_to_nsecs, I don't know how this     ## */
 /* ##                 would have ever compiled, let alone worked!!        ## */
@@ -140,7 +143,9 @@ typedef ULONG_PTR   DWORD_PTR;
 #include <math.h>
 
 #ifndef UNIX
+#if _MSC_VER < 1300
 #include "ostream64.h"
+#endif
 #endif /* !UNIX */
 
 

@@ -1,3 +1,25 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / WaitingForManagers.cpp                                   ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is the Waiting for Managers dialog in Iometer.   ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
+
 /*
 Intel Open Source License 
 
@@ -306,7 +328,7 @@ BOOL CWaitingForManagers::RemoveWaitingManager(const CString& name, const CStrin
 		if ( (name.CompareNoCase(names[counter]) == 0
 			  && address.CompareNoCase(addresses[counter]) == 0)
 			|| ( (addresses[counter] == "") // "special local host" case
-			  && (names[counter].Compare(HOSTNAME_LOCAL) == 0 ) ) )
+		  && (names[counter].Compare(HOSTNAME_LOCAL) == 0 ) ) )
 		{
 			// Remove this entry from the waiting list
 			names.RemoveAt(counter);

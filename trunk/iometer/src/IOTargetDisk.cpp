@@ -12,7 +12,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed LINUX_DEBUG, because it is redundant.       ## */
 /* ##                 We can use the generic _DEBUG therefor.             ## */
 /* ##               2003-03-04 (joe@eiler.net)                            ## */
@@ -23,7 +26,7 @@
 /* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Fixed the getSectorSizeOfPhysDisk() method to       ## */
 /* ##                 detect the sector size was on major and minor       ## */
-/* ##                 number (instead on major number only).              ## */ 
+/* ##                 number (instead on major number only).              ## */
 /* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Applied the iometer-initial-largefile.patch file    ## */
@@ -315,9 +318,9 @@ void TargetDisk::Set_Size( int maximum_size )
 	{
 		size = new_size;
 		#if _DEBUG
-			cout << "Resetting accessible size of disk " << spec.name << " to "
-				<< maximum_size << " sectors." << endl
-				<< "   " << spec.name << " size = " << size << endl;
+			cout << "Resetting accessible size of disk " << spec.name << " to " << 
+				maximum_size << " sectors." << endl << "   " << spec.name <<
+				" size = " << size << endl;
 		#endif
 	}
 }
@@ -334,8 +337,8 @@ void TargetDisk::Set_Starting_Sector( int starting_sector )
 
 	starting_position = (DWORDLONG) starting_sector * (DWORDLONG) spec.disk_info.sector_size;
 	#if _DEBUG
-		cout << "Moving starting sector of disk " << spec.name << " to " 
-			<< starting_position << "." << endl;
+		cout << "Moving starting sector of disk " << spec.name << " to " << 
+			starting_position << "." << endl;
 	#endif
 
 	// Moving the starting disk sector may have shrunk the accessible size of the disk.

@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / PageDisk.cpp                                             ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is the Disk Targets tab in Iometer.              ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -434,8 +455,8 @@ void CPageDisk::ShowConnectionRate()
 {
 	Manager	*manager;
 	Worker	*worker;
-	int trans_per_conn;
-	int test_connection_rate;
+	int trans_per_conn=0;
+	int test_connection_rate=0;
 
 	switch ( theApp.pView->m_pWorkerView->GetSelectedType() )
 	{

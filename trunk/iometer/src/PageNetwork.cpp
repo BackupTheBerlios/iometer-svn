@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / PageNetwork.cpp                                          ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is the Network Targets window in Iometer.        ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -157,7 +178,7 @@ void CPageNetwork::EnableWindow( BOOL enable )
 	Worker	*worker;
 	int		selected_type;
 	CWnd	*last_focused;
-	BOOL	enable_max_sends;
+	BOOL	enable_max_sends = false;
 
 	// Only enable thingies if a test is not running.
 	if ( theApp.test_state != TestIdle )
@@ -712,8 +733,8 @@ void CPageNetwork::ShowConnectionRate()
 {
 	Manager *manager;
 	Worker	*worker;
-	int		trans_per_conn;
-	int		test_connection_rate;
+	int		trans_per_conn=0;
+	int		test_connection_rate=0;
 
 	switch ( theApp.pView->m_pWorkerView->GetSelectedType() )
 	{

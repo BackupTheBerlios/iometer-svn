@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / WaitingForManagers.h                                     ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is the Header file of the WFM dialog.            ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -120,8 +141,8 @@ protected:
 	// How many times a second to see whether the waiting list is empty
 	static const int polling_frequency;
 
-	CArray<CString, int> names;
-	CArray<CString, int> addresses;
+	CStringArray			names;
+	CStringArray			addresses;
 };
 
 //{{AFX_INSERT_LOCATION}}

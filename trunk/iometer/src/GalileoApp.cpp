@@ -12,7 +12,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the NDEBUG check to the generic _DEBUG.     ## */
 /* ##               2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Cut out the Windows Pipes support for               ## */
@@ -131,11 +134,12 @@ BOOL CGalileoApp::InitInstance()
 	// If you are not using these features and wish to reduce the size
 	//  of your final executable, you should remove from the following
 	//  the specific initialization routines you do not need.
-
+#if _MSC_VER < 1300
 #ifdef _AFXDLL
 	Enable3dControls();			// Call this when using MFC in a shared DLL
 #else
 	Enable3dControlsStatic();	// Call this when linking to MFC statically
+#endif
 #endif
 
 	//init file version strings
@@ -372,9 +376,10 @@ void CGalileoApp::IdentifyLocalAddresses()
 		{
 			for ( int counter=0; hostinfo->h_addr_list[counter] != NULL; counter++ )
 			{
-				ip_addresses.Add( counter );
+//				ip_addresses.Add(counter);
 				memcpy( &sin.sin_addr.s_addr, hostinfo->h_addr_list[counter], hostinfo->h_length );
-				ip_addresses[counter] = inet_ntoa( sin.sin_addr );
+//				ip_addresses[counter] = inet_ntoa( sin.sin_addr );
+				ip_addresses.SetAtGrow(counter, inet_ntoa( sin.sin_addr ));
 			}
 		}
 		else

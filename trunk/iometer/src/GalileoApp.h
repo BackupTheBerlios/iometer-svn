@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / GalileoApp.h                                             ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: The header file for main Iometer application class.   ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -127,7 +148,7 @@ public:
 protected:
 	void IdentifyLocalAddresses();
 
-	CArray<CString, int>	ip_addresses;
+	CStringArray			ip_addresses;
 	CString					netbios_hostname;
 
 	// Formatting string for launching a new Dynamo.

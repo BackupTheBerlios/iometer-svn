@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / PageDisplay.cpp                                          ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is the Results window in Iometer.                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -854,7 +875,7 @@ void CPageDisplay::OnMDisplay( int submenu_id, int menu_item, int result_code )
 // 
 void CPageDisplay::SelectStatisticByName( int button, const char *statistic_name )
 {
-	int submenu_id, menu_item;
+	unsigned int submenu_id, menu_item;
 
 	if ( (button < 0) || (button >= NUM_STATUS_BARS) )
 	{
@@ -1255,10 +1276,12 @@ BOOL CPageDisplay::LoadConfig( const CString& infilename )
 			}
 			else
 			{
+				CString str;
+				str.Format("%d",bar_number);
 				ErrorMessage( "Invalid bar chart item name \""
-					+ bar_item + "\" for bar #" + (CString)bar_number
+					+ bar_item + "\" for bar #" + str 
 					+ " in RESULTS DISPLAY section.  Ignoring this bar "
-					"setting." );
+					+ "setting." );
 				continue;
 			}
 		}
