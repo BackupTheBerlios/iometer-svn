@@ -13,7 +13,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-05-10 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the version to current date.                ## */
+/* ##               2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Dropped not used defines like IOVER_FILE,           ## */
 /* ##                 IOVER_PRODUCT, IOVER_PRIVATEBUILD and               ## */
 /* ##                 IOVER_SPECIALBUILD.                                 ## */
@@ -103,8 +105,12 @@ extern "C"
 // The last "official" version was "2001.07.19", which is the version
 // you will find in iometer-initial.tar.gz at the Sourceforge page
 // (http://sourceforge.net/projects/iometer).
-#define IOVER_FILEVERSION				"2003.02.15-post\0"
+//#define IOVER_FILEVERSION				"2003.02.15\0"
+//#define IOVER_FILEVERSION				"2003.02.15-post\0"
+#define IOVER_FILEVERSION				"2003.05.10\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
+
+
 
 #ifndef UNIX
 
