@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-10 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Corrected the macro definition for BLKGETSIZE64.    ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied Dan Bar Dov's patch for adding              ## */
 /* ##                 Linux on PPC support.                               ## */
 /* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
@@ -818,7 +820,7 @@ inline int IsBigEndian( void )
   #define BLKBSZGET    _IOR(0x12,112,size_t)
  #endif
  #if defined(_IO) && !defined(BLKGETSIZE64)
-  #define BLKGETSIZE64 _IOR(0x12,114,sizeof(unsigned long long))
+  #define BLKGETSIZE64 _IOR(0x12,114,unsigned long long)
  #endif
 #endif 
 // ----------------------------------------------------------------------------
