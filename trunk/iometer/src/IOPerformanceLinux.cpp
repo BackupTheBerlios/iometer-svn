@@ -54,7 +54,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-07 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-02-15 (mingz@ele.uri.edu)                        ## */
+/* ##               - Bugfix for Get_NI_Counters to parse /proc/net/dev   ## */
+/* ##                 with correct format.                                ## */
+/* ##               2004-02-07 (mingz@ele.uri.edu)                        ## */
 /* ##               - Changed all im_kstat to iomtr_kstat with Daniel     ## */
 /* ##                 suggestion. A better name.                          ## */
 /* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
@@ -94,7 +97,7 @@
 /* ##                 (brings some minor changes to main() function).     ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-#define PERFORMANCE_DETAILS	0 // Turn on to display additional performance messages.
+#define PERFORMANCE_DETAILS	0   // Turn on to display additional performance messages.
 #if defined(IOMTR_OS_LINUX)
 
 
@@ -540,6 +543,8 @@ void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 //   eth0:30165814  176832    0    0    0     0          0         0  3700725   27219    0    0    0   288       0          0
 //////////////////////////////////////////////////////////////////////
 // Note: "lo" is the loopback device, and "eth0" is an ethernet card.
+//
+// Updated: This file is same from 2.4 to 2.6 kernel. so should works at most of the time.
 #define NET_IF_TO_IGNORE "ians"
 
 void Performance::Get_NI_Counters(int snapshot) {
@@ -571,7 +576,7 @@ void Performance::Get_NI_Counters(int snapshot) {
 			 ++network_interfaces) {
 		// grab the interface names (if there are leading blanks,
 		// then they are removed using the Strip() function)
-		scanCount = fscanf(netInfo, "%[^:]: %*d %d %lld %*d %*d %*d %*d %d %lld",ifname,
+		scanCount = fscanf(netInfo, "%[^:]: %*d %d %lld %*d %*d %*d %*d %*d %*d %d %lld",ifname,
 											 &packetIn,
 											 &raw_ni_data[network_interfaces]
 											             [NI_IN_ERRORS][snapshot],

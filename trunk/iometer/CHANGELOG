@@ -8,6 +8,8 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-1216ds2-getnicounter.patch by Ming Zhang (bugfix for
+     reading the /proc/net/dev file under Linux).     
    - iometer-2003.12.16-post.DS1-SolarisMultipleSwapDevices.patch
      by Daniel Scheibli (rework of the Get_All_Swap_Devices()
      function for Solaris - fixing a few minor inconsistencies).
