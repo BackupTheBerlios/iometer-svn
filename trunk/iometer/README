@@ -58,16 +58,18 @@ NOTE: It is important to keep in mind, that results might not be
 
 3 Running Iometer
 
-NOTE: If you are running Dynamo on a Linux machine with a glibc (GNU
-      libc) version 2.3 or higher (having NPTL support) - a prominent
-      candidate is Red Hat 9 - it might come to segmentation faults
-      after ending a test.
-      This happens due to the shift from LinuxThreads to NPTL (Native
-      POSIX Thread Library) and the incompatibilities coming with that.
-      To get around that issue you have run the following command before
-      starting Dynamo:
-      
-      export LD_ASSUME_KERNEL=2.4.1
+NOTE: If you have a problem while running Iometer/Dynamo or found a
+      bug you should consult the "Known Issues" page first: 
+
+      http://iometer.sourceforge.net/doc/issues.html
+
+      There you will find workarounds for this known issues. If you
+      have a new issue you might join the iometer-user mailing list
+      (see http://lists.sourceforge.net/lists/listinfo/iometer-user)
+      and ask the community for help. If it is a real bug, then please
+      go ahead an file it at:
+
+      http://sourceforge.net/tracker/?group_id=40179&atid=427254
 
   ------------------------------------------------------------------------
 
