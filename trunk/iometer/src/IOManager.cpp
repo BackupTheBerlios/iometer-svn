@@ -49,7 +49,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-19 (mingz@ele.uri.edu)                        ## */
+/* ##               - Rewrote the Report_TCP for linux code,              ## */
+/* ##                 The old one is buggy and if you do not set          ## */
+/* ##                 hostname correctly, it always return a 127.0.0.1    ## */
+/* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT    ## */
 /* ##               2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Massive cleanup of this file (grouping the          ## */
@@ -378,13 +382,14 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 
 
 
+#if defined(IOMTR_OSFAMILY_WINDOWS) || defined(IOMTR_OS_SOLARIS)
 //
 // Checking for all TCP network interfaces.  Storing them, and returning the number
 // of interfaces found.  
 //
 int Manager::Report_TCP( Target_Spec *tcp_spec )
 {
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	int 			 retval;
 	WSADATA 		 wd;
 #endif
@@ -396,7 +401,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 
 	cout << "Reporting TCP network information..." << endl;
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	// initialize WinSock version 2.0
 	retval = WSAStartup( MAKEWORD(2, 0), &wd ); 
 	if ( retval != 0 )
@@ -460,7 +465,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		count++;
 	#endif
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	// clean up WinSock
 	if ( WSACleanup() != 0 )
 	{
@@ -473,6 +478,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 	cout << "   done." << endl;
 	return count;
 }
+#endif
 
 
 
