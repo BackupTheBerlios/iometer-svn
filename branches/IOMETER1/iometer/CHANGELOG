@@ -4,10 +4,12 @@
 
 
 
-ChangeLog (2004.nn.nn):
-=======================
+ChangeLog (IOMETER 1 - 2004.nn.nn):
+===================================
 
 - Applied patches:
+   - disk_full.patch by Lamont Cranston (fixes handling of the disk full
+     condition when preparing logical drives).
    - iometer-2003.12.16-post.DS2.DanielGlobalAccessSpecs.patch by
      Daniel Scheibli (adds a set of sample Global Access Specifications).
    - iometer-netware.patch by Thayne Harmon (modifies the usage output
@@ -89,8 +91,8 @@ ChangeLog (2004.nn.nn):
 
 
 
-ChangeLog (2003.12.16):
-=======================
+ChangeLog (IOMETER 1 - 2003.12.16):
+===================================
 
 - Applied patches:
    - iometer-2003.05.10-IoMtrGlobalDefines4.patch by Daniel Scheibli
@@ -144,8 +146,8 @@ ChangeLog (2003.12.16):
 
 
 
-ChangeLog (2003.05.10):
-=======================
+ChangeLog (IOMETER 1 - 2003.05.10):
+===================================
 
 - Applied patches:
   - iometer-2003.02.15-ResultEndTimeHighRes.patch by Daniel Scheibli
@@ -197,8 +199,8 @@ ChangeLog (2003.05.10):
 
 
 
-ChangeLog (2003.02.15):
-=======================
+ChangeLog (IOMETER 1 - 2003.02.15):
+===================================
 
 - Applied patches:
    - iometer.patch by Matt D. Robinson (ensures, that there is an allocated
@@ -221,8 +223,8 @@ ChangeLog (2003.02.15):
 
 
 
-ChangeLog (2003.02.08):
-=======================
+ChangeLog (IOMETER 1 - 2003.02.08):
+===================================
 
 - Applied patches:
    - iometer-initial-datatypes.patch

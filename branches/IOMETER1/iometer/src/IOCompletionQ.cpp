@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-05-14 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Handle disk full condition in GetOverlappedResult.  ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -477,20 +479,30 @@ BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD 
 				this_fd = eventqid->element_list[i].aiocbp.aio_fildes;
 				if (this_fd == filep->fd)
 				{
+					DWORD bytes_expected;
+
 					*bytes_transferred = aio_return64(eventqid->aiocb_list[i]);
 
-					if (*bytes_transferred != eventqid->aiocb_list[i]->aio_nbytes) {
-						cerr << "Transfer cut short! Error is " << aio_error_return << "\n";
-						cerr << "Wanted " << eventqid->aiocb_list[i]->aio_nbytes << ", "
-							<< "got " << *bytes_transferred << "\n";
-						exit(1);
-					}
+					bytes_expected = eventqid->aiocb_list[i]->aio_nbytes;
+
 					// We have done an aio_return() on this element. So anull it.
+
 					eventqid->aiocb_list[i] = 0;
 					eventqid->last_freed = i;
 					eventqid->position = i + 1;
+
 					// Note that changing lpOverlapped has no effect. Its a local copy.
+
 					lpOverlapped = (LPOVERLAPPED)eventqid->element_list[i].data;
+
+					if (*bytes_transferred != bytes_expected)
+					{
+						if ( aio_error_return == ENOSPC )
+						{
+							SetLastError( aio_error_return );
+							return( FALSE );
+						}
+					}
 
 					if ((long)*bytes_transferred < 0)
 					{
