@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Assimilated the patch from Robert Jones which is    ## */
+/* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
+/* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -276,13 +279,7 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 //
 ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 {
-#if defined(IOMTR_OS_LINUX)
 	socklen_t buflen;
-#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	int buflen;
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
-#endif
 
 #if defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *)*s;
@@ -440,13 +437,7 @@ void NetAsyncTCP::SetTimeout( int sec, int usec )
 ReturnVal NetAsyncTCP::Accept()
 {
 	fd_set	  sock_set;		// used by select function.
-#if defined(IOMTR_OS_LINUX)
 	socklen_t addr_len;
-#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	int	  addr_len;		// used by accept.
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
-#endif
 
 #if defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *)server_socket;
@@ -565,14 +556,11 @@ ReturnVal NetAsyncTCP::Accept()
 ReturnVal NetAsyncTCP::WaitForDisconnect()
 {
 	struct sockaddr	address;
-#ifdef LINUX
 	socklen_t addr_len = sizeof( address );
-#else
-	int				addr_len = sizeof( address );
-#endif
-	fd_set			readfds;
+
+	fd_set		readfds;
 #ifdef UNIX
-	struct File		*fp = (struct File *)client_socket;
+	struct File    *fp = (struct File *)client_socket;
 #endif
 
 

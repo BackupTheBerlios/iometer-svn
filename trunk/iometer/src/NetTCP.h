@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Assimilated the patch from Robert Jones which is    ## */
+/* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
+/* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -75,6 +78,10 @@
  typedef struct linger LINGER;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
+
+#ifndef socklen_t
+ #define socklen_t int
 #endif
 
 

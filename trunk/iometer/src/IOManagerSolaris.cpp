@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Assimilated the patch from Robert Jones which is    ## */
+/* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
+/* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -486,9 +489,19 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 				case UNUSED:
 					strcat(disk_spec[*count].name, "unused");
 					break;
+// NOTE: This might be to generic, maybe we need an seperate global define
+//       for this stuff. Current knowledge is include PPCBOOT for Sparc
+//       build and exclude it for i386 build (because it is not defined
+//       within /usr/include/sys/dktp/fdisk.h).
+#if defined(IOMTR_CPU_I386)
+ // nop
+#elif defined(IOMTR_CPU_SPARC)
 				case PPCBOOT:
 					strcat(disk_spec[*count].name, "ppcboot");
 					break;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 				case SUNIXOS:
 					strcat(disk_spec[*count].name, "sunixos");
 					break;

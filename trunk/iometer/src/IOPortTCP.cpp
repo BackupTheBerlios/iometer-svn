@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Assimilated the patch from Robert Jones which is    ## */
+/* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
+/* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -193,11 +196,7 @@ PortTCP::~PortTCP()
 BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned short port_number )
 { 
 	struct sockaddr_in sin;
-#if defined(IOMTR_OS_LINUX)
 	socklen_t buflen;
-#else
-	int buflen;
-#endif
 
 	network_port = port_number; // listen at specified port (0 = system assigns port number)
 

@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Assimilated the patch from Robert Jones which is    ## */
+/* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
+/* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Massive cleanup of this file (grouping the          ## */
 /* ##                 different blocks together).                         ## */
 /* ##               - Implemented the IOMTR_[OSFAMILY|OS|CPU]_* global    ## */
@@ -63,6 +66,7 @@
 /* ######################################################################### */
 #ifndef PORTTCP_DEFINED
 #define PORTTCP_DEFINED
+
 
 #if _MSC_VER >= 1000
 #pragma once
@@ -80,6 +84,9 @@
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
+#ifndef socklen_t
+ #define socklen_t int
+#endif
 #if defined(IOMTR_OSFAMILY_UNIX)
  #define SOCKET	int
 #endif
