@@ -45,7 +45,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Remarks ...: <none>                                                ## */
+/* ##  Remarks ...: - As the code never supported asynchronous type of    ## */
+/* ##                 connections for Unix, we are focusing and aiming    ## */
+/* ##                 for synchronous connections only!                   ## */
+/* ##               - There is still code for asynchronous conncetions,   ## */
+/* ##                 but it will be skipped in a later versions.         ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */

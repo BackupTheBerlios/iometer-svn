@@ -423,14 +423,10 @@ A.2 Dynamo
       related coding is kept in IOPerformanceLinux.cpp - the seperation is
       done by cheating with defines.
 
-    - IOTime.h                (<none>)
     - IOTime.cpp              (<none>)
-    - rdtsc.c                 (<none>)
     
       This files contains the different implementations for reading the 
-      processors high resolution timers. IOTime.h contains the Linux code,
-      IOTime.cpp the Windows and rdtsc.c the Solaris part - the seperation
-      is done by cheating with defines.
+      processors high resolution timers.
       
  o Helping code (Rest of)
 
