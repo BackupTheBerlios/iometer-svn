@@ -1,0 +1,57 @@
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+         1         2         3         4         5         6         7         8
+----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|
+
+
+
+ToDo:
+=====
+
+ - IOCommon.h: Ensure, that there is only one "Operation System", "Operating
+   System Platform" ,"Endian Type" and "Processor Type" define while make.
+ - IOManager.cpp: As a code remark says, GHz SPARC CPU's has to be recognised
+   in the Login() method (processor_speed_to_nsecs variable).
+ - IOMessage.h / IOTest.h: Merge the files into a common one.
+ - IOPerformance.cpp / IOPerformanceLinux.cpp: Consolidate the Get_*_Counters()
+   and Extract_*_Counters() methods for all operating systems (only one name
+   schema).
+ - IOPerformanceLinux.cpp: Cut out all the _WIN32 and _WIN64 related methods
+   (like Extract_CPU_Counters, Calculate_Stat,...).
+ - IOTime.h / IOTime.cpp / rdtsc.c: Merge the files into a common one.
+ - IOVersion.h: Drop all the unneeded defines like IOVER_FILE and IOVER_PRODUCT
+ - <All>: Check if it is possible to move the reorder() function calls into the
+   Send() / Receive() methods (eases code and makes it more solid).
+ - <All>: Move all Includes out of the codefiles into the central headerfile
+   (IOCommon.h).
+ - <All>: Move all Defines out of the codefiles into the central headerfile
+   and/or its Makefiles.
+ - <All>: Define seperate global defines for
+    - Operating System:
+      LINUX, SOLARIS, WINDOWS
+    - Operating System Platform (can be set based on Operating System):
+      WINTEL (Windows, OS/2), UNIX (AIX, BSD, HP-UX, Linux, Solaris,...)
+    - Processor:
+      IA32, IA64, SPARC
+ - <All>: Endian Type could be detected during runtime. This can be done with a
+   new Performance::Get_Endian_Type() method.
+ - <All>: Decouple the code in that way, that it is possible to seperate
+   the files into a common, dynamo and iometer subdirectory.
+ - <Docu>: Finding the documentation "sources" which was used to generate the
+   Iometer User's Guide (PDF from October 20, 1999).
+ - <Docu>: Diagram showing the message flow between Iometer and Dynamo as well
+   as a analyses of the exchanged data structures.
+ - ...
+
+
+ 
+Wishlist:
+=========
+
+ - IOMeter: Command-line version.
+ - <All>: uDAFS support.
+ - <All>: Object-Based Storage Devices support.
+ - ...
+
+
+ 
+ 
