@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the Windows 64 Bit on AMD64.                        ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -140,15 +144,19 @@
  //
  //#define USING_DDK
 
- // vld: I don't think we want to be including the kmode include files from here.
- // Just hardcode the itc here as per itanium specs
+ // Ved: USING_DDK macro is here for unknown reasons. I use it to differentiate builds
+ // from visual studio (and the sdk) vs the ddk. 
+ // Either way, including a kernel mode header in user mode is not possible. Therefore, 
+ // we wish to use the !USING_DDK path here for all cases, even though USING_DDK 
+ // will really be defined in the ddk env. Get it?!?
  
- #ifdef USING_DDK	// Driver
- #include <ia64reg.h>	// from IA64 DDK
- #include <wdm.h>	// from IA64 DDK
- #endif // USING_DDK
+ //#ifdef USING_DDK	// Driver
+ //#include <ia64reg.h>	// from IA64 DDK
+ //#include <wdm.h>	// from IA64 DDK
+ //#endif // USING_DDK
+ 
+ //#ifndef USING_DDK    // Application
 
- #ifndef USING_DDK	// Application
  //
  // Including the typedef that I need from DDK 'ia64reg.h' here so that we don't
  // have to include the DDK in the build path.  There are lots of additional
@@ -181,7 +189,7 @@
  #ifdef __cplusplus
  }
  #endif
- #endif //!USING_DDK
+ //#endif //!USING_DDK
 
  ////////////////////////////////////////////////////////////////////////////////////
  //  Name:	 readITC
@@ -221,8 +229,22 @@
 
  }
 // ----------------------------------------------------------------------------
+#elif defined(IOMTR_OS_WIN64) && defined(IOMTR_CPU_AMD64)
+
+ // Same as above, but less comments. Same story; defs are from the ddk.
+
+ unsigned __int64 __rdtsc (void);
+
+ #pragma intrinsic(__rdtsc)
+
+ DWORDLONG rdtsc() 
+ {
+	return __rdtsc();
+ }
+ 
+// ----------------------------------------------------------------------------
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+ #error ===> ERROR: You have to do some coding here to get the port done!
 #endif
 // ----------------------------------------------------------------------------
 

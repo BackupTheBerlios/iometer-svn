@@ -52,7 +52,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-03 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the Windows 64 Bit on AMD64.                        ## */
+/* ##               2003-08-03 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -147,6 +151,7 @@
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
  #define VC_EXTRALEAN
+ #pragma warning (disable: 4242)
  #include <process.h>
  #include <io.h>
  #include <direct.h>
@@ -186,10 +191,7 @@ using namespace std;
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
- #if defined(USING_DDK)
-  #pragma warning (disable: 4242)   // disable some of the type conversion warnings
- #endif
- #if (_MSC_VER < 1300) || defined(USING_DDK)   // apparently, the DDK needs this
+ #if (_MSC_VER < 1300) || defined(USING_DDK)
   #include "ostream64.h"
  #endif
 #endif 
@@ -241,11 +243,15 @@ using namespace std;
 #endif 
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
- #if !defined(USING_DDK)
-  //vld: note, these are ok for 32bit, but incorrect for 64!
-  typedef unsigned long   ULONG_PTR;
-  typedef ULONG_PTR       DWORD_PTR;
- #endif
+ #ifndef USING_DDK
+  #if defined(IOMTR_OS_WIN64)
+     typedef __int64 LONG_PTR, *PLONG_PTR;
+     typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
+  #else
+     typedef __int32 LONG_PTR, *PLONG_PTR;
+     typedef unsigned __int32 ULONG_PTR, *PULONG_PTR;
+  #endif // defined(IOMTR_OS_WIN64)
+ #endif // USING_DDK
 #endif 
 // ----------------------------------------------------------------------------
 

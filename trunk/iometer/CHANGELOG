@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - iometer-2003.05.10-Win64OnAmd64.patch by Daniel Scheibli (Integrates
+    the changes contributed by Vedran Degoricija to ensure, that the
+    executables can be build for Windows 64 Bit on AMD64).
   - Patch provided by Robert H Creecy to fix the segmentation fault which
     happened when running on Solaris while having multiple swap devices
     configured.

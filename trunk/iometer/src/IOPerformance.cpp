@@ -53,7 +53,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the Windows 64 Bit on AMD64.                        ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -333,42 +337,23 @@ double Performance::Get_Processor_Speed()
 	DWORD type;
 	DWORD size_of_speed = sizeof( DWORD );
 
-	BOOL rdtsc_or_itc_supported = TRUE;
+	BOOL rdtsc_supported = TRUE;
 	HKEY processor_speed_key;
 
-#if defined(IOMTR_CPU_I386)
 	// Try RDTSC and see if it causes an exception.  (This code is NT-specific 
 	// because Solaris does not support __try/__except.)
 	__try
 	{
-		_asm
-		{
-			_emit 0Fh	// Store low  32-bits of counter in EAX.
-			_emit 31h	// Store high 32-bits of counter in EDX.
-		}
+		rdtsc();
 	}
 	__except( EXCEPTION_EXECUTE_HANDLER )
 	{
-		rdtsc_or_itc_supported = FALSE;
+		rdtsc_supported = FALSE;
 	}
-#elif defined(IOMTR_CPU_IA64)
-	//*** Trying to read ITC instead of using GetTickCount.  See IOTime.h.
 
-	// Try ITC and see if it causes an exception.  (This code is NT-specific 
-	// because Solaris does not support __try/__except.)
-	__try
+	if ( !rdtsc_supported )
 	{
-		__getReg( CV_IA64_ApITC );
-	}
-	__except( EXCEPTION_EXECUTE_HANDLER )
-	{
-		rdtsc_or_itc_supported = FALSE;
-	}
-#endif
-
-	if ( !rdtsc_or_itc_supported )
-	{
-#if defined(IOMTR_CPU_I386)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_AMD64)
 		cout << "*** Processor does not support RDTSC instruction!"    << endl <<
 			"    Dynamo requires this for high-resolution timing." << endl;
 #elif defined(IOMTR_CPU_IA64)

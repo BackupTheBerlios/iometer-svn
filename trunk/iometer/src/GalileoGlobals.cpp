@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the Windows 64 Bit on AMD64.                        ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -120,7 +124,7 @@ void ErrorMessage( LPCTSTR errmsg )
 
 
 //Called to display error message box in a separate thread (see ErrorMessage(), above).
-UINT _cdecl MessageBoxThread(LPVOID pErrorMessage)
+UINT CDECL MessageBoxThread(LPVOID pErrorMessage)
 {
 	AfxMessageBox(*(CString *)pErrorMessage);
 	delete (CString *)pErrorMessage;
