@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-121603-ds2-report_tcp.patch by Ming Zhang (rewrite of the
+     Report_TCP() function for Linux - more robust when the hostname is
+     not setup properly).
    - iometer-1216ds2-getnicounter.patch by Ming Zhang (bugfix for
      reading the /proc/net/dev file under Linux).     
    - iometer-2003.12.16-post.DS1-SolarisMultipleSwapDevices.patch
