@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-13 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Reworked the Get_All_Swap_Devices() function to     ## */
+/* ##                 fix a few minor inconsistencies.                    ## */
+/* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed DYNAMO_DESTRUCTIVE to                       ## */
 /* ##                 IOMTR_SETTING_OVERRIDE_FS                           ## */
 /* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
@@ -1189,66 +1192,86 @@ int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 	} // end-while().
 }
 
+
+
 // Function to get all swap device names into a single string of the form
 // <string1>:<string2>:<string3> and so on.
 // It is easier to lookup if in this form.
 //
 void Manager::Get_All_Swap_Devices()
 {
-	int num, i, n;
-	swaptbl_t *s;
-	char *strs;
-
-	if ((num = swapctl(SC_GETNSWP, 0)) <= 0)
-	{
-		// No swap devices found or error occurred. Simply return.
-		return;
-	}
-	else // swap devices found
-	{
-		s = (swaptbl_t *)malloc(num * sizeof(swapent_t) + sizeof(struct swaptable));
-		if (s == NULL)
-			return;
-
-		strs = (char *)malloc((num+1) * MAX_NAME);
-		if (strs == NULL)
-		{
-			free(s);
-			return;
-		}
-
-		// Initialize string pointers in the swaptable.
-		for (i = 0; i < num+1; i++)
-			s->swt_ent[i].ste_path = strs + (i * MAX_NAME);	
+	// Presettings
 	
-		s->swt_n = num + 1;
-		if ((n = swapctl(SC_LIST, s)) < 0)
-		{
+	int 		num, i, n;
+	swaptbl_t	*pSwapTable;
+	char 		*pcSwapNames;
+
+	// Loop till list of swap devices is created
+
+	for(;;) {
+
+		// Get the number of swap devices
+		// (if non is found or error occurred - simply return)
+
+		if( ( num = swapctl(SC_GETNSWP, 0) ) <= 0 ) {
+			return;
+		}
+
+		// Allocate the needed temporary memory structures
+		
+		pSwapTable = (swaptbl_t *) malloc( ( ( num + 1 ) * sizeof(swapent_t) ) + sizeof(struct swaptable) );
+		if( pSwapTable == NULL ) {
+			return;
+		}
+		pcSwapNames = (char *) malloc( ( num + 1 ) * MAX_NAME );
+		if( pcSwapNames == NULL ) {
+			free( pSwapTable );
+			return;
+		}
+
+		// Initialize string pointers in the swaptable
+		
+		for( i = 0; i < ( num + 1 ); i++ ) {
+			pSwapTable->swt_ent[i].ste_path = pcSwapNames + ( i * MAX_NAME );	
+		}
+		pSwapTable->swt_n = num + 1;
+		
+		// Request filling the swaptable
+		
+		if( ( n = swapctl(SC_LIST, pSwapTable) ) < 0 ) {
 			cerr << "WARN: swapctl failed with error " << errno << endl;
-			free(s);
-			free(strs);
+			free( pSwapTable );
+			free( pcSwapNames );
 			return;
 		}
 
-		// allocate for num strings of length MAX_NAME + num ':' + 1
-		swap_devices = (char *) malloc(num * MAX_NAME + num + 1);
-		if (swap_devices == NULL)
-		{
-			free(s);
-			free(strs);
+		// Ensure that the swaptable was big enough for the data
+		
+		if( n > num ) {
+			free( pSwapTable );
+			free( pcSwapNames );
+			continue;			
+		}
+		
+		// Allocate the memory for the final destination of the swap device list
+		// (n * swap_device_name) + (n * ":") + 1
+
+		swap_devices = (char *) malloc( ( n * MAX_NAME ) + n + 1 );
+		if( swap_devices == NULL ) {
+			free( pSwapTable );
+			free( pcSwapNames );
 			return;
 		}
 
-		for (i = 0; i < n; i++)
-		{
-			strcat(swap_devices, s->swt_ent[i].ste_path);
-			strcat(swap_devices, ":");
+		for( i = 0; i < n; i++ ) {
+			strcat( swap_devices, pSwapTable->swt_ent[i].ste_path );
+			strcat( swap_devices, ":" );
 		}
 #ifdef _DEBUG
 		cout << "swap devices: " << swap_devices << endl;
 #endif
-		free(s);
-		free(strs);
+		free( pSwapTable );
+		free( pcSwapNames );
 		return;
 	}
 }
@@ -1256,3 +1279,7 @@ void Manager::Get_All_Swap_Devices()
 
 
 #endif // IOMTR_OS_SOLARIS
+
+
+
+

@@ -52,7 +52,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-13 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Increased MAX_NAME from 64 to 80 - according to     ## */
+/* ##                 swapctl(2) man page in Solaris 2.6 (relevant due    ## */
+/* ##                 to the Get_All_Swap_Devices() function).            ## */
+/* ##               2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved BLKSSZGET, BLKBSZGET and BLKGETSIZE64         ## */
 /* ##                 from the IOTargetDisk.cpp file to here.             ## */
 /* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
@@ -287,7 +291,8 @@ using namespace std;
 #define KILOBYTE   1024
 #define MEGABYTE   1048576
 
-#define MAX_NAME	      64
+#define MAX_NAME	      80   // xca1019: Was 64 - changed according to
+                                   // the Solaris 2.6 man page for swapctl(2)
 #define	MAX_CPUS	      32
 #define	MAX_WORKERS	      100
 #define MAX_TARGETS	      512

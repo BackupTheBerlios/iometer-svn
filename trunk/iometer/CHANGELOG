@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-2003.12.16-post.DS1-SolarisMultipleSwapDevices.patch
+     by Daniel Scheibli (rework of the Get_All_Swap_Devices()
+     function for Solaris - fixing a few minor inconsistencies).
    - iometer-2003.12.16-post.DS1-AlwaysSendCompletionQueue.patch
      by Daniel Scheibli (implements the code changes suggested by 
      Dough Haigh to solve the performance drop in network tests on
