@@ -50,7 +50,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-12 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-03-24 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the "manager_network_name" in the usage     ## */
+/* ##                 help to "manager_computer_name" to better reflect   ## */
+/* ##                 the questioned field (as suggested by Tony Renna).  ## */
+/* ##               2004-02-12 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added /dev/ccnt ioctl code for linux                ## */
 /* ##                 on some Intel XScale architectures.                 ## */
 /* ##               2004-02-07 (mingz@ele.uri.edu)                        ## */
@@ -396,9 +400,9 @@ void Syntax( const char* errmsg /*=NULL*/ )
 #endif
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_network_name]" << endl;
+	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_computer_name]" << endl;
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-	cout << "dynamo [-i iometer_computer_name] [-n manager_name] [-m manager_network_name]" << endl;
+	cout << "dynamo [-i iometer_computer_name] [-n manager_name] [-m manager_computer_name]" << endl;
 	cout << "       [-x excluded_fs_type]" << endl;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
@@ -416,7 +420,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "      This name is the one Iometer will use as the manager name, important" << endl;
 	cout << "      when restoring config files.  This defaults to the host's name." << endl;
 	cout << endl;
-	cout << "   manager_network_name - the network name of this Dynamo" << endl;
+	cout << "   manager_computer_name - the name of the computer running this Dynamo" << endl;
 	cout << "      This name or IP address is the one Iometer will use to communicate" << endl;
 	cout << "      with this manager. The default is the IP adress of the host's first" << endl;
 	cout << "      NIC." << endl;

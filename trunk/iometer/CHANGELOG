@@ -52,6 +52,9 @@ ChangeLog (2004.nn.nn):
      Guide.
    - Added first comments about the coding style to the Developers Guide.
 - Others:
+   - Changed "manager_network_name" to "manager_computer_name" in the
+     usage of Dynamo to reflect the value questioned here (as suggested
+     by Tony Renna).
    - Modified the Iometer icon to use the new black one instead of the
      old color lightning/spectrum thing.
    - Added an installer for Iometer on Windows (based on the Nullsoft
