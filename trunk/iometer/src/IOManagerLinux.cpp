@@ -13,7 +13,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed LINUX_DEBUG, because it is redundant.       ## */
+/* ##                 We can use the generic _DEBUG therefor.             ## */
+/* ##               2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - replaces EXCLUDE_FILESYS define with a string       ## */
 /* ##                 so filesystem types are no longer hard coded.       ## */
 /* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
@@ -138,7 +141,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 
 	while ((ment = getmntent(file)) != NULL)
 	{
-#if LINUX_DEBUG
+#ifdef _DEBUG
 		cout << "*** File system found: " << ment->mnt_fsname << "\n";
 #endif
 		if (!strncmp(ment->mnt_fsname, "/dev/", 5)) {
@@ -156,7 +159,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 
 		// see if the current file sys is an excluded file system type for dynamo.
 		if (strstr(exclude_filesys, ment->mnt_type) != NULL) {
-#if LINUX_DEBUG
+#ifdef _DEBUG
 			cout << "*** File system type \"" << ment->mnt_type << "\" excluded.\n";
 #endif
 			continue;
@@ -171,7 +174,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		disk_name[length] = 0;
 
 		if ( ! d.Init_Logical( disk_name ) ) {
-#if LINUX_DEBUG
+#ifdef _DEBUG
 			cout << "*** " << __FUNCTION__ << ": Init_Logical failed.\n";
 #endif
 			continue;
@@ -234,13 +237,13 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	while ((count < MAX_TARGETS) &&
 				 (fscanf(file, "%*d %*d %*d %20s", devName) == 1)) {
 		sprintf(paddedDevName, " %s ", devName);
-#if LINUX_DEBUG
+#ifdef _DEBUG
 		cout << __FUNCTION__ << ": Found device " << devName << "\n";
 #endif
 		if (strstr(usedDevs, paddedDevName) == NULL) {
 			// Nobody has mounted this device. Try to open it for reading; if we can,
 			// then add it to our list of physical devices.
-#ifdef LINUX_DEBUG
+#ifdef _DEBUG
 			cout << __FUNCTION__ << ": Device is not mounted.\n";
 #endif
 			if (d.Init_Physical(devName)) {
@@ -249,7 +252,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 				++count;
 			}
 		}
-#ifdef LINUX_DEBUG
+#ifdef _DEBUG
 		else {
 			cout << __FUNCTION__ << ": Device is mounted. Ignoring.\n";
 		}

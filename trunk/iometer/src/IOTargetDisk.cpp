@@ -12,7 +12,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed LINUX_DEBUG, because it is redundant.       ## */
+/* ##                 We can use the generic _DEBUG therefor.             ## */
+/* ##               2003-03-04 (joe@eiler.net)                            ## */
 /* ##               - Cleaned up some compiler warnings for Solaris       ## */
 /* ##               2003-02-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added output of major & minor number within         ## */
@@ -1484,7 +1487,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk) {
 
 	if (open_disk) {
 		if (!Open(NULL)) {
-#if LINUX_DEBUG
+#ifdef _DEBUG
 			cout << __FUNCTION__ << ": Open on \"" << file_name <<
 				"\" failed (error " << strerror(errno) << ").\n";
 #endif			

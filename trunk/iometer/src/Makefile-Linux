@@ -12,7 +12,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-03-04 (joe@eiler.net)                                  ##
+##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)                   ##
+##               - Removed LINUX_DEBUG, because it is redundant.             ##
+##                 We can use the generic _DEBUG therefor.                   ##
+##               2003-03-04 (joe@eiler.net)                                  ##
 ##               - Changed NO_LINUX_VI to be NO_DYNAMO_VI                    ##
 ##               - Merged rdtsc.c into IOTime.cpp                            ##
 ##               - Some minor cleanup                                        ##
@@ -66,7 +69,7 @@ STRIP=/usr/bin/strip
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
 # Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
 #
-#	-DUNIX -DLINUX -DNO_DYNAMO_VI -DLINUX_DEBUG=1 -D_DETAILS=1 -D_DEBUG=1 \
+#	-DUNIX -DLINUX -DNO_DYNAMO_VI -D_DETAILS=1 -D_DEBUG=1 \
 
 # CFLAGS GO HERE
 CFLAGS=	-O3 \
@@ -78,10 +81,6 @@ CFLAGS=	-O3 \
 	-D_REENTRANT
 #	-ggdb
 #	-D_DETAILS
-##### OS_PLATFORM_UNIX | OS_PLATFORM_WINTEL
-##### OS_LINUX | OS_SOLARIS | OS_WINDOWS
-##### CPU_ENDIAN_TYPE_BIG | CPU_ENDIAN_TYPE_LITTLE
-
 
 # For older versions of the librt.a it is needed to apply a patch (see the
 # file "Documentation/LinuxReadme.txt" for an explanation of the patch,
