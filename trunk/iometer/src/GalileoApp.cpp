@@ -761,6 +761,16 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 				// We are all through with login_data_msg
 				delete login_data_msg;
 
+				// In certain situations, ::AddManager() may return a null, we have to at least 
+				// check for it.
+				if (manager == NULL)
+				{
+					ErrorMessage("AddManager() failed to add manager to manager list!");
+					login_port->Close();
+					login_state = failed;
+					return FALSE; 
+				}
+
 				// Get the manager's list of available targets.
 				manager->UpdateTargetLists();
 
