@@ -17,6 +17,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               -Added some more processor info stuff                 ## */
 /* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Applied proc-speed-fix.txt patch file               ## */
@@ -331,6 +334,7 @@ int Performance::Get_Processor_Count()
 
 
 
+#define SPEED_VALUE_COUNT 117
 //
 // Getting the speed of the processors in Hz.
 //
@@ -338,19 +342,23 @@ double Performance::Get_Processor_Speed()
 {
 	// Note: When adding entries, make sure you also incerement the upper
 	// bound of the index in the for loop below.
-	int speed_values[87] = {
-			 980, 975, 966, 950, 940, 933, 920, 910,
-		900, 880, 875, 866, 850, 840, 833, 820, 810,
-		800, 780, 775, 766, 750, 740, 733, 720, 710,
-		700, 680, 675, 666, 650, 640, 633, 620, 610,
-		600, 580, 575, 566, 550, 540, 533, 520, 510,
-		500, 480, 475, 466, 450, 440, 433, 420, 410,
-		400, 380, 375, 366, 350, 340, 333, 320, 310,
-		300, 280, 275, 266, 250, 240, 233, 220, 210,
-		200, 180, 175, 166, 150, 140, 133, 120, 110,
-		100,  80,  75,  66,  50,  33,  25 };
+	int speed_values[SPEED_VALUE_COUNT] = {
+		3060, 3000, 2930, 2900, 2800, 2700, 2660, 2600, 2530,
+		2500, 2400, 2300, 2260, 2200, 2000, 1900, 1800, 1700,
+		1600, 1500, 1400, 1300, 1260, 1200, 1130, 1100, 1060,
+		1000,  980,  975,  966,  950,  940,  933,  920,  910,
+	 	 900,  880,  875,  866,  850,  840,  833,  820,  810,
+		 800,  780,  775,  766,  750,  740,  733,  720,  710,
+		 700,  680,  675,  666,  650,  640,  633,  620,  610,
+		 600,  580,  575,  566,  550,  540,  533,  520,  510,
+		 500,  480,  475,  466,  450,  440,  433,  420,  410,
+		 400,  380,  375,  366,  350,  340,  333,  320,  310,
+		 300,  280,  275,  266,  250,  240,  233,  220,  210,
+		 200,  180,  175,  166,  150,  140,  133,  120,  110,
+		 100,   80,   75,   66,   50,   40,   33,   25,   20 };
 
 	DWORD speed;
+	int speed_magnitude; /* 0=MHz,1=GHz */
 	DWORD type;
 	DWORD size_of_speed = sizeof( DWORD );
 #ifdef UNIX
@@ -440,12 +448,29 @@ double Performance::Get_Processor_Speed()
 		cout << "*** Could not locate processor information in registry." << endl;
 		return (double) 0.0;
 	}
-	// TODO: Add support for GHz CPU here!!
 	if ( RegQueryValueEx( processor_speed_key, "~MHz\0", NULL, &type, (LPBYTE)&speed, &size_of_speed ) 
 		!= ERROR_SUCCESS )
 	{
-		cout << "*** Could not retrieve estimated processor speed from registry." << endl;
-		return (double) 0.0;
+		/* if getting MHz fails try to get GHz */
+		if ( RegQueryValueEx( processor_speed_key, "~GHz\0", NULL, &type, (LPBYTE)&speed, &size_of_speed ) 
+			!= ERROR_SUCCESS )
+		{
+			cout << "*** Could not retrieve estimated processor speed from registry." << endl;
+			return (double) 0.0;
+		}
+		else
+		{
+			speed_magnitude = 1; /* set to GHz */
+		}
+	}
+	else
+	{
+		speed_magnitude = 0; /* set to MHz */
+	}
+
+	if(speed_magnitude == 1)
+	{
+		speed *= 1000; /* convert the GHz value to MHz */
 	}
 
 #endif // WIN_NT
@@ -461,20 +486,34 @@ double Performance::Get_Processor_Speed()
 
 //#endif	
 
-	for ( int i = 0; i < 87; i++ )
+	for ( int i = 0; i < SPEED_VALUE_COUNT; i++ )
 	{
 		// Try to match estimated speed with a known one.
 		if ( ( (int)speed > speed_values[i] - 5 ) && ( (int)speed < speed_values[i] + 5 ) )
 		{
 			speed = speed_values[i];
-			cout << "Processor speed: " << speed << " MHz." << endl;
-			return(speed * 1000000.0);
+			if ( speed < 1000 )
+			{
+				cout << "Processor speed: " << speed << " MHz." << endl;
+			}
+			else
+			{
+				cout << "Processor speed: " << speed/1000 << " GHz." << endl;
+			}
+			return (double) (speed * 1000000);
 		}
 	}
 	// Round the registry value to the nearest 10
 	speed = ( ( speed + 5 ) / 10 ) * 10;
-	cout << "Processor speed: " << speed << " MHz." << endl;
-	return(speed * 1000000.0);
+	if ( speed < 1000 )
+	{
+		cout << "Processor speed: " << speed << " MHz." << endl;
+	}
+	else
+	{
+		cout << "Processor speed: " << speed/1000 << " GHz." << endl;
+	}
+	return (double) (speed * 1000000);
 }
 
 

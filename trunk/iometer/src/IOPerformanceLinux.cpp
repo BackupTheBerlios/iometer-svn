@@ -18,6 +18,13 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - Added some more GHz processor stuff.                ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - Changed Get_NI_Counters so interfaces that do not   ## */
+/* ##                 contain statistics in /proc/net/dev do not cause    ## */
+/* ##                 dynamo to die.  Right now the only interface that   ## */
+/* ##                 does this is for Intel Link Aggregation (ians)      ## */
 /* ##  Changes ...: 2003-02-09 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Modified Get_CPU_Counters to add the Jiffies for    ## */
 /* ##                 user mode with low priority (nice) to the user      ## */
@@ -205,6 +212,17 @@ double Performance::Get_Processor_Speed()
 		if (!strncmp(label, "cpu MHz", 7)) {
 			scanDecodes = fscanf(cpuInfo, "%*s %lf", &result);
 			result *= 1000000.0;
+			fclose(cpuInfo);
+			if (scanDecodes == 1) {
+				return(result);
+			} else {
+				cerr << "Error determining CPU speed.\n";
+				return(0.0);
+			}
+		}
+		else if (!strncmp(label, "cpu GHz", 7)) {
+			scanDecodes = fscanf(cpuInfo, "%*s %lf", &result);
+			result *= 1000000000.0;
 			fclose(cpuInfo);
 			if (scanDecodes == 1) {
 				return(result);
@@ -757,10 +775,11 @@ void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 //   eth0:30165814  176832    0    0    0     0          0         0  3700725   27219    0    0    0   288       0          0
 //////////////////////////////////////////////////////////////////////
 // Note: "lo" is the loopback device, and "eth0" is an ethernet card.
+#define NET_IF_TO_IGNORE "ians"
 
 void Performance::Get_NI_Counters(int snapshot) {
 	int c, scanCount, packetIn, packetOut;
-
+	char ifname[32];
 	FILE *netInfo = fopen("/proc/net/dev", "r");
 	assert(netInfo != NULL);
 	// Pull out the first two lines of the file. These two lines contain
@@ -774,7 +793,8 @@ void Performance::Get_NI_Counters(int snapshot) {
 			 network_interfaces < MAX_NUM_INTERFACES;
 			 ++network_interfaces) {
 		// Take out the leading white space.
-		scanCount = fscanf(netInfo, "%*[^:]: %*d %d %lld %*d %*d %*d %*d %d %lld",
+		// then grab the interface name
+		scanCount = fscanf(netInfo, "%*[ ] %[^:]: %*d %d %lld %*d %*d %*d %*d %d %lld",ifname,
 											 &packetIn,
 											 &raw_ni_data[network_interfaces]
 											             [NI_IN_ERRORS][snapshot],
@@ -785,9 +805,18 @@ void Performance::Get_NI_Counters(int snapshot) {
 			fclose(netInfo);
 			return;
 		}
-		assert(scanCount == 4);
-		raw_ni_data[network_interfaces][NI_PACKETS][snapshot] =
-			packetIn + packetOut;
+		if(strstr(NET_IF_TO_IGNORE,ifname) != NULL) {
+			#ifdef _DEBUG
+				cout << "Ignoring network interface: " << ifname << endl;
+			#endif
+			// We are supposed to ignore this interface so...
+			network_interfaces--;
+		}
+		else {
+			assert(scanCount == 5);
+			raw_ni_data[network_interfaces][NI_PACKETS][snapshot] =
+				packetIn + packetOut;
+		}
 		// Skip to the next line.
 		do {
 			c = getc(netInfo);
