@@ -47,7 +47,9 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT    ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -77,9 +79,7 @@
 #include "IOTargetDisk.h"
 #include "IOTargetTCP.h"
 
-#ifdef NO_DYNAMO_VI
- //nop
-#else
+#if defined(IOMTR_SETTING_VI_SUPPORT)
  #include "IOTargetVI.h"
 #endif
 
@@ -89,6 +89,7 @@
 #if defined(IOMTR_OS_LINUX)
  #include <assert.h>
 #endif
+
 
 
 //
@@ -200,12 +201,10 @@ BOOL Grunt::Size_Target_Array( int count, const Target_Spec *target_specs )
 			targets[i] = new TargetDisk;
 		else if ( IsType( target_specs[i].type, GenericTCPType ) )
 			targets[i] = new TargetTCP;
-#if defined(NO_DYNAMO_VI)
- // nop
-#else
+#if defined(IOMTR_SETTING_VI_SUPPORT)
 		else if ( IsType( target_specs[i].type, GenericVIType ) )
 			targets[i] = new TargetVI;
-#endif // NO_DYNAMO_VI
+#endif // IOMTR_SETTING_VI_SUPPORT
 
 		if ( !targets[i] )
 			return FALSE;
@@ -374,9 +373,7 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 	// Create appropriate completion queue object based on targets.
 	// If the Grunt will manage VI targets, the targets will provide a
 	// pointer to the completion queue to use.
-#if defined(NO_DYNAMO_VI)
- // nop
-#else
+#if defined(IOMTR_SETTING_VI_SUPPORT)
 	if ( IsType( type, GenericVIType ) )
 	{
 		// VI targets must know where the data buffer is and its size before
@@ -386,7 +383,7 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 		io_cq = &((TargetVI*)targets[0])->vi.vi_cq;
 	}
 	else
-#endif // NO_DYNAMO_VI
+#endif // IOMTR_SETTING_VI_SUPPORT
 	{
 		// Create completion queue and verify its creation.
 		if ( !(io_cq = new CQAIO) )

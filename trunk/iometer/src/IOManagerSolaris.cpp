@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed DYNAMO_DESTRUCTIVE to                       ## */
+/* ##                 IOMTR_SETTING_OVERRIDE_FS                           ## */
+/* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the error correction provided by         ## */
 /* ##                 Rob Creecy to prevent the segmentation fault        ## */
 /* ##                 when having multiple swap devices configured.       ## */
@@ -322,7 +325,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			 << endl
 			 << "  --->  To enable access to the partition/slice mount it or destroy"
 			 << endl
-			 << "        it or over-ride protection by setting the DYNAMO_DESTRUCTIVE"
+			 << "        it or over-ride protection by setting the IOMTR_SETTING_OVERRIDE_FS"
 			 << endl
 			 << "        environment var."
 			 << endl << endl;
@@ -433,8 +436,8 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 				// Not mounted! Next check if there is a file system on it.
 				if (Has_File_System(file_name, fstype) == TRUE)
 				{
-#ifdef DYNAMO_DESTRUCTIVE
-					if (getenv("DYNAMO_DESTRUCTIVE") != NULL)
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
+					if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
 					{
 						cout << "WARNING: allowing raw access to unmounted fs: "
 							<< file_name << endl;
@@ -446,7 +449,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 							<< ". File system found on disk" << endl;
 						this->is_destructive = TRUE;
 						continue; 	// jump to start of for-loop
-#ifdef DYNAMO_DESTRUCTIVE
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
 					}
 #endif
 				}
@@ -729,8 +732,8 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 			// Not mounted! Next check if there is a file system on it.
 			if (Has_File_System(file_name, fstype) == TRUE)
 			{
-#ifdef DYNAMO_DESTRUCTIVE
-				if (getenv("DYNAMO_DESTRUCTIVE") != NULL)
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
+				if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
 				{
 					cout << "WARNING: allowing raw access to unmounted fs: " << file_name << endl;
 				}
@@ -740,7 +743,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 					cout << "NOTICE: ignoring " << file_name << ". file system found on disk" << endl;
 					this->is_destructive = TRUE;
 					continue;
-#ifdef DYNAMO_DESTRUCTIVE
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
 				}
 #endif
 			}
@@ -840,8 +843,8 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 					// Not mounted! Next check if there is a file system on it.
 					if (Has_File_System(file_name, fstype) == TRUE)
 					{
-#ifdef DYNAMO_DESTRUCTIVE
-						if (getenv("DYNAMO_DESTRUCTIVE") != NULL)
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
+						if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
 						{
 							cout << "WARNING: allowing raw access to unmounted fs: " << file_name << endl;
 						}
@@ -851,7 +854,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 							cout << "NOTICE: ignoring " << file_name << ". file system found on disk" << endl;
 							this->is_destructive = TRUE;
 							continue;
-#ifdef DYNAMO_DESTRUCTIVE
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
 						}
 #endif
 					}
@@ -929,7 +932,7 @@ BOOL Manager::Has_File_System(char *file_name, char *fstype)
 	return(FALSE);
 }
 
-#ifdef DYNAMO_DESTRUCTIVE
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
 BOOL Manager::Reported_As_Logical(Target_Spec *spec, char *rdisk, int count)
 {
 	int					i, retval;
@@ -1056,7 +1059,7 @@ BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count
 	fclose(fp);
 	return FALSE;
 }
-#endif // DYNAMO_DESTRUCTIVE
+#endif // IOMTR_SETTING_OVERRIDE_FS
 
 BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
 {

@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT    ## */
+/* ##               2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Massive cleanup of this file (grouping the          ## */
 /* ##                 different blocks together).                         ## */
 /* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -480,9 +482,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 //
 int Manager::Report_VIs( Target_Spec *vi_spec )
 {
-#ifdef NO_DYNAMO_VI
-	return(0);
-#else
+#if defined(IOMTR_SETTING_VI_SUPPORT)
 	int		count = 0, nic_base;
 	VIPL	vipl;
 	VINic	nic;
@@ -610,7 +610,9 @@ int Manager::Report_VIs( Target_Spec *vi_spec )
 	// All done.
 	cout << "   done." << endl;
 	return count;
-#endif // NO_DYNAMO_VI
+#else
+	return(0);
+#endif // IOMTR_SETTING_VI_SUPPORT
 }
 
 

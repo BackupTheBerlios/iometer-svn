@@ -45,7 +45,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)                   ##
+##               - Changed DYNAMO_DESTRUCTIVE to IOMTR_SETTING_OVERRIDE_FS   ##
+##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT          ##
+##               2003-07-27 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Removed the [BIG|LITTLE]_ENDIAN_ARCH defines, because     ##
 ##                 they have been replaced by IsBigEndian() function calls.  ##
 ##               2003-07-18 (daniel.scheibli@edelbyte.org)                   ##
@@ -81,7 +84,7 @@ STRIP=/usr/ccs/bin/strip
 
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
-# Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
+# Note 2) -DIOMTR_SETTING_OVERRIDE_FS controls inclusion of destructive dynamo code.
 # Note 3) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
 #
 # Always enable CCFLAGS=-compat=4 on Sparc till the transition from compile
@@ -92,8 +95,6 @@ CFLAGS= -O \
 	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_SOLARIS \
 	-DIOMTR_CPU_SPARC \
         -D_LARGEFILE64_SOURCE \
-        -DDYNAMO_DESTRUCTIVE \
-        -DNO_DYNAMO_VI \
         -D_REENTRANT
 #-I/opt/SUNWspro/include/CC \
 # CFLAGS=-compat=4

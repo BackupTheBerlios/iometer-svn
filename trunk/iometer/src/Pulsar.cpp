@@ -51,6 +51,8 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed DYNAMO_DESTRUCTIVE to                       ## */
+/* ##                 IOMTR_SETTING_OVERRIDE_FS                           ## */
 /* ##               - Consolidated the ParseParam() method.               ## */
 /* ##               - Disabled accepting parameters without switch.       ## */
 /* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
@@ -232,16 +234,17 @@ int CDECL main( int argc, char *argv[] )
 		cout << "       Cannot get TCP statistics from the kernel " << endl;
 	}
 
-#ifdef DYNAMO_DESTRUCTIVE
+#ifdef IOMTR_SETTING_OVERRIDE_FS
 	// No command line args specifies destructive testing. Check to see if there
 	// are any environment variables specifying the same. We need to warn the user.
-	if (getenv("DYNAMO_DESTRUCTIVE") != NULL)
+	if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
 	{
 		cout << "       ************ WARNING **************" << endl;
 		cout << "       dynamo running in Destructive mode." << endl;
+		cout << "         (overriding the not mounted fs)"   << endl;		
 		cout << "       ************ WARNING **************" << endl;
 	}
-#endif // DYNAMO_DESTRUCTIVE
+#endif // IOMTR_SETTING_OVERRIDE_FS
 #endif // IOMTR_OSFAMILY_UNIX
 
 	// Ensure, that the endian type of the CPU is detectable

@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-2003.12.16-IoMtrGlobalDefines5.patch by Daniel Scheibli
+     (introduces the IOMTR_SETTING_* global defines to include additional
+     code like the VI stuff).
    - iometer-2003.12.16-SwitchesNowRequired.patch by Daniel Scheibli
      (code cleanup of the dynamo parameter handling; switches are no
      longer option but required now)

@@ -92,6 +92,25 @@ find important global defines (-D<key>[=<value>]):
    IOMTR_CPU_SPARC          Sun Sparc processor (64 bit)
    
    * = Not yet implemented / supported.
+
+ o IOMTR_SETTING_...
+
+   This family of global defines activates parts of the code that are not
+   active by default. Such parts of the code can be dangerous or require
+   non standard libraries: 
+   
+   IOMTR_SETTING_OVERRIDE_FS   DANGER! - Additional code for dynamo, which
+                               allows it to use a (not mounted) file system
+			       partitions as target. Please notice that
+			       this destroys the file system and overwrites
+			       the contained data!
+			       This feature is for the Sun Solaris platform
+			       only and gets included when compiling with
+			       this global define. To activate it you also
+			       have to set a environment variable named
+			       IOMTR_SETTING_OVERRIDE_FS
+   IOMTR_SETTING_VI_SUPPORT    Adds VI (Virtual Interface Architecture)
+                               support to the dynamo executable.   
    
  o _DEBUG
 

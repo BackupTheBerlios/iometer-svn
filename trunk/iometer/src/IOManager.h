@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-14 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed DYNAMO_DESTRUCTIVE to                       ## */
+/* ##                 IOMTR_SETTING_OVERRIDE_FS                           ## */
+/* ##               2003-07-14 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -152,9 +155,9 @@ private:
 	int		Report_Disks( Target_Spec *disk_spec );
 #if defined(IOMTR_OSFAMILY_UNIX)
 	// These UNIX-specific methods are defined in IOManagerUNIX.cpp.
-#ifdef DYNAMO_DESTRUCTIVE
+#if defined(IOMTR_SETTING_OVERRIDE_FS)
 	BOOL		Reported_As_Logical(Target_Spec *spec, char *rdisk, int count);
-#endif // DYNAMO_DESTRUCTIVE
+#endif // IOMTR_SETTING_OVERRIDE_FS
 	BOOL		Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count);
 
 	BOOL 		Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end);
