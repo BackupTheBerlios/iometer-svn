@@ -36,6 +36,7 @@ ChangeLog (IOMETER2 - 2004.mm.dd):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
+   - Renamed Makefile-Solaris.Sparc into Makefile-Solaris.sparc
    - Modified an #ifdef in IOPerformanceLinux.cpp to make it work for
      the XScale processor as well.
    - Addded the IOManagerWin.cpp file to the Iometer.dsp project file
@@ -44,6 +45,7 @@ ChangeLog (IOMETER2 - 2004.mm.dd):
      added to his list in Galileo[App|Globals].cpp
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
 - Documentation:
+   - Added further stuff to the Coding Style section of the DEVGUIDE.
    - Added the initial drop of the DocBook sources of the first part of
      the Iometer Users Guide (converted from OpenOffice - by James Rogers).
 - Others:

@@ -58,6 +58,23 @@ package) that you can find in the download area at SourceForge.
 Right now there is not much to tell, as the source code is still under
 consolidation. But you should at least considere the following:
 
+ o Document each change you are doing. For which change ever, you have
+   to at least document it in the header of the touched codefile. Put
+   the date as well as your name / email address as basic input in
+   and describe what you are doing and why you are doing it.
+   
+   Try to reduce yourself to a realtive short but telling text - if
+   you need some examples, then have a look to IOCommon.h.
+   
+   In case you are doing a more complex change / addition, it is wise
+   to at some more documentation at the location of the code itself.
+   This helps other people and yourself (if you read your coding a
+   few months later!) understanding the purpose, assumptions and the
+   implementation itself.
+   
+   If it is even more relevant, then document it in this file. If in
+   doubt, then definitively document it in this file!
+
  o Use normal tab spacing (tab = 8 spaces).
 
  o Place the open "{" after the condition (for instance "if(...) {").
@@ -67,6 +84,33 @@ consolidation. But you should at least considere the following:
    token in the Linux kernel). Of course it is best if you do not
    have a need for such indicators - meaning you directly go with the
    final version of the code.
+
+ o Make use of the IOMTR_... defines/macros (see further parts of the
+   document) and do not create you own FOO_BAR defines.
+   
+ o If you work with ifdef's that do have an else case, then formulate
+   your entire construct that way, that the else case is empty except
+   for a new platform.
+   
+   Lets thing about an example where you wanted to do foo for Netware
+   and Unix, but bar for Windows. In this case a single if/else/endif
+   is not enough, as introducing a new (4th) operating sytem family
+   would potentically brake unnoticed. Therefor it is a must that you
+   do the following:
+   
+   #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+    // foo
+   #elif defined(IOMTR_OSFAMILY_WINDOWS)
+    // bar
+   #else
+    #warning ===> WARNING: You have to do some coding here to get the port done!
+   #endif
+
+ o If you are doing ifdefs with multiple conditions, then sort the
+   elements in an alphabetic order. The example in before for instance
+   is doing that and listing Netware before Unix (as this all gets
+   interpreted by the preprocessor, there is no need to tune - in
+   terms of most likely first - here).
 
   ------------------------------------------------------------------------
 
@@ -114,7 +158,6 @@ find important global defines (-D<key>[=<value>]):
    
    * = Not yet implemented / supported.
 
-
  o IOMTR_CPU_...
 
    This are global defines to identify the Processor / CPU itself: 
@@ -146,6 +189,18 @@ find important global defines (-D<key>[=<value>]):
 			       IOMTR_SETTING_OVERRIDE_FS
    IOMTR_SETTING_VI_SUPPORT    Adds VI (Virtual Interface Architecture)
                                support to the dynamo executable.   
+
+ o IOMTR_MACRO_...
+ 
+   This family of global defines is not realy relevant to the makefile, but
+   we will covere them here as well as this is the best location for them
+   (with the current status of this document in mind).
+   
+   The global defines starting with this prefix are macros in reality. They
+   get defined in the IOCommon.h file and cover small functional parts like
+   min() / max() for instance. The documentation of the macros that are
+   realy implemented, can be found in the close to their definition (in
+   the IOCommon.h file).
    
  o _DEBUG
 
