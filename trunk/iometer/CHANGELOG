@@ -18,6 +18,9 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
      the new IOManagerWin.cpp file).
 - Cleanup:
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
+- Others:
+   - Modified the About dialog to point to the Intel Open Source License
+     only.
 
 
 

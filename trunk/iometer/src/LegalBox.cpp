@@ -48,9 +48,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-07-24 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Replaced the license claimed in the EULA to the     ## */
-/* ##                 Intel Opem Source License as this the current       ## */
+/* ##                 Intel Open Source License text only.                ## */
+/* ##               2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Replaced the license claimed in the EULA to the     ## */
+/* ##                 Intel Open Source License as this the current       ## */
 /* ##                 under which the Source Code and Binaries are        ## */
 /* ##                 distributed.                                        ## */
 /* ##                 EULA sections which are obsolet or stays in         ## */
@@ -129,6 +132,7 @@ BOOL CLegalBox::OnInitDialog()
 
 	CString legal;
 
+/*
 	legal = "INTEL SOFTWARE LICENSE AGREEMENT\x0d\x0a\
 IMPORTANT - READ BEFORE COPYING, INSTALLING OR USING\x0d\x0a \x0d\x0a";
 
@@ -137,6 +141,7 @@ IMPORTANT - READ BEFORE COPYING, INSTALLING OR USING\x0d\x0a \x0d\x0a";
 following terms and conditions.  By loading or using the Software, you \
 agree to the terms of this Agreement.  If you do not wish to so agree, \
 do not install or use the Software.\x0d\x0a \x0d\x0a";
+*/
 
 /*
 	legal += "LICENSE:  You may copy the Software onto your organization's computers \
@@ -156,9 +161,10 @@ more than one user.\x0d\x0a \x0d\x0a";
 	legal += "4.  The Software may include portions offered on terms in addition to \
 those set out here, as set out in a license accompanying those portions.\x0d\x0a \x0d\x0a";
 */
-
+/*
 	legal += "LICENSE: \x0d\x0a \x0d\x0a";
-	
+*/
+	legal = "";
 	legal += "Intel Open Source License \x0d\x0a \x0d\x0a";
 
 	legal += "Copyright (c) 2001 Intel Corporation \
