@@ -52,7 +52,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added the currently not supported CPU types         ## */
+/* ##                 (see README under IOMTR_CPU_*) as well.             ## */
+/* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed the [BIG|LITTLE]_ENDIAN_ARCH defines.       ## */
 /* ##               - Added the implementation of the IsBigEndian()       ## */
 /* ##                 function which detects the endian type of the CPU.  ## */
@@ -121,9 +124,12 @@
 #endif
 // ----------------------------------------------------------------------------
 // Check the Processor mapping
-#if ( defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_SPARC))
+#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
+    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_X86-64)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_X86-64))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
