@@ -4,6 +4,20 @@
 
 
 
+ChangeLog (2004.mm.mm):
+=======================
+
+- Applied patches:
+   - iometer2.Lamont001ConstructorCleanup.patch by Daniel Scheibli
+     (bundles the changes contributed by Lamont Cranston - it introduces
+     the new IOManagerWin.cpp file).
+
+
+     
+--------------------------------------------------------------------------------
+
+
+
 ChangeLog (2004.nn.nn):
 =======================
 

@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-04-15 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Moved Report_Disks() over to IOManagerWin.cpp.      ## */
+/* ##               2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure compiling under Windows.     ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -332,83 +334,6 @@ BOOL Manager::Login( char* port_name )
 }
 
 
-
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-//
-// Checking for all accessible drives.  Storing them, and returning the number
-// of disks found.  Drives are reported in order so that Iometer does not
-// need to sort them.
-//
-int Manager::Report_Disks( Target_Spec* disk_spec )
-{
-	DWORD	dummy_word;
-	TargetDisk	d;
-	char	drive_letter;
-	int		drive_number = 0;
-	int		count = 0;
-
-	cout << "Reporting drive information..." << endl;
-
-	// Reporting logical drives first.
-	for ( drive_letter = 'A'; drive_letter <= 'Z'; drive_letter++ )
-	{
-		// Checking to see if drive exists.
-		if ( ! d.Init_Logical( drive_letter ) )
-			continue;
-
-		// Drive exists.  Getting its sector size, label, and volume name.
-		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
-		strcat( disk_spec[count].name, "\\" );
-		if ( !GetVolumeInformation( disk_spec[count].name, disk_spec[count].name + 2, 
-			MAX_NAME - 1, NULL, &dummy_word, &dummy_word, NULL, 0 ) )
-		{
-			cout << "   Unable to retrieve volume information for " 
-				<< d.spec.name << "." << endl;
-			disk_spec[count].name[2] = '\0';
-		}
-
-		#if _DEBUG
-				cout << "   Found " << disk_spec[count].name << "." << endl;
-		#endif
-		count++;
-	}
-
-	// Reporting physical drives.
-	while ( count < MAX_TARGETS )
-	{
-		// See if the physical drive exists.
-		sprintf( d.spec.name, "%s%i", PHYSICAL_DISK, drive_number );
-		strcpy( d.file_name, d.spec.name );
-		d.spec.type = PhysicalDiskType;
-
-		// Try to open the drive, if it exists close it and initialize it.  If
-		// it doesn't exist, no more physical drives will be found.  This is
-		// temporary code until the TargetDisk class is split up.
-		if ( !d.Open( NULL ) )
-			break;
-		d.Close( NULL );
-
-		// Drive exists, see if it is available for accessing.
-		if( ! d.Init_Physical( drive_number ) )
-		{
-			drive_number++;
-			continue;
-		}
-
-		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
-		strcpy( disk_spec[count].name, PHYSICAL_DRIVE_PREFIX );
-		_itoa( drive_number, disk_spec[count].name + strlen( disk_spec[count].name ), 10 );
-		drive_number++;
-
-		#if _DEBUG
-				cout << "   Found " << disk_spec[count].name << "." << endl;
-		#endif
-		count++;
-	}
-	cout << "   done." << endl << flush;
-	return count;
-}
-#endif
 
 
 

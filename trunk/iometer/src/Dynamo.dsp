@@ -123,6 +123,10 @@ SOURCE=.\IOManager.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\IOManagerWin.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\IOPerformance.cpp
 # End Source File
 # Begin Source File
