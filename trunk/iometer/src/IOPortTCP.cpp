@@ -13,7 +13,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-04-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Improved error messages for better support.         ## */
+/* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Updated the global debug flag (_DEBUG) handling     ## */
 /* ##                 of the source file (check for platform etc.).       ## */
 /* ##               2003-03-04 (joe@eiler.net)                            ## */
@@ -146,8 +148,9 @@ PortTCP::PortTCP( BOOL synch )
 
 		if ( retval != 0 )
 		{
-			*errmsg << "*** Could not initialize WinSock in PortTCP::PortTCP()!  Error "
-					<< retval << ends;
+			*errmsg << "===> ERROR: Could not initialize WinSock." << endl
+				<< "     [PortTCP::PortTCP() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     retval = " << retval << ends;
 			OutputErrMsg();
 		}
 	}
@@ -177,8 +180,9 @@ PortTCP::~PortTCP()
 
 		if ( WSACleanup() != 0 )
 		{
-			*errmsg << "*** Could not clean up WinSock in PortTCP::~PortTCP()!  Error "
-					<< WSAGetLastError() << ends;
+			*errmsg << "===> ERROR: Could not clean up WinSock." << endl
+				<< "     [PortTCP::~PortTCP() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     return code = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 		}
 	}
@@ -213,12 +217,10 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 		// get the unqualified local host name
 		if ( gethostname ( name, MAX_NETWORK_NAME ) == SOCKET_ERROR )
 		{
-			#if _DEBUG
-				*errmsg << "*** Error " << WSAGetLastError() 
-						<< " getting local host name in PortTCP::Create()." 
-						<< ends;
-				OutputErrMsg();
-			#endif
+			*errmsg << "===> ERROR: Getting local host name failed." << endl
+				<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
+			OutputErrMsg();
 			return FALSE;
 		}
 	}
@@ -233,12 +235,10 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 		struct hostent *hostinfo = gethostbyname ( name );
 		if ( hostinfo == NULL )
 		{
-			#if _DEBUG
-				*errmsg << "*** Error " << WSAGetLastError() 
-						<< " getting host name for \"" 
-						<< name << "\" in PortTCP::Create()." << ends;
-				OutputErrMsg();
-			#endif
+			*errmsg << "===> ERROR: Getting host name for \"" << name << "\" failed." << endl
+				<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
+			OutputErrMsg();
 			return FALSE;
 		}
 		memcpy ( &sin.sin_addr.s_addr, hostinfo->h_addr_list[0], hostinfo->h_length );
@@ -268,11 +268,10 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 
 	if ( server_socket == (int)INVALID_SOCKET )
 	{
-		#if _DEBUG
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " creating socket in PortTCP::Create()." << ends;
-			OutputErrMsg();
-		#endif
+		*errmsg << "===> ERROR: Creating socket failed." << endl
+			<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+			<< "     errno = " << WSAGetLastError() << ends;
+		OutputErrMsg();
 		return FALSE;
 	}
 
@@ -291,11 +290,10 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 
 	if ( bind ( server_socket, (struct sockaddr *) &sin, sizeof(sin) ) != 0 )
 	{
-		#if _DEBUG
-			*errmsg << "*** Error " << WSAGetLastError() << " binding to socket " 
-					<< name << " in PortTCP::Create()." << ends;
-			OutputErrMsg();
-		#endif
+		*errmsg << "===> ERROR: Binding to socket " << name << "failed." << endl
+			<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+			<< "     errno = " << WSAGetLastError() << ends;
+		OutputErrMsg();
 		return FALSE;
 	}
 
@@ -303,12 +301,10 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 	buflen = sizeof(sin);
 	if ( getsockname ( server_socket, (struct sockaddr *) &sin, &buflen ) != 0 )
 	{
-		#if _DEBUG
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " getting information about server socket in PortTCP::Create()." 
-					<< ends;
-			OutputErrMsg();
-		#endif
+		*errmsg << "===> ERROR: Getting information about server socket failed." << endl
+			<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+			<< "     errno = " << WSAGetLastError() << ends;
+		OutputErrMsg();
 		return FALSE;
 	}
 	network_port = ntohs ( sin.sin_port );
@@ -344,8 +340,9 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 	{
 		if ( gethostname ( name, MAX_NETWORK_NAME ) == SOCKET_ERROR )
 		{
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " getting local host name in PortTCP::Connect()." << ends;
+			*errmsg << "===> ERROR: Getting local host name failed." << endl
+				<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 			return FALSE;
 		}
@@ -366,9 +363,9 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 		hostinfo = gethostbyname ( name );
 		if ( hostinfo == NULL )
 		{
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " getting host info for \"" << name 
-					<< "\" in PortTCP::Connect()." << ends;
+			*errmsg << "===> ERROR: Getting host information for \"" << name << "\" failed." << endl
+				<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 			return FALSE;
 		}
@@ -396,8 +393,9 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 
 	if ( client_socket == (int)INVALID_SOCKET )
 	{
-		*errmsg << "*** Error " << WSAGetLastError() << " creating socket " 
-				<< name << " in PortTCP::Connect()." << ends;
+		*errmsg << "===> ERROR: Creating socket failed." << endl
+			<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+			<< "     errno = " << WSAGetLastError() << ends;
 		OutputErrMsg();
 		return FALSE;
 	}
@@ -434,7 +432,9 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 				if ( WSAGetLastError() != WSAECONNREFUSED ) 
 #endif // UNIX
 				{
-					*errmsg << "*** Error " << WSAGetLastError() << " connecting to socket " << name << " in PortTCP::Connect()." << ends;
+					*errmsg << "===> ERROR: Connecting to socket " << name << " failed." << endl
+						<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+						<< "     errno = " << WSAGetLastError() << ends;
 					OutputErrMsg();
 				}
 			#endif
@@ -453,8 +453,9 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 
 			if ( close ( client_socket ) < 0 )
 			{
-				*errmsg << "*** Error " << WSAGetLastError() << " closing socket " 
-						<< name << " in PortTCP::Connect()." << ends;
+				*errmsg << "===> ERROR: Closing socket " << name << " failed." << endl
+					<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+					<< "     errno = " << WSAGetLastError() << ends;
 				OutputErrMsg();
 				return FALSE;
 			}
@@ -462,8 +463,9 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 			if ( (client_socket = socket( AF_INET, SOCK_STREAM, PF_UNSPEC )) 
 				== (int)INVALID_SOCKET )
 			{
-				*errmsg << "*** Error " << WSAGetLastError() << " re-creating socket " 
-						<< name << " in PortTCP::Connect()." << ends;
+				*errmsg << "===> ERROR: Recreating socket " << name << " failed." << endl
+					<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+					<< "     errno = " << WSAGetLastError() << ends;
 				OutputErrMsg();
 				return FALSE;
 			}
@@ -497,8 +499,9 @@ BOOL PortTCP::Accept()
 
 	if ( listen ( server_socket, 0 ) != 0 ) // allow at most one connection at a time
 	{
-		*errmsg << "*** Error " << WSAGetLastError() << " listening to socket " 
-				<< name << " in PortTCP::Accept()." << ends;
+		*errmsg << "===> ERROR: Listening to socket " << name << " failed." << endl
+			<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+			<< "     errno = " << WSAGetLastError() << ends;
 		OutputErrMsg();
 		return FALSE;
 	}
@@ -519,9 +522,9 @@ BOOL PortTCP::Accept()
 
 		if ( client_socket == (int)INVALID_SOCKET )
 		{
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " accepting connections to socket " 
-					<< name << " in PortTCP::Accept()." << ends;
+			*errmsg << "===> ERROR: Accepting connection to socket " << name << " failed." << endl
+				<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 			return FALSE;
 		}
@@ -537,8 +540,8 @@ BOOL PortTCP::Accept()
 
 		if ( !InitOverlapped( &accept_overlapped ) )
 		{
-			*errmsg << "*** Could not create OVERLAPPED structure for socket " 
-					<< name << " in PortTCP::Accept()." << ends;
+			*errmsg << "===> ERROR: Creating OVERLAPPED structure for socket " << name << " failed." << endl
+				<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 			OutputErrMsg();
 			return FALSE;
 		}
@@ -557,9 +560,9 @@ BOOL PortTCP::Accept()
 
 		if ( client_socket == INVALID_SOCKET )
 		{
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " creating client socket for " << name 
-					<< " ion PortTCP::Accept()." << ends;
+			*errmsg << "===> ERROR: Creating client socket for " << name << " failed." << endl
+				<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 			return FALSE;
 		}
@@ -586,7 +589,8 @@ BOOL PortTCP::Accept()
 			}
 			else
 			{
-				*errmsg << "*** AcceptEx() failed in PortTCP::Accept()." << ends;
+				*errmsg << "===> ERROR: AcceptEx() failed." << endl
+					<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 				OutputErrMsg();
 				return FALSE;
 			}
@@ -594,7 +598,9 @@ BOOL PortTCP::Accept()
 	}
 #else /* Not win32 || _WIN64 */
 	else {
-		cerr << "Error; attempting asynchronous connection in Unix.\n";
+		*errmsg << "===> ERROR: Attempting asynchronous connection in Unix." << endl
+			<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+		OutputErrMsg();
 		return(FALSE);
 	}
 #endif // WIN32 || _WIN64 // (asynch code)
@@ -631,7 +637,9 @@ BOOL PortTCP::GetAcceptResult()
 
 	return result;
 #else // !WIN32 || _WIN64
-	cerr << "Error: Asynchronous socted accept attempted under Unix.\n";
+	*errmsg << "===> ERROR: Asynchronous socket accept attempted under Unix." << endl
+		<< "     [PortTCP::GetAcceptResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+	OutputErrMsg();
 	return(FALSE);
 #endif // WIN32 || _WIN64
 }
@@ -670,7 +678,9 @@ DWORDLONG PortTCP::Receive( LPVOID msg, DWORD size )
 	}
 #else
 	else {
-		cerr << "Error; asynchronous TCP attempted under Unix.\n";
+		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
+			<< "     [PortTCP::Receive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+		OutputErrMsg();
 		return(0);
 	}
 #endif
@@ -731,8 +741,8 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 
 	if ( !InitOverlapped( &receive_overlapped ) )
 	{
-		*errmsg << "*** Could not create OVERLAPPED structure for socket " 
-				<< name << " in PortTCP::AsynchReceive()." << ends;
+		*errmsg << "===> ERROR: Creating OVERLAPPED structure for socket " << name << " failed." << endl
+			<< "     [PortTCP::AsynchReceive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return PORT_ERROR;
 	}
@@ -742,7 +752,7 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 	{
 		#if PORT_DETAILS || _DETAILS
 			cout << "Received " << bytes_read << " of " << size 
-				 << " bytes from socket " << name << "." << endl;
+			     << " bytes from socket " << name << "." << endl;
 		#endif
 
 		return (DWORDLONG) bytes_read;
@@ -757,7 +767,9 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 	}
 #else
 	else {
-		cerr << "Error; asynchronous TCP attempted under Unix.\n";
+		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
+			<< "     [PortTCP::AsynchReceive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+		OutputErrMsg();
 		return(PORT_ERROR);
 	}
 #endif
@@ -794,7 +806,9 @@ DWORDLONG PortTCP::GetReceiveResult()
 	}
 #else
 	else {
-		cerr << "Error; asynchronous TCP attempted under Unix.\n";
+		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
+			<< "     [PortTCP::GetReceiveResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+		OutputErrMsg();
 		return(PORT_ERROR);
 	}
 #endif
@@ -844,13 +858,16 @@ DWORDLONG PortTCP::SynchSend( LPVOID msg, DWORD size )
 		if ( bytes_written == 0 || bytes_written == SOCKET_ERROR )
 		{
 			// socket has been closed, return error
-			cout << "*** PortTCP::SynchSend() error, code = " << WSAGetLastError() << endl;
+			*errmsg << "===> ERROR: Send failed." << endl
+				<< "     [PortTCP::SynchSend() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
+			OutputErrMsg();
 			return PORT_ERROR;
 		}
 
 		#if PORT_DETAILS || _DETAILS
 			cout << "Sent " << bytes_written << " of " << size 
-				 << " bytes to socket " << name << "." << endl;
+			     << " bytes to socket " << name << "." << endl;
 		#endif
 
 		total_bytes_written += bytes_written;	// add bytes written so far to total
@@ -886,7 +903,7 @@ DWORDLONG PortTCP::AsynchSend( LPVOID msg, DWORD size )
 	{
 		#if PORT_DETAILS || _DETAILS
 			cout << "Sent " << bytes_written << " of " << size 
-				 << " bytes to socket " << name << "." << endl;
+			     << " bytes to socket " << name << "." << endl;
 		#endif
 		return (DWORDLONG) bytes_written;
 	}
@@ -900,7 +917,9 @@ DWORDLONG PortTCP::AsynchSend( LPVOID msg, DWORD size )
 	}
 #else
 	else {
-		cerr << "Error; asynchronous TCP attempted under Unix.\n";
+		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
+			<< "     [PortTCP::AsynchSend() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+		OutputErrMsg();
 		return(PORT_ERROR);
 	}
 #endif
@@ -931,7 +950,9 @@ DWORDLONG PortTCP::GetSendResult()
 	}
 #else
 	else {
-		cerr << "Error; asynchronous TCP attempted under Unix.\n";
+		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
+			<< "     [PortTCP::GetSendResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
+		OutputErrMsg();
 		return(PORT_ERROR);
 	}
 #endif
@@ -986,16 +1007,16 @@ DWORD PortTCP::Peek()
 	{
 		#if PORT_DETAILS || _DETAILS
 			cout << "Peeked " << bytes_available << " bytes from socket " 
-				 << name << "." << endl;
+			     << name << "." << endl;
 		#endif
 		return (DWORD) bytes_available;
 	}
 	else
 	{
 		#if PORT_DETAILS || _DETAILS
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " peeking from socket " << name 
-					<< " in PortTCP::Peek()." << ends;
+			*errmsg << "===> ERROR: Peeking from socket " << name << " failed." << endl
+				<< "     [PortTCP::Peek() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 		#endif
 		return 0;	// no data available at this time, maybe later
@@ -1026,8 +1047,9 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 		// closed with no Accept() active -- this is no problem since we're just closing it anyway
 		if ( WSAGetLastError() != WSAENOTCONN ) 
 		{
-			*errmsg << "*** Error " << WSAGetLastError() << " shutting down " 
-					<< socket_name << " socket in PortTCP::CloseSocket()." << ends;
+			*errmsg << "===> ERROR: Shutting down socket " << socket_name << " failed." << endl
+				<< "     [PortTCP::CloseSocket() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+				<< "     errno = " << WSAGetLastError() << ends;
 			OutputErrMsg();
 			return FALSE;
 		}
@@ -1047,8 +1069,9 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 	if ( close ( *s ) != 0 )
 #endif
 	{
-		*errmsg << "*** Error " << WSAGetLastError() << " closing " 
-				<< socket_name << " socket in PortTCP::CloseSocket()." << ends;
+		*errmsg << "===> ERROR: Closing socket " << socket_name << " failed." << endl
+			<< "     [PortTCP::CloseSocket() in " << __FILE__ << " line " << __LINE__ << "]" << endl
+			<< "     errno = " << WSAGetLastError() << ends;
 		OutputErrMsg();
 		return FALSE;
 	}
