@@ -103,7 +103,7 @@ UINT CDECL MessageBoxThread(LPVOID pErrorMessage);
 // Reports error messages appropriately.
 // Make sure this is not called while the result file is open!
 //
-void CDECL ErrorMessage( LPCTSTR errmsg )
+void ErrorMessage( LPCTSTR errmsg )
 {
 	// If in batch mode, don't pop up error dialogs that require user intervention.
 

@@ -83,6 +83,8 @@ ChangeLog (IOMETER 1 - 2004.07.30):
      (code cleanup of the dynamo parameter handling; switches are no
      longer option but required now)
 - Cleanup:
+   - Added a check for null pointers in case a Manager could not be
+     added to his list in Galileo[App|Globals].cpp
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
    - Corrected the CPU speed detection output as it was proposed
      Kenneth Morse (rounding issue).
