@@ -9,6 +9,10 @@ ChangeLog (2003.nn.nn):
 
 
 - Applied patches:
+  - iometer-2003.05.04-CIOB5.patch by Matt Robinson (modifies
+    the mechanisms for read and writes in IOMeter so that different
+    buffers are used each time to avoid cache line collisions and
+    performance lock-ups with some chipsets).
   - iometer-2003.02.15-ResultEndTime.patch by Daniel Scheibli (modifies
     the result file output to append the current timestamp after each
     block of results).
