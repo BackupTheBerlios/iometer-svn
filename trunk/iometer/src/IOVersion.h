@@ -1,6 +1,6 @@
 /* ######################################################################### */
 /* ##                                                                     ## */
-/* ##  (Iometer & Dynamo) / IOVerion.h                                    ## */
+/* ##  (Iometer & Dynamo) / IOVersion.h                                   ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -13,7 +13,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Dropped not used defines like IOVER_FILE,           ## */
+/* ##                 IOVER_PRODUCT, IOVER_PRIVATEBUILD and               ## */
+/* ##                 IOVER_SPECIALBUILD.                                 ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */
 /* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */
@@ -94,72 +98,15 @@ extern "C"
 {
 #endif
 
-//////////
-//Intel HF standard (code name "Hollywood") specifies four segments:
-//	M.mx.yy.zzzz
-//	 (M = Major version #
-//	  m = minor version #
-//	  x = maintenance release #
-//	  yy = patch release #
-//	  zzzz = build #
-//////////
-
-//////////
-//	Iometer has been using date stamps as the version strings, and currently
-//	does not have major or minor version numbers:
-//	(If I were to guess on the version number)
-//		5.6.97 (1.00)
-//			6/11/97, 7.22.97,
-//		8.20.97 (1.01)
-//		10.2.97 (1.02)
-//			12.11.97
-//		1998.01.05 (1.10) - name changes
-//			1998.04.02, 1998.04.16, 1998.06.15, 1998.06.24, 1998.08.01,
-//			1998.08.24
-//		1998.09.01 (1.20) - VI support
-//			1998.09.25 (1.18), 1998.10.02
-//		1998.10.08 (1.21) - Solaris support
-//			1998.11.24, 1999.01.11, 1999.02.17, 1999.03.02, 1999.03.08,
-//			1999.06.15, 1999.06.18
-//		1999.08.02 (1.30) - Test configuration save/restor, batch mode
-//			1999.09.23, 1999.10.02
-//		2000.12.07 - Added support for Win64
-//		2000.12.28 - Recompile with correct SDK include files
-//		2000.04.05 - Build with 2462 SDK
-//				   - Removed occurances of "this->" from AccessDialog.cpp
-//					 because 2462 SDK compiler didn't like it.  Isn't really
-//					 needed anyway so shouldn't make a difference...
-//		2000.07.19 - Build with XP RC1 SDK.
-//				   - Added in new IOCQAIO.cpp and IOPerformance.cpp that had been
-//				     put there by somebody else...
-//////////
-
-//per HF Guidelines, product version = file version
-//#define IOVER_FILE						1,30,0, 0001
-#define IOVER_FILE						2001,07,19,0
-#define IOVER_PRODUCT					IOVER_FILE
-//#define IOVER_FILEVERSION				"1.30.0.0001\0"
-
-// The last "official" version was "2001.07.19", which is the
-// version you will find in iometer-initial.tar.gz at the
-// Sourceforge page (http://sourceforge.net/projects/iometer).
-// #define IOVER_FILEVERSION				"2001.07.19\0"
-#define IOVER_FILEVERSION				"2003.02.15\0"
-#define IOVER_PRODUCTVERSION			IOVER_FILEVERSION
-
+// Iometer has been using date stamps as the version strings, and currently
+// does not have major or minor version numbers.
+// The last "official" version was "2001.07.19", which is the version
+// you will find in iometer-initial.tar.gz at the Sourceforge page
+// (http://sourceforge.net/projects/iometer).
+#define IOVER_FILEVERSION				"2003.02.15-post\0"
+#define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
 
 #ifndef UNIX
-
-//If this is to be enabled, FILEFLAGS, VS_FF_PRIVATEBUILD flag must be set.
-//#define IOVER_PRIVATEBUILD				"1.30.0.0001\0"
-#define IOVER_PRIVATEBUILD				"\0"
-//If this is to be enabled, FILEFLAGS, VS_FF_SPECIALBUILD flag must be set.
-
-#if defined (_WIN64)
-#define IOVER_SPECIALBUILD				"Built using 64-bit Windows SDK\0"
-#else
-#define IOVER_SPECIALBUILD				"\0"
-#endif // _WIN64
 
 #define IOVER_LEGALCOPYRIGHT				"Copyright © 1996-2001 Intel Corporation\0"
 //#define IOVER_LEGALTRADEMARKS			"??? Iometer is a Trademark of Intel Corporation\0"

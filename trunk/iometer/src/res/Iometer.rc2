@@ -15,8 +15,6 @@
 #include "ioversion.h"							  //Iometer version info definitions
 
 VS_VERSION_INFO     VERSIONINFO
-  FILEVERSION       IOVER_FILE
-  PRODUCTVERSION    IOVER_PRODUCT
   FILEFLAGSMASK     VS_FFI_FILEFLAGSMASK    //0x0000003FL
 #ifdef _DEBUG
 #if defined (_WIN64)
@@ -54,10 +52,8 @@ BEGIN
             VALUE "LegalCopyright",     IOVER_LEGALCOPYRIGHT
             VALUE "LegalTrademarks",    IOVER_LEGALTRADEMARKS
             VALUE "OriginalFilename",   IOVER_ORIGINAL_FILE_NAME
-            VALUE "PrivateBuild",       IOVER_PRIVATEBUILD
             VALUE "ProductName",        IOVER_PRODUCT_NAME
             VALUE "ProductVersion",     IOVER_PRODUCTVERSION
-            VALUE "SpecialBuild",       IOVER_SPECIALBUILD
         END
     END
     BLOCK "VarFileInfo"

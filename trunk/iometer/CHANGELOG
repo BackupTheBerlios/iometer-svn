@@ -24,6 +24,7 @@ ChangeLog (2003.nn.nn):
     new processor speed values as well as improvements for the GHz CPU
     detection).
 - Cleanup:
+   - Dropped different unneeded defines in IOVersion.h
    - Dropped clean_ctlm.c, because we can use the recode tool instead.
    - Merged rdtsc.c into IOTime.cpp
    - Cleaned up some compiler warnings on Solaris

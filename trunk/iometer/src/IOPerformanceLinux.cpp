@@ -19,6 +19,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cleaned the code from Windows related stuff         ## */
+/* ##                 (doesn't make sense in a pure Linux context).       ## */
+/* ##               2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Bugfix for Get_NI_Counters to ensure, that          ## */
 /* ##                 interface names with no leading blanks (for         ## */
 /* ##                 example dummy0) are handled as well.                ## */
@@ -251,10 +254,7 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot) {
 	cout << "   Getting system performance data." << endl << flush;
 #endif
 
-/* ##### REM: BEGIN ##### */
-//	time_counter[snapshot] = rdtsc();
 	time_counter[snapshot] = jiffies();
-/* ##### REM: END ##### */
 	if (snapshot == LAST_SNAPSHOT) {
 		// calculate time diff in clock ticks..
 		timediff = (time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
@@ -274,6 +274,8 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot) {
 		break;
 	}
 }
+
+
 
 void Performance::Get_CPU_Counters(int snapshot)
 {
@@ -322,286 +324,10 @@ void Performance::Get_CPU_Counters(int snapshot)
 		}
 	}
 	fclose(cpuStat);
-	
-//	if (processor_count > 1) {
-//		--processor_count; /* We'll have "cpu " and "cpu0"..."cpun". */
-//	}
-	//
-	// We get out interrupt info from "/proc/interrupts". Sample output:
-	//////////////////////////////////////////////////////////////////////
-	//            CPU0       
-  //   0:   17469505          XT-PIC  timer
-  //   1:     103125          XT-PIC  keyboard
-  //   2:          0          XT-PIC  cascade
-  //   8:          1          XT-PIC  rtc
-	//  11:      69292          XT-PIC  aic7xxx
-	//  12:     725412          XT-PIC  PS/2 Mouse
-	//  13:          1          XT-PIC  fpu
-	//  14:     340442          XT-PIC  Intel EtherExpress Pro 10/100 Ethernet
-	//  15:    2691388          XT-PIC  ide1
-	// NMI:          0
-	//////////////////////////////////////////////////////////////////////
-
-//	FILE *interStat = fopen("/proc/interrupts", "r");
-//	assert(interStat != NULL);
-//	for (;;) {
-//		int result;
-//
-//		do {
-//			c = getc(interStat);
-//		} while ((c != '\n') && (c != EOF));
-		/*
-		 * The following code is based on the assumption that any IRQ
-		 * entry in /proc/interrupts will begin with a space followed by
-		 * an integer.  Otherwise it's an "NMI" or "ERR".  This is
-		 * important, because NMI and ERR don't have per-processor
-		 * values, only one value, so they'll break in the
-		 * processor_count loop below.  If this code breaks, check that
-		 * "cat /proc/interrupts" looks like the comment above, and
-		 * change this code to match if it doesn't.
-		 */
-//		if (getc(interStat) != ' ') {
-//			break;
-//		}
-//		if (fscanf(interStat, "%d:", &result) != 1) {
-//			break;
-//		}
-//		for (int i = 0; i < processor_count; ++i) {
-//			long long interruptCount;
-//			numScans = fscanf(interStat, "%lld", &interruptCount);
-//			assert(numScans == 1);
-//			raw_cpu_data[i][CPU_IRQ][snapshot] += interruptCount;
-//		}
-//	}
-//	fclose(interStat);
 }
 
 void Performance::Get_TCP_Counters(int snapshot) {}
 
-
-//
-// Calculating the performance value for a given counter pair based on its saved information.
-//
-#if defined (_WIN32) || defined (_WIN64)
-double Performance::Calculate_Stat( _int64 start_value, _int64 end_value, DWORD counter_type )
-{
-	double	count_difference;	// Difference between two snapshots of a counter.
-	double	perf_stat;			// Calculated performance statistic, such as % utilization.
-
-	// Verify valid performance time.
-	if ( perf_time <= 0 )
-	{
-		cout << "*** Performance time not positive." << endl;
-		return (double)0.0;
-	}
-
-	// Determine what type of counter we're dealing with.
-	switch ( counter_type & PERF_TYPE_MASK )
-	{
-
-	// Dealing with a number (e.g. error count)
-	case PERF_TYPE_NUMBER:
-		#if PERFORMANCE_DETAILS
-			cout << "Performing calculation on a performance number." << endl;
-		#endif
-		switch ( counter_type & PERF_SUBTYPE_MASK )
-		{
-		case PERF_NUMBER_DECIMAL:
-			#if PERFORMANCE_DETAILS
-				cout << "Performance number decimal." << endl;
-			#endif
-			perf_stat = (double)(end_value - start_value);
-			break;
-		case PERF_NUMBER_DEC_1000:	// divide result by 1000 before displaying
-			#if PERFORMANCE_DETAILS
-				cout << "Performance number decimal x 1000." << endl;
-			#endif
-			perf_stat = (double)(end_value - start_value) / (double)1000.0;
-			break;
-		// other subtypes exist, but are not handled
-		default:
-			cout << "*** Performance counter number subtype not handled" << endl;
-			return (double)0.0;
-		}
-		break;
-
-	// Dealing with an actual counter value.
-	case PERF_TYPE_COUNTER:
-		#if PERFORMANCE_DETAILS
-			cout << "Performing calculation on a performance counter." << endl;
-		#endif
-
-		// Computing the difference between the two counters.
-		if ( counter_type & PERF_DELTA_COUNTER )
-		{
-			#if PERFORMANCE_DETAILS
-				cout << "Performance delta counter." << endl;
-			#endif
-			count_difference = (double)(end_value - start_value);
-		}
-		else
-		{
-			cout << "*** Unhandled performance counter delta type." << endl;
-			return (double)0.0;
-		}
-
-		// Determine the calculated value based on the counter's subtype.
-		switch ( counter_type & PERF_SUBTYPE_MASK )
-		{
-
-		// Divide the counter by the time difference
-		case PERF_COUNTER_RATE:
-			#if PERFORMANCE_DETAILS
-				cout << "Performance counter is a rate." << endl;
-			#endif
-
-			// Adjust the time based on the counter's update frequency.
-			switch ( counter_type & PERF_TIMER_MASK )
-			{
-			// Timer is based on the system timer, just use it.
-			case PERF_TIMER_TICK:
-				#if PERFORMANCE_DETAILS
-					cout << "Using system timer for update frequency." << endl;
-				#endif
-				perf_stat = count_difference / perf_time;
-				break;
-
-			// These timers are based on a 100-ns timer, so multiply timer by 10,000,000 to get seconds.
-			case PERF_TIMER_100NS:
-				#if PERFORMANCE_DETAILS
-					cout << "Using 100-ns timer for update frequency." << endl;
-				#endif
-				perf_stat = count_difference / (perf_time * (double)10000000.0);
-				break;
-
-			// other timer rates exist, but are not handled.
-			default:
-				cout << "*** Performance update frequency type not handled." << endl;
-				return (double)0.0;
-			}
-
-			break;
-		default:
-			cout << "*** Unhandled performance counter, counter subtype." << endl;
-			return (double)0.0;
-		}
-
-		break;
-
-	// other types exist, but are not handled
-	default:
-		cout << "*** Unhandled performance counter type." << endl;
-		return (double)0.0;
-	}
-
-	// Handle any inverted performance counters.
-	if ( counter_type & PERF_INVERSE_COUNTER )
-	{
-		#if PERFORMANCE_DETAILS
-			cout << "Inverting performance counter (1 - value)." << endl;
-		#endif
-		perf_stat = (double) 1.0 - perf_stat;
-	}
-
-	// Perform any additional operations needed based on the counter's display suffix.
-	switch ( counter_type & PERF_SUFFIX_MASK )
-	{
-	case PERF_DISPLAY_NO_SUFFIX:		// just return value
-	case PERF_DISPLAY_PER_SEC:			// no additional calculations needed
-		return perf_stat;
-
-	case PERF_DISPLAY_PERCENT:			// scale by 100 to reflect a percentage
-		#if PERFORMANCE_DETAILS
-			cout << "Performance counter is a percent." << endl;
-		#endif
-		// Verify valid values.  
-		// Do not print an error message unless it's more than trivially invalid.
-		if ( perf_stat < (double)0.0 ) 
-		{
-			if ( perf_stat < (double)-0.001 ) 
-			{
-				cout << "*** Performance counter percentage is less than zero: " 
-					 << perf_stat << endl;
-			}
-			return (double)0.0;
-		}
-		else if ( perf_stat > (double)1.0 )
-		{
-			if ( perf_stat > (double)1.001 ) 
-			{
-				cout << "*** Performance counter percentage is greater than 1: " 
-					 << perf_stat << endl;
-			}
-			return (double)100.0;
-		}
-
-		return (perf_stat * (double)100.0);
-
-	default:
-		cout << "*** Unhandled performance display suffix." << endl;
-		return (double)0.0;
-	}
-}
-#endif
-
-
-
-#if defined (_WIN32) || defined (_WIN64)
-//
-// Extracting counters for NT CPU performance data.
-//
-void Performance::Extract_CPU_Counters( int snapshot )
-{
-	char	cpu_name[3];
-	int		cpu, stat, i;
-
-	// Loop through all processors and record performance information.
-	for ( cpu = 0; cpu < processor_count; cpu++ )
-	{
-		// Find the desired processor instance.
-		if ( !Locate_Perf_Instance( cpu ) )
-			return;
-
-		// Verify that the instance found is for the current processor, 
-		// otherwise perform an enhaustive search.
-		_itoa( cpu, cpu_name, 10 );
-		if ( strncmp( cpu_name, (char*)((LPBYTE)perf_instance + perf_instance->NameOffset), 2 ) )
-		{
-			#if _DEBUG
-				cout << "Performing exhaustive search for processor instance " << cpu << endl;
-			#endif
-
-			// Check all processor instances and try to match one with the desired processor.
-			for ( i = 0; i < perf_object->NumInstances; i++ )
-			{
-				if ( !Locate_Perf_Instance( i ) )
-					return;
-				#if PERFORMANCE_DETAILS || _DETAILS
-					cout << "Looking at processor name: " 
-						<< (char*)((LPBYTE)perf_instance + perf_instance->NameOffset) << endl;
-				#endif
-				// Match the name of the current instance with the name of the desired cpu.
-				if ( !strncmp( cpu_name, (char*)((LPBYTE)perf_instance + perf_instance->NameOffset), 2 ) )
-					break;	// Found the correct instance.
-			}
-			if ( i == perf_object->NumInstances )
-			{
-				cout << "*** Unable to locate performance instance of processor " << cpu << endl;
-				return;
-			}
-		}
-
-		// Saving CPU specific counters.
-		for ( stat = 0; stat < CPU_RESULTS; stat++ )
-		{
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "Extracting CPU stat " << stat << " for CPU " << cpu << endl;
-			#endif
-			raw_cpu_data[cpu][stat][snapshot] = Extract_Counter( &(cpu_perf_counter_info[stat]) );
-		}
-	}
-}
-#endif
 
 
 //
@@ -622,23 +348,6 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 				cout << "Calculating stat " << stat << " for CPU " << cpu << endl;
 			#endif
 
-#if defined (_WIN32) || defined (_WIN64)
-			// If we've never set the counter offsets, then we've never successfully retrieved
-			// the performance data.  Set all of the values to 0.
-			if ( cpu_perf_counter_info[stat].offset == IOERROR )
-			{
-				cout << "*** Offset to CPU performance counter not defined for stat " 
-					 << stat << "." << endl;
-				cpu_results->CPU_utilization[cpu][stat] = (double)0.0;
-			}
-			else
-			{
-				cpu_results->CPU_utilization[cpu][stat] = Calculate_Stat( 
-					raw_cpu_data[cpu][stat][FIRST_SNAPSHOT],
-					raw_cpu_data[cpu][stat][LAST_SNAPSHOT],
-					cpu_perf_counter_info[stat].type );
-			}
-#else // UNIX
 			double result;
 			if (stat == CPU_IRQ)
 			{
@@ -649,17 +358,6 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 				//
 				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT] - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * clock_tick / timediff;
 				cpu_results->CPU_utilization[cpu][stat] = result;
-/* ##### REM:BEGIN ##### */
-// cerr << "Before ...: " << rdtsc() << " " << jiffies() << " " << clock_tick << " " << timediff << endl;
-// sleep(1);
-// cerr << "After ....: " << rdtsc() << " " << clock_tick << " " << jiffies() << endl;
-// #if defined (i386)
-// cerr << "===> i386 <===" << endl;
-// #endif
-// cerr << "Calculate_CPU_Stats(IRQ) " << cpu << " " << stat << " " << raw_cpu_data[cpu][stat][LAST_SNAPSHOT] << " " << raw_cpu_data[cpu][stat][FIRST_SNAPSHOT] << endl;
-// cerr << "Calculate_CPU_Stats(IRQ) " << clock_tick << " " << timediff << " " << (time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]) << endl;
-/* ##### REM:END ##### */
-
 			}
 			else
 			{
@@ -683,45 +381,16 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 				}
 
 				cpu_results->CPU_utilization[cpu][stat] = (result * 100);
-
-/* ##### REM:BEGIN ##### */
-//cerr << "Calculate_CPU_Stats(OTHER) " << cpu << " " << stat << " " << raw_cpu_data[cpu][stat][LAST_SNAPSHOT] << " " << raw_cpu_data[cpu][stat][FIRST_SNAPSHOT] << endl;
-/* ##### REM:END ##### */
 			}
-#endif
+
 			#if PERFORMANCE_DETAILS || _DETAILS
 				cout << "CPU " << cpu << " recorded stat " << stat << " = " 
 					<< cpu_results->CPU_utilization[cpu][stat] << endl;
 			#endif
-
-/* ##### REM:BEGIN ##### */
-//cerr << "Calculate_CPU_Stats " << cpu << " " << stat << " " << cpu_results->CPU_utilization[cpu][stat] << endl;
-/* ##### REM:END ##### */
 		}
 	}
 }
 
-
-#if defined (_WIN32) || defined (_WIN64)
-//
-// Extracting counters for NT network performance data.
-//
-void Performance::Extract_TCP_Counters( int snapshot )
-{
-	int		stat;
-
-	// Saving network TCP specific counters.
-	if ( !Locate_Perf_Instance() )
-		return;
-	for ( stat = 0; stat < TCP_RESULTS; stat++ )
-	{
-		#if PERFORMANCE_DETAILS || _DETAILS
-			cout << "Extracting TCP stat " << stat << endl;
-		#endif
-		raw_tcp_data[stat][snapshot] = Extract_Counter( &(tcp_perf_counter_info[stat]) );
-	}
-}
-#endif
 
 
 //
@@ -736,25 +405,11 @@ void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 	{
 		// If we've never set the counter offsets, then we've never successfully retrieved
 		// the performance data.  Set all of the values to 0.
-#if defined (_WIN32) || defined (_WIN64)
-		if ( tcp_perf_counter_info[stat].offset == IOERROR )
-		{
-			net_results->tcp_stats[stat] = (double)0.0;
-		}
-		else
-		{
-			net_results->tcp_stats[stat] = Calculate_Stat( 
-				raw_tcp_data[stat][FIRST_SNAPSHOT],
-				raw_tcp_data[stat][LAST_SNAPSHOT],
-				tcp_perf_counter_info[stat].type );
-		}
-#else
 		double result;
 		result = ((double) raw_tcp_data[stat][LAST_SNAPSHOT] - 
 			raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
 		result *= clock_tick;		// note that timediff is in CLK_TCKs and not seconds
 		net_results->tcp_stats[stat] = result;
-#endif
 
 		#if PERFORMANCE_DETAILS || _DETAILS
 			cout << "TCP recorded stat " << stat << " = " 
@@ -830,6 +485,7 @@ void Performance::Get_NI_Counters(int snapshot) {
 }
 
 
+
 //
 // Calculate network performance statistics based on snapshots of performance counters.
 //
@@ -845,19 +501,6 @@ void Performance::Calculate_NI_Stats( Net_Results *net_results )
 		{
 			// If we've never set the counter offsets, then we've never successfully retrieved
 			// the performance data.  Set all of the values to 0.
-#if defined (_WIN32) || defined (_WIN64)
-			if ( ni_perf_counter_info[stat].offset == IOERROR )
-			{
-				net_results->ni_stats[net][stat] = (double)0.0;
-			}
-			else
-			{
-				net_results->ni_stats[net][stat] = Calculate_Stat( 
-					raw_ni_data[net][stat][FIRST_SNAPSHOT],
-					raw_ni_data[net][stat][LAST_SNAPSHOT],
-					ni_perf_counter_info[stat].type );
-			}
-#else // UNIX
 			double result;
 			//
 			// Note:
@@ -873,7 +516,7 @@ void Performance::Calculate_NI_Stats( Net_Results *net_results )
 				((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
 
 			net_results->ni_stats[net][stat] = result;
-#endif
+
 			#if PERFORMANCE_DETAILS || _DETAILS
 				cout << "   Network interface " << net << " recorded stat " << stat << " = " 
 					<< net_results->ni_stats[net][stat] << endl;

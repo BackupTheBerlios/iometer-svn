@@ -15,10 +15,7 @@ ToDo:
  - IOPerformance.cpp / IOPerformanceLinux.cpp: Consolidate the Get_*_Counters()
    and Extract_*_Counters() methods for all operating systems (only one name
    schema).
- - IOPerformanceLinux.cpp: Cut out all the _WIN32 and _WIN64 related methods
-   (like Extract_CPU_Counters, Calculate_Stat,...).
  - IOTime.h / IOTime.cpp: Merge the files into a common one.
- - IOVersion.h: Drop all the unneeded defines like IOVER_FILE and IOVER_PRODUCT
  - <All>: Check if it is possible to move the reorder() function calls into the
    Send() / Receive() methods (eases code and makes it more solid).
  - <All>: Move all Includes out of the codefiles into the central headerfile
@@ -31,7 +28,7 @@ ToDo:
     - Operating System Platform (can be set based on Operating System):
       WINTEL (Windows, OS/2), UNIX (AIX, BSD, HP-UX, Linux, Solaris,...)
     - Processor:
-      IA32, IA64, SPARC
+      IA32, IA64, SPARC, X86-64
  - <All>: Endian Type could be detected during runtime. This can be done with a
    new Performance::Get_Endian_Type() method.
  - <All>: Decouple the code in that way, that it is possible to seperate
