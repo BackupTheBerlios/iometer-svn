@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - iometer-2003.05.10-IsBigEndianFunction.patch by Daniel Scheibli
+    (Does endian type detection for CPU during runtime. This function
+    replaces the [BIG|LITTLE]_ENDIAN_ARCH global defines).
   - iometer-2003.05.10-Solaris9onI386.patch by Daniel Scheibli
     (Assimilates the patch submitted by Robert Jones to build with
     Solaris 9 on x86 (i386)).
