@@ -52,6 +52,7 @@ ChangeLog (2004.nn.nn):
      Guide.
    - Added first comments about the coding style to the Developers Guide.
 - Others:
+   - Modified the About dialog to reflect the Open Source status of Iometer.
    - Changed the license of the iomtr_kstat module to the GPL.
    - Added md5sum's for each package to the project homepage.
    - Extended the build environment with capabilities to handle Java.
