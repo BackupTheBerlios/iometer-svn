@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer & Dynamo) / IOVerion.h                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is a central headerfile for Iometer as well      ## */
+/* ##               as Dynamo which covers the versioning stuff.          ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the version to current date.                ## */
+/* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the version to current date.                ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -44,6 +65,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file is used by both Iometer and Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef _IOVERSION
 #define _IOVERSION
@@ -117,7 +139,12 @@ extern "C"
 #define IOVER_FILE						2001,07,19,0
 #define IOVER_PRODUCT					IOVER_FILE
 //#define IOVER_FILEVERSION				"1.30.0.0001\0"
-#define IOVER_FILEVERSION				"2001.07.19\0"
+
+// The last "official" version was "2001.07.19", which is the
+// version you will find in iometer-initial.tar.gz at the
+// Sourceforge page (http://sourceforge.net/projects/iometer).
+// #define IOVER_FILEVERSION				"2001.07.19\0"
+#define IOVER_FILEVERSION				"2003.02.15\0"
 #define IOVER_PRODUCTVERSION			IOVER_FILEVERSION
 
 

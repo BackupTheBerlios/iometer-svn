@@ -1,3 +1,28 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOTargetDisk.cpp                                          ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Implements a Target subclass named TargetDisk.        ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Fixed the getSectorSizeOfPhysDisk() method to       ## */
+/* ##                 detect the sector size was on major and minor       ## */
+/* ##                 number (instead on major number only).              ## */ 
+/* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Applied the iometer-initial-largefile.patch file    ## */
+/* ##                 (modifies the Open() method and adds O_LARGEFILE    ## */
+/* ##                 to the flags field of the open() function calls).   ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -42,6 +67,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // TargetDisk includes all the code that actually accesses a disk target.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #include "IOTargetDisk.h"
 #include "IOAccess.h"
@@ -1017,8 +1043,7 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 #ifdef SOLARIS
 		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|O_LARGEFILE|open_flag, S_IRUSR|S_IWUSR);
 #elif defined(LINUX)
-		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|open_flag,
-																					S_IRUSR|S_IWUSR);
+		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|O_LARGEFILE|open_flag, S_IRUSR|S_IWUSR);
 #else  // WIN32 || _WIN64
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile( file_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | 
@@ -1029,10 +1054,9 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	else if ( IsType( spec.type, PhysicalDiskType ) )
 	{
 #ifdef SOLARIS
-		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE,
-																					S_IRUSR|S_IWUSR);
+		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
 #elif defined(LINUX)
-		((struct File *)disk_file)->fd = open(file_name, O_RDWR, S_IRUSR|S_IWUSR);
+		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
 #else // WIN32 || _WIN64
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile(file_name, GENERIC_READ | GENERIC_WRITE,
@@ -1572,7 +1596,8 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
       "Can't open \"/dev/kmem\" to find block size.\n";
     return(0);
   }
-	sectorTableLoc += major * sizeof(int *);
+
+  sectorTableLoc += major * sizeof(int *);
   seekResult = lseek(fd, sectorTableLoc, SEEK_SET);
   assert(seekResult == sectorTableLoc);
 
@@ -1585,9 +1610,10 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 		close(fd);
 		return(512);
 	}
-	printf("Sector table loc is 0x%lx\n", sectorTableLoc);
-	printf("Subtable loc is 0x%lx\n", (off_t)sectorSubtableLoc);
+	cout << "Sector table loc is " << hex << sectorTableLoc << "\n";
+	cout << "Subtable loc is " << hex << (off_t)sectorSubtableLoc << "\n";
 
+  sectorSubtableLoc += minor * sizeof(int *);
   seekResult = lseek(fd, (off_t)sectorSubtableLoc, SEEK_SET);
   assert(seekResult == (off_t)sectorSubtableLoc);
   

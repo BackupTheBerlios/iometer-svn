@@ -33,6 +33,11 @@ VS_VERSION_INFO     VERSIONINFO
 #endif // _WIN64
 
 #endif
+
+#ifndef JLB051002
+// Make sure you put _GALILEO_ in the preprocessor defines in Project/Settings/Resources
+#endif
+
   FILEOS            VOS__WINDOWS32          //0x00000004L
   FILETYPE          IOVER_FILETYPE          //APP (0x1L), DLL, or STATIC_LIB
   FILESUBTYPE       VFT2_UNKNOWN            //for FILETYPE of DRV, FONT, or VXD

@@ -1,3 +1,29 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOPerformance.cpp                                         ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: The generic variant of the Performance class.         ## */
+/* ##               This class does two jobs:                             ## */
+/* ##               1.) Collects basic informations like the number       ## */
+/* ##                   of CPU's.                                         ## */
+/* ##               2.) Collection of system-wide performance             ## */
+/* ##                   informations.                                     ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Applied proc-speed-fix.txt patch file               ## */
+/* ##                 (dropping two type casts in the                     ## */
+/* ##                 Get_Processor_Speed() method).                      ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -42,6 +68,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // all system-wide performance information (CPU and network) from the OS.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #define PERFORMANCE_DETAILS	0 // Turn on to display additional performance messages.
 
@@ -441,13 +468,13 @@ double Performance::Get_Processor_Speed()
 		{
 			speed = speed_values[i];
 			cout << "Processor speed: " << speed << " MHz." << endl;
-			return (double) (speed * 1000000);
+			return(speed * 1000000.0);
 		}
 	}
 	// Round the registry value to the nearest 10
 	speed = ( ( speed + 5 ) / 10 ) * 10;
 	cout << "Processor speed: " << speed << " MHz." << endl;
-	return (double) (speed * 1000000);
+	return(speed * 1000000.0);
 }
 
 
@@ -1245,9 +1272,7 @@ void Performance::Extract_CPU_Counters( int snapshot )
 		// otherwise perform an enhaustive search.
 		_itoa( cpu, cpu_name, 10 );
 
-                strcpy((char*)cpu_reg_name, (char*)((LPBYTE)perf_instance +
-
-        perf_instance->NameOffset));
+                strcpy((char*)cpu_reg_name, (char*)((LPBYTE)perf_instance + perf_instance->NameOffset));
 
                 if (perf_instance->NameLength = 6)
                 {

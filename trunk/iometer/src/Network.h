@@ -1,3 +1,25 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / Network.h                                                 ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Contains the class definition of the Network class,   ## */
+/* ##               which covers the communication between network        ## */
+/* ##               workers in Dynamo.                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Different changes to support compilation with       ## */
+/* ##                 gcc 3.2 (known as cout << hex error).               ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -47,16 +69,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // both Iometer and Dynamo, but is currently used only in Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef NETWORK_DEFINED
 #define NETWORK_DEFINED
 
-#if defined (_WIN32) || defined (_WIN64)
-#include <strstream>
+#include <sstream>
 using namespace std;
-#else // !WIN32 || _WIN64
-#include <strstream.h>
-#endif // !WIN32 || _WIN64
+
 #include "IOCommon.h"
 
 
@@ -103,7 +123,7 @@ public:
 protected:
 	virtual void OutputErrMsg();
 
-	ostrstream *errmsg;
+	ostringstream *errmsg;
 };
 
 #endif

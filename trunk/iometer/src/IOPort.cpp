@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer & Dynamo) / IOPort.cpp                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This class covers the communication between Iometer   ## */
+/* ##               and Dynamo.                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Different changes to support compilation with       ## */
+/* ##                 gcc 3.2 (known as cout << hex error).               ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -48,6 +69,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file is used by both Iometer and Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #if defined (_WIN32) || defined (_WIN64)
 #include "GalileoApp.h"
@@ -73,7 +95,7 @@ Port::Port( BOOL synch )
 	synchronous = synch;
 	name[0] = '\0';
 	type = PORT_TYPE_INVALID;
-	errmsg = new ostrstream;
+	errmsg = new ostringstream;
 	accept_overlapped.hEvent = NULL;
 	receive_overlapped.hEvent = NULL;
 	send_overlapped.hEvent = NULL;
@@ -178,13 +200,13 @@ void Port::OutputErrMsg()
 {
 	if ( !errmsg )
 	{
-		errmsg = new ostrstream;
+		errmsg = new ostringstream;
 		*errmsg << "Port::OutputErrMsg() called with invalid errmsg value!" << ends;
 	}
 
 #ifdef _WINDOWS
 	// Iometer
-	ErrorMessage( errmsg->str() );
+	ErrorMessage( errmsg->str().c_str() );
 #else
 	// Dynamo
 	cout << errmsg->str() << endl;
@@ -192,7 +214,12 @@ void Port::OutputErrMsg()
 
 	// str() returns pointer to buffer and freezes it, we must call freeze(FALSE) to 
 	// unfreeze the buffer before we can delete the object
-	errmsg->rdbuf()->freeze( FALSE );
+        // ---
+	// REMARK: freeze() no longer needed because new are now
+	// using ostringstream instead of ostrstream.
+	//
+	// errmsg->rdbuf()->freeze( FALSE );
+	
 	delete errmsg;
-	errmsg = new ostrstream;
+	errmsg = new ostringstream;
 }

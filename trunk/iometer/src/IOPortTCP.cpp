@@ -205,6 +205,7 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 		}
 		memcpy ( &sin.sin_addr.s_addr, hostinfo->h_addr_list[0], hostinfo->h_length );
 		strncpy ( network_name, inet_ntoa(sin.sin_addr), sizeof(network_name) - 1 );
+	
 	}
 
 	//

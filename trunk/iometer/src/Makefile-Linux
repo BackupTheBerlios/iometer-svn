@@ -1,3 +1,32 @@
+###############################################################################
+##                                                                           ##
+##  Dynamo / Makefile-Linux                                                  ##
+##                                                                           ##
+## ------------------------------------------------------------------------- ##
+##                                                                           ##
+##  Job .......: The Makefile for the GNU/Linux variant.                     ##
+##                                                                           ##
+## ------------------------------------------------------------------------- ##
+##                                                                           ##
+##  Remarks ...: <none>                                                      ##
+##                                                                           ##
+## ------------------------------------------------------------------------- ##
+##                                                                           ##
+##  Changes ...: 2003-02-09 (daniel.scheibli@edelbyte.org)                   ##
+##               - Added the default variable CXX again.                     ##
+##               2003-02-02 (daniel.scheibli@edelbyte.org)                   ##
+##               - Added new header holding the changelog.                   ##
+##               - Applied the iometer-initial-largefile.patch file          ##
+##                 (brings some global defines).                             ##
+##               - Removed the "depend" target related stuff.                ##
+##               - Added the typical "all" target.                           ##
+##               - Removed AS, CC and changed STRIP variable.                ##
+##               - Swapped the librt.a patch stuff, because it is more       ##
+##                 common, that someone runs a glibc version 2.2 or later    ##
+##                 then running an old one.                                  ##
+##               - Sort of the object file list (OBJECTS variable).          ##
+##                                                                           ##
+###############################################################################
 # ==========================================================================
 #                  Copyright (C) 1998 - 1999 Intel Corporation
 #                          All rights reserved
@@ -19,22 +48,19 @@
 #  $ make clean
 #
 #
+###############################################################################
 .MAKE_VERSION: VERSION-1.0
 
 # un-comment out .IGNORE to suppress error messages and not stop make on errors.
 #.IGNORE:
 .SUFFIXES: .cpp .c .o
 
-AS=/opt/SUNWspro/bin/as
-# CC=/opt/SUNWspro/bin/cc
-# CXX=/opt/SUNWspro/bin/CC
 RM=/bin/rm -f
 MV=/bin/mv
 TOUCH=/usr/bin/touch
-MAKEDEPEND=makedepend
-STRIP=/usr/ccs/bin/strip
+STRIP=/usr/bin/strip
 
-#
+
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
 # Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
@@ -43,31 +69,54 @@ STRIP=/usr/ccs/bin/strip
 
 #	-ggdb
 #	-D_DETAILS
-CFLAGS=	\
-	-O3 \
-	-Wall  \
+CFLAGS=	-O3 \
+	-Wall \
 	-DUNIX -DLINUX -DNO_LINUX_VI -D_GNU_SOURCE \
+	-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
 	-DDYNAMO_DESTRUCTIVE \
 	-D_REENTRANT
+##### OS_PLATFORM_UNIX | OS_PLATFORM_WINTEL
+##### OS_LINUX | OS_SOLARIS | OS_WINDOWS
+##### CPU_ENDIAN_TYPE_BIG | CPU_ENDIAN_TYPE_LITTLE
 
-# We have a dependency on a patched version of librt.a 2.1.2.  
-# See the file "Documentation/LinuxReadme.txt" for an explanation of the
-# patch, and "Documentation/linux-rt-2.1.2.patch" for the patch itself.
-# If you have glibc version 2.2 or later, the patch is not needed; in this
+
+# For older versions of the librt.a it is needed to apply a patch (see the
+# file "Documentation/LinuxReadme.txt" for an explanation of the patch,
+# and "Documentation/linux-rt-2.1.2.patch" for the patch itself).
+# If you have glibc version less then 2.2, the patch is needed; in this
 # case, change this line as follows:
 #
-# LDFLAGS= -lrt -lpthread
+# LDFLAGS= ../glibc-2.1/rt/librt.a -lpthread
+LDFLAGS= -lrt -lpthread
 
-LDFLAGS= ../glibc-2.1/rt/librt.a -lpthread
+OBJECTS= IOGlobals.o \
+         Pulsar.o \
+         IOManager.o IOManagerLinux.o IOManagerSolaris.o \
+	 IOGrunt.o \
+	 IOTarget.o IOTargetDisk.o IOTargetTCP.o \
+	 IOPort.o IOPortTCP.o \
+	 IOMessage.o IOTest.o \
+	 Network.o NetTCP.o \
+	 ByteOrder.o \
+	 IOPerformance.o IOPerformanceLinux.o \
+	 IOTime.o rdtsc.o \
+	 IOCQAIO.o IOCompletionQ.o \
+	 IOAccess.o
+		
 
-OBJECTS=IOAccess.o IOCompletionQ.o IOGrunt.o IOManager.o \
-		IOManagerLinux.o IOManagerSolaris.o IOPerformance.o IOPort.o \
-		IOPerformanceLinux.o IOPortTCP.o \
-		IOTarget.o IOTargetDisk.o IOTargetTCP.o \
-		Network.o NetTCP.o IOTime.o rdtsc.o Pulsar.o \
-		IOCQAIO.o ByteOrder.o IOGlobals.o
 
 # Make Rules
+
+help:
+	@echo
+	@echo "Please pick one of the listed targets."
+	@echo "Targets ...: all       Build the binaries"
+	@echo "             dynamo    Build the dynamo binary"
+	@echo "             install   Install the binaries"
+	@echo "             clean     Remove old binaries and object files"
+	@echo
+
+all: dynamo
 
 dynamo: $(OBJECTS)
 	$(CXX) $(CFLAGS) -o dynamo $(OBJECTS) $(LIBS) $(LDFLAGS)
@@ -79,767 +128,9 @@ install:
 	echo "Not Supported."
 
 .cpp.o:
-	g++ $(CFLAGS) -c $<
+	$(CXX) $(CFLAGS) -c $<
 
 .c.o:
-	g++ $(CFLAGS) -c $<
+	$(CXX) $(CFLAGS) -c $<
 
-#
-# Remove the error redirection if there are any problems with the Makefile.
-# Also note that we currently have a problem with the two IOCQAIO.[cpp, h] files.
-# They have uppercase extensions which won't work in UNIX.
-#
-depend:
-	makedepend $(CFLAGS) -I/usr/include/g++-2 \
-		$$(echo $(OBJECTS) | \
-		   sed -e 's/\.o/.cpp/g' -e 's/rdtsc.cpp/rdtsc.c/')
 
-# Do not add anything to this Makefile beyond this point.
-# The generated dependency rules will be inserted here.
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
-IOAccess.o: IOAccess.h IOCommon.h /usr/include/stdio.h
-IOAccess.o: /usr/include/features.h /usr/include/sys/cdefs.h
-IOAccess.o: /usr/include/gnu/stubs.h
-IOAccess.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOAccess.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOAccess.o: /usr/include/bits/types.h /usr/include/libio.h
-IOAccess.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOAccess.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOAccess.o: /usr/include/bits/time.h /usr/include/limits.h
-IOAccess.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOAccess.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOAccess.o: /usr/include/sys/types.h /usr/include/endian.h
-IOAccess.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOAccess.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOAccess.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOAccess.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOAccess.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOAccess.o: /usr/include/alloca.h /usr/include/errno.h
-IOAccess.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOAccess.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOAccess.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOAccess.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOAccess.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOAccess.o: /usr/include/aio.h /usr/include/signal.h
-IOAccess.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOAccess.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOAccess.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOAccess.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOAccess.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOAccess.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOAccess.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOAccess.o: /usr/include/pthread.h /usr/include/sched.h
-IOAccess.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOAccess.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOAccess.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOAccess.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOAccess.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOAccess.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-IOCompletionQ.o: IOCommon.h /usr/include/stdio.h /usr/include/features.h
-IOCompletionQ.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOCompletionQ.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOCompletionQ.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOCompletionQ.o: /usr/include/bits/types.h /usr/include/libio.h
-IOCompletionQ.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOCompletionQ.o: /usr/include/string.h /usr/include/malloc.h
-IOCompletionQ.o: /usr/include/time.h /usr/include/bits/time.h
-IOCompletionQ.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-IOCompletionQ.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-IOCompletionQ.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-IOCompletionQ.o: /usr/include/endian.h /usr/include/bits/endian.h
-IOCompletionQ.o: /usr/include/sys/select.h /usr/include/bits/select.h
-IOCompletionQ.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-IOCompletionQ.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-IOCompletionQ.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-IOCompletionQ.o: /usr/include/stdlib.h /usr/include/alloca.h
-IOCompletionQ.o: /usr/include/errno.h /usr/include/bits/errno.h
-IOCompletionQ.o: /usr/include/linux/errno.h /usr/include/asm/errno.h
-IOCompletionQ.o: /usr/include/sys/timeb.h /usr/include/math.h
-IOCompletionQ.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
-IOCompletionQ.o: /usr/include/bits/mathcalls.h
-IOCompletionQ.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOCompletionQ.o: /usr/include/aio.h /usr/include/signal.h
-IOCompletionQ.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOCompletionQ.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOCompletionQ.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOCompletionQ.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOCompletionQ.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOCompletionQ.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOCompletionQ.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOCompletionQ.o: /usr/include/pthread.h /usr/include/sched.h
-IOCompletionQ.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOCompletionQ.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOCompletionQ.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOCompletionQ.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOCompletionQ.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOCompletionQ.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-IOGrunt.o: IOGrunt.h IOCommon.h /usr/include/stdio.h /usr/include/features.h
-IOGrunt.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOGrunt.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOGrunt.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOGrunt.o: /usr/include/bits/types.h /usr/include/libio.h
-IOGrunt.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOGrunt.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOGrunt.o: /usr/include/bits/time.h /usr/include/limits.h
-IOGrunt.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOGrunt.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOGrunt.o: /usr/include/sys/types.h /usr/include/endian.h
-IOGrunt.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOGrunt.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOGrunt.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOGrunt.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOGrunt.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOGrunt.o: /usr/include/alloca.h /usr/include/errno.h
-IOGrunt.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOGrunt.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOGrunt.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOGrunt.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOGrunt.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOGrunt.o: /usr/include/aio.h /usr/include/signal.h
-IOGrunt.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOGrunt.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOGrunt.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOGrunt.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOGrunt.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOGrunt.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOGrunt.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOGrunt.o: /usr/include/pthread.h /usr/include/sched.h
-IOGrunt.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOGrunt.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOGrunt.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOGrunt.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOGrunt.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOGrunt.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOTarget.h
-IOGrunt.o: IOTest.h IOAccess.h vipl.h IOCQ.h IOTransfers.h VINic.h IOVIPL.h
-IOGrunt.o: /usr/include/dlfcn.h /usr/include/bits/dlfcn.h IOTargetDisk.h
-IOGrunt.o: IOTime.h IOCQAIO.h IOTargetTCP.h NetTCP.h Network.h
-IOGrunt.o: /usr/include/g++-2/strstream.h /usr/include/g++-2/strfile.h
-IOGrunt.o: /usr/include/sys/time.h /usr/include/sys/socket.h
-IOGrunt.o: /usr/include/netdb.h /usr/include/rpc/netdb.h
-IOGrunt.o: /usr/include/arpa/inet.h
-IOManager.o: IOCommon.h /usr/include/stdio.h /usr/include/features.h
-IOManager.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOManager.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOManager.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOManager.o: /usr/include/bits/types.h /usr/include/libio.h
-IOManager.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOManager.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOManager.o: /usr/include/bits/time.h /usr/include/limits.h
-IOManager.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOManager.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOManager.o: /usr/include/sys/types.h /usr/include/endian.h
-IOManager.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOManager.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOManager.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOManager.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOManager.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOManager.o: /usr/include/alloca.h /usr/include/errno.h
-IOManager.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOManager.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOManager.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOManager.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOManager.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOManager.o: /usr/include/aio.h /usr/include/signal.h
-IOManager.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOManager.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOManager.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOManager.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOManager.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOManager.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOManager.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOManager.o: /usr/include/pthread.h /usr/include/sched.h
-IOManager.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOManager.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOManager.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOManager.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOManager.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOManager.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOManager.h
-IOManager.o: IOGrunt.h IOTarget.h IOTest.h IOAccess.h vipl.h IOCQ.h
-IOManager.o: IOTransfers.h VINic.h IOVIPL.h /usr/include/dlfcn.h
-IOManager.o: /usr/include/bits/dlfcn.h IOPort.h
-IOManager.o: /usr/include/g++-2/strstream.h /usr/include/g++-2/strfile.h
-IOManager.o: IOMessage.h IOPerformance.h IOTime.h /usr/include/sys/sysinfo.h
-IOManager.o: /usr/include/linux/kernel.h /usr/include/sys/socket.h
-IOManager.o: /usr/include/net/if.h /usr/include/stropts.h
-IOManager.o: /usr/include/bits/stropts.h /usr/include/netdb.h
-IOManager.o: /usr/include/rpc/netdb.h /usr/include/arpa/inet.h IOPortTCP.h
-IOManager.o: IOTargetDisk.h IOCQAIO.h IOTargetVI.h NetVI.h IOCQVI.h Network.h
-IOManagerLinux.o: IOManager.h IOGrunt.h IOCommon.h /usr/include/stdio.h
-IOManagerLinux.o: /usr/include/features.h /usr/include/sys/cdefs.h
-IOManagerLinux.o: /usr/include/gnu/stubs.h
-IOManagerLinux.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOManagerLinux.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOManagerLinux.o: /usr/include/bits/types.h /usr/include/libio.h
-IOManagerLinux.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOManagerLinux.o: /usr/include/string.h /usr/include/malloc.h
-IOManagerLinux.o: /usr/include/time.h /usr/include/bits/time.h
-IOManagerLinux.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-IOManagerLinux.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-IOManagerLinux.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-IOManagerLinux.o: /usr/include/endian.h /usr/include/bits/endian.h
-IOManagerLinux.o: /usr/include/sys/select.h /usr/include/bits/select.h
-IOManagerLinux.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-IOManagerLinux.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-IOManagerLinux.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-IOManagerLinux.o: /usr/include/stdlib.h /usr/include/alloca.h
-IOManagerLinux.o: /usr/include/errno.h /usr/include/bits/errno.h
-IOManagerLinux.o: /usr/include/linux/errno.h /usr/include/asm/errno.h
-IOManagerLinux.o: /usr/include/sys/timeb.h /usr/include/math.h
-IOManagerLinux.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
-IOManagerLinux.o: /usr/include/bits/mathcalls.h
-IOManagerLinux.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOManagerLinux.o: /usr/include/aio.h /usr/include/signal.h
-IOManagerLinux.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOManagerLinux.o: /usr/include/bits/sigaction.h
-IOManagerLinux.o: /usr/include/bits/sigcontext.h
-IOManagerLinux.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOManagerLinux.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOManagerLinux.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOManagerLinux.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOManagerLinux.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOManagerLinux.o: /usr/include/pthread.h /usr/include/sched.h
-IOManagerLinux.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOManagerLinux.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOManagerLinux.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOManagerLinux.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOManagerLinux.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOManagerLinux.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-IOManagerLinux.o: IOTarget.h IOTest.h IOAccess.h vipl.h IOCQ.h IOTransfers.h
-IOManagerLinux.o: VINic.h IOVIPL.h /usr/include/dlfcn.h
-IOManagerLinux.o: /usr/include/bits/dlfcn.h IOPort.h
-IOManagerLinux.o: /usr/include/g++-2/strstream.h /usr/include/g++-2/strfile.h
-IOManagerLinux.o: IOMessage.h IOPerformance.h IOTime.h
-IOManagerLinux.o: /usr/include/sys/sysinfo.h /usr/include/linux/kernel.h
-IOManagerLinux.o: /usr/include/sys/socket.h /usr/include/net/if.h
-IOManagerLinux.o: /usr/include/stropts.h /usr/include/bits/stropts.h
-IOManagerLinux.o: IOTargetDisk.h IOCQAIO.h /usr/include/dirent.h
-IOManagerLinux.o: /usr/include/bits/dirent.h /usr/include/ctype.h
-IOManagerLinux.o: /usr/include/mntent.h /usr/include/paths.h
-IOManagerLinux.o: /usr/include/sys/wait.h /usr/include/bits/waitflags.h
-IOManagerLinux.o: /usr/include/bits/waitstatus.h /usr/include/sys/swap.h
-IOPort.o: IOPort.h /usr/include/g++-2/strstream.h
-IOPort.o: /usr/include/g++-2/iostream.h /usr/include/g++-2/streambuf.h
-IOPort.o: /usr/include/libio.h /usr/include/_G_config.h
-IOPort.o: /usr/include/bits/types.h /usr/include/features.h
-IOPort.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOPort.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOPort.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOPort.o: /usr/include/g++-2/strfile.h IOCommon.h /usr/include/stdio.h
-IOPort.o: /usr/include/bits/stdio_lim.h /usr/include/string.h
-IOPort.o: /usr/include/malloc.h /usr/include/time.h /usr/include/bits/time.h
-IOPort.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-IOPort.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-IOPort.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-IOPort.o: /usr/include/endian.h /usr/include/bits/endian.h
-IOPort.o: /usr/include/sys/select.h /usr/include/bits/select.h
-IOPort.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-IOPort.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-IOPort.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-IOPort.o: /usr/include/stdlib.h /usr/include/alloca.h /usr/include/errno.h
-IOPort.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOPort.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOPort.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOPort.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOPort.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOPort.o: /usr/include/aio.h /usr/include/signal.h /usr/include/bits/signum.h
-IOPort.o: /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h
-IOPort.o: /usr/include/bits/sigcontext.h /usr/include/asm/sigcontext.h
-IOPort.o: /usr/include/bits/sigstack.h IOVersion.h
-IOPort.o: /usr/include/g++-2/fstream.h /usr/include/unistd.h
-IOPort.o: /usr/include/bits/posix_opt.h /usr/include/bits/confname.h
-IOPort.o: /usr/include/getopt.h /usr/include/pthread.h /usr/include/sched.h
-IOPort.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOPort.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOPort.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOPort.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOPort.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOPort.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOMessage.h
-IOPort.o: IOTest.h IOAccess.h vipl.h
-IOPerformanceLinux.o: /usr/include/assert.h /usr/include/features.h
-IOPerformanceLinux.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOPerformanceLinux.o: IOPerformance.h IOCommon.h /usr/include/stdio.h
-IOPerformanceLinux.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOPerformanceLinux.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOPerformanceLinux.o: /usr/include/bits/types.h /usr/include/libio.h
-IOPerformanceLinux.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOPerformanceLinux.o: /usr/include/string.h /usr/include/malloc.h
-IOPerformanceLinux.o: /usr/include/time.h /usr/include/bits/time.h
-IOPerformanceLinux.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-IOPerformanceLinux.o: /usr/include/bits/local_lim.h
-IOPerformanceLinux.o: /usr/include/linux/limits.h
-IOPerformanceLinux.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-IOPerformanceLinux.o: /usr/include/endian.h /usr/include/bits/endian.h
-IOPerformanceLinux.o: /usr/include/sys/select.h /usr/include/bits/select.h
-IOPerformanceLinux.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-IOPerformanceLinux.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-IOPerformanceLinux.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-IOPerformanceLinux.o: /usr/include/stdlib.h /usr/include/alloca.h
-IOPerformanceLinux.o: /usr/include/errno.h /usr/include/bits/errno.h
-IOPerformanceLinux.o: /usr/include/linux/errno.h /usr/include/asm/errno.h
-IOPerformanceLinux.o: /usr/include/sys/timeb.h /usr/include/math.h
-IOPerformanceLinux.o: /usr/include/bits/huge_val.h
-IOPerformanceLinux.o: /usr/include/bits/mathdef.h
-IOPerformanceLinux.o: /usr/include/bits/mathcalls.h
-IOPerformanceLinux.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOPerformanceLinux.o: /usr/include/aio.h /usr/include/signal.h
-IOPerformanceLinux.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOPerformanceLinux.o: /usr/include/bits/sigaction.h
-IOPerformanceLinux.o: /usr/include/bits/sigcontext.h
-IOPerformanceLinux.o: /usr/include/asm/sigcontext.h
-IOPerformanceLinux.o: /usr/include/bits/sigstack.h IOVersion.h
-IOPerformanceLinux.o: /usr/include/g++-2/iostream.h
-IOPerformanceLinux.o: /usr/include/g++-2/streambuf.h
-IOPerformanceLinux.o: /usr/include/g++-2/fstream.h /usr/include/unistd.h
-IOPerformanceLinux.o: /usr/include/bits/posix_opt.h
-IOPerformanceLinux.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOPerformanceLinux.o: /usr/include/pthread.h /usr/include/sched.h
-IOPerformanceLinux.o: /usr/include/bits/sched.h
-IOPerformanceLinux.o: /usr/include/bits/pthreadtypes.h
-IOPerformanceLinux.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOPerformanceLinux.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOPerformanceLinux.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOPerformanceLinux.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOPerformanceLinux.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-IOPerformanceLinux.o: IOTime.h /usr/include/sys/sysinfo.h
-IOPerformanceLinux.o: /usr/include/linux/kernel.h /usr/include/sys/socket.h
-IOPerformanceLinux.o: /usr/include/net/if.h /usr/include/stropts.h
-IOPerformanceLinux.o: /usr/include/bits/stropts.h
-IOPortTCP.o: IOPortTCP.h IOPort.h /usr/include/g++-2/strstream.h
-IOPortTCP.o: /usr/include/g++-2/iostream.h /usr/include/g++-2/streambuf.h
-IOPortTCP.o: /usr/include/libio.h /usr/include/_G_config.h
-IOPortTCP.o: /usr/include/bits/types.h /usr/include/features.h
-IOPortTCP.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOPortTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOPortTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOPortTCP.o: /usr/include/g++-2/strfile.h IOCommon.h /usr/include/stdio.h
-IOPortTCP.o: /usr/include/bits/stdio_lim.h /usr/include/string.h
-IOPortTCP.o: /usr/include/malloc.h /usr/include/time.h
-IOPortTCP.o: /usr/include/bits/time.h /usr/include/limits.h
-IOPortTCP.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOPortTCP.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOPortTCP.o: /usr/include/sys/types.h /usr/include/endian.h
-IOPortTCP.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOPortTCP.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOPortTCP.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOPortTCP.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOPortTCP.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOPortTCP.o: /usr/include/alloca.h /usr/include/errno.h
-IOPortTCP.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOPortTCP.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOPortTCP.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOPortTCP.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOPortTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOPortTCP.o: /usr/include/aio.h /usr/include/signal.h
-IOPortTCP.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOPortTCP.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOPortTCP.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOPortTCP.o: IOVersion.h /usr/include/g++-2/fstream.h /usr/include/unistd.h
-IOPortTCP.o: /usr/include/bits/posix_opt.h /usr/include/bits/confname.h
-IOPortTCP.o: /usr/include/getopt.h /usr/include/pthread.h
-IOPortTCP.o: /usr/include/sched.h /usr/include/bits/sched.h
-IOPortTCP.o: /usr/include/bits/pthreadtypes.h /usr/include/bits/sigthread.h
-IOPortTCP.o: /usr/include/netinet/in.h /usr/include/stdint.h
-IOPortTCP.o: /usr/include/bits/wordsize.h /usr/include/bits/socket.h
-IOPortTCP.o: /usr/include/bits/sockaddr.h /usr/include/asm/socket.h
-IOPortTCP.o: /usr/include/asm/sockios.h /usr/include/bits/in.h
-IOPortTCP.o: /usr/include/bits/byteswap.h IOMessage.h IOTest.h IOAccess.h
-IOPortTCP.o: vipl.h /usr/include/sys/socket.h /usr/include/netdb.h
-IOPortTCP.o: /usr/include/rpc/netdb.h /usr/include/arpa/inet.h
-IOPortTCP.o: /usr/include/sys/time.h
-IOTarget.o: IOTarget.h IOCommon.h /usr/include/stdio.h
-IOTarget.o: /usr/include/features.h /usr/include/sys/cdefs.h
-IOTarget.o: /usr/include/gnu/stubs.h
-IOTarget.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOTarget.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOTarget.o: /usr/include/bits/types.h /usr/include/libio.h
-IOTarget.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOTarget.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOTarget.o: /usr/include/bits/time.h /usr/include/limits.h
-IOTarget.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOTarget.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOTarget.o: /usr/include/sys/types.h /usr/include/endian.h
-IOTarget.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOTarget.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOTarget.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOTarget.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOTarget.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOTarget.o: /usr/include/alloca.h /usr/include/errno.h
-IOTarget.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOTarget.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOTarget.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOTarget.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOTarget.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOTarget.o: /usr/include/aio.h /usr/include/signal.h
-IOTarget.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOTarget.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOTarget.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOTarget.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOTarget.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOTarget.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOTarget.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOTarget.o: /usr/include/pthread.h /usr/include/sched.h
-IOTarget.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOTarget.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOTarget.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOTarget.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOTarget.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOTarget.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOTest.h
-IOTarget.o: IOAccess.h vipl.h IOCQ.h IOTransfers.h
-IOTargetDisk.o: IOTargetDisk.h IOCommon.h /usr/include/stdio.h
-IOTargetDisk.o: /usr/include/features.h /usr/include/sys/cdefs.h
-IOTargetDisk.o: /usr/include/gnu/stubs.h
-IOTargetDisk.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOTargetDisk.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOTargetDisk.o: /usr/include/bits/types.h /usr/include/libio.h
-IOTargetDisk.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOTargetDisk.o: /usr/include/string.h /usr/include/malloc.h
-IOTargetDisk.o: /usr/include/time.h /usr/include/bits/time.h
-IOTargetDisk.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-IOTargetDisk.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-IOTargetDisk.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-IOTargetDisk.o: /usr/include/endian.h /usr/include/bits/endian.h
-IOTargetDisk.o: /usr/include/sys/select.h /usr/include/bits/select.h
-IOTargetDisk.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-IOTargetDisk.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-IOTargetDisk.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-IOTargetDisk.o: /usr/include/stdlib.h /usr/include/alloca.h
-IOTargetDisk.o: /usr/include/errno.h /usr/include/bits/errno.h
-IOTargetDisk.o: /usr/include/linux/errno.h /usr/include/asm/errno.h
-IOTargetDisk.o: /usr/include/sys/timeb.h /usr/include/math.h
-IOTargetDisk.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
-IOTargetDisk.o: /usr/include/bits/mathcalls.h
-IOTargetDisk.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOTargetDisk.o: /usr/include/aio.h /usr/include/signal.h
-IOTargetDisk.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOTargetDisk.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOTargetDisk.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOTargetDisk.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOTargetDisk.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOTargetDisk.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOTargetDisk.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOTargetDisk.o: /usr/include/pthread.h /usr/include/sched.h
-IOTargetDisk.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOTargetDisk.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOTargetDisk.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOTargetDisk.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOTargetDisk.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOTargetDisk.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOTime.h
-IOTargetDisk.o: IOTarget.h IOTest.h IOAccess.h vipl.h IOCQ.h IOTransfers.h
-IOTargetDisk.o: IOCQAIO.h /usr/include/assert.h /usr/include/sys/vfs.h
-IOTargetDisk.o: /usr/include/sys/statfs.h /usr/include/bits/statfs.h
-IOTargetTCP.o: IOTargetTCP.h IOCommon.h /usr/include/stdio.h
-IOTargetTCP.o: /usr/include/features.h /usr/include/sys/cdefs.h
-IOTargetTCP.o: /usr/include/gnu/stubs.h
-IOTargetTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOTargetTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOTargetTCP.o: /usr/include/bits/types.h /usr/include/libio.h
-IOTargetTCP.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOTargetTCP.o: /usr/include/string.h /usr/include/malloc.h
-IOTargetTCP.o: /usr/include/time.h /usr/include/bits/time.h
-IOTargetTCP.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-IOTargetTCP.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-IOTargetTCP.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-IOTargetTCP.o: /usr/include/endian.h /usr/include/bits/endian.h
-IOTargetTCP.o: /usr/include/sys/select.h /usr/include/bits/select.h
-IOTargetTCP.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-IOTargetTCP.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-IOTargetTCP.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-IOTargetTCP.o: /usr/include/stdlib.h /usr/include/alloca.h
-IOTargetTCP.o: /usr/include/errno.h /usr/include/bits/errno.h
-IOTargetTCP.o: /usr/include/linux/errno.h /usr/include/asm/errno.h
-IOTargetTCP.o: /usr/include/sys/timeb.h /usr/include/math.h
-IOTargetTCP.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
-IOTargetTCP.o: /usr/include/bits/mathcalls.h
-IOTargetTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOTargetTCP.o: /usr/include/aio.h /usr/include/signal.h
-IOTargetTCP.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOTargetTCP.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOTargetTCP.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOTargetTCP.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOTargetTCP.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOTargetTCP.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOTargetTCP.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOTargetTCP.o: /usr/include/pthread.h /usr/include/sched.h
-IOTargetTCP.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOTargetTCP.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOTargetTCP.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOTargetTCP.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOTargetTCP.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOTargetTCP.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOTarget.h
-IOTargetTCP.o: IOTest.h IOAccess.h vipl.h IOCQ.h IOTransfers.h NetTCP.h
-IOTargetTCP.o: Network.h /usr/include/g++-2/strstream.h
-IOTargetTCP.o: /usr/include/g++-2/strfile.h /usr/include/sys/time.h
-IOTargetTCP.o: /usr/include/sys/socket.h /usr/include/netdb.h
-IOTargetTCP.o: /usr/include/rpc/netdb.h /usr/include/arpa/inet.h IOCQAIO.h
-Network.o: Network.h /usr/include/g++-2/strstream.h
-Network.o: /usr/include/g++-2/iostream.h /usr/include/g++-2/streambuf.h
-Network.o: /usr/include/libio.h /usr/include/_G_config.h
-Network.o: /usr/include/bits/types.h /usr/include/features.h
-Network.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-Network.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-Network.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-Network.o: /usr/include/g++-2/strfile.h IOCommon.h /usr/include/stdio.h
-Network.o: /usr/include/bits/stdio_lim.h /usr/include/string.h
-Network.o: /usr/include/malloc.h /usr/include/time.h /usr/include/bits/time.h
-Network.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-Network.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-Network.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-Network.o: /usr/include/endian.h /usr/include/bits/endian.h
-Network.o: /usr/include/sys/select.h /usr/include/bits/select.h
-Network.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-Network.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-Network.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-Network.o: /usr/include/stdlib.h /usr/include/alloca.h /usr/include/errno.h
-Network.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-Network.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-Network.o: /usr/include/math.h /usr/include/bits/huge_val.h
-Network.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-Network.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-Network.o: /usr/include/aio.h /usr/include/signal.h
-Network.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-Network.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-Network.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-Network.o: IOVersion.h /usr/include/g++-2/fstream.h /usr/include/unistd.h
-Network.o: /usr/include/bits/posix_opt.h /usr/include/bits/confname.h
-Network.o: /usr/include/getopt.h /usr/include/pthread.h /usr/include/sched.h
-Network.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-Network.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-Network.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-Network.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-Network.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-Network.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-NetTCP.o: NetTCP.h Network.h /usr/include/g++-2/strstream.h
-NetTCP.o: /usr/include/g++-2/iostream.h /usr/include/g++-2/streambuf.h
-NetTCP.o: /usr/include/libio.h /usr/include/_G_config.h
-NetTCP.o: /usr/include/bits/types.h /usr/include/features.h
-NetTCP.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-NetTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-NetTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-NetTCP.o: /usr/include/g++-2/strfile.h IOCommon.h /usr/include/stdio.h
-NetTCP.o: /usr/include/bits/stdio_lim.h /usr/include/string.h
-NetTCP.o: /usr/include/malloc.h /usr/include/time.h /usr/include/bits/time.h
-NetTCP.o: /usr/include/limits.h /usr/include/bits/posix1_lim.h
-NetTCP.o: /usr/include/bits/local_lim.h /usr/include/linux/limits.h
-NetTCP.o: /usr/include/bits/posix2_lim.h /usr/include/sys/types.h
-NetTCP.o: /usr/include/endian.h /usr/include/bits/endian.h
-NetTCP.o: /usr/include/sys/select.h /usr/include/bits/select.h
-NetTCP.o: /usr/include/bits/sigset.h /usr/include/sys/sysmacros.h
-NetTCP.o: /usr/include/sys/stat.h /usr/include/bits/stat.h
-NetTCP.o: /usr/include/fcntl.h /usr/include/bits/fcntl.h
-NetTCP.o: /usr/include/stdlib.h /usr/include/alloca.h /usr/include/errno.h
-NetTCP.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-NetTCP.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-NetTCP.o: /usr/include/math.h /usr/include/bits/huge_val.h
-NetTCP.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-NetTCP.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-NetTCP.o: /usr/include/aio.h /usr/include/signal.h /usr/include/bits/signum.h
-NetTCP.o: /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h
-NetTCP.o: /usr/include/bits/sigcontext.h /usr/include/asm/sigcontext.h
-NetTCP.o: /usr/include/bits/sigstack.h IOVersion.h
-NetTCP.o: /usr/include/g++-2/fstream.h /usr/include/unistd.h
-NetTCP.o: /usr/include/bits/posix_opt.h /usr/include/bits/confname.h
-NetTCP.o: /usr/include/getopt.h /usr/include/pthread.h /usr/include/sched.h
-NetTCP.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-NetTCP.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-NetTCP.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-NetTCP.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-NetTCP.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-NetTCP.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-NetTCP.o: /usr/include/sys/time.h /usr/include/sys/socket.h
-NetTCP.o: /usr/include/netdb.h /usr/include/rpc/netdb.h
-NetTCP.o: /usr/include/arpa/inet.h /usr/include/netinet/tcp.h
-IOTime.o: IOTime.h IOCommon.h /usr/include/stdio.h /usr/include/features.h
-IOTime.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOTime.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOTime.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOTime.o: /usr/include/bits/types.h /usr/include/libio.h
-IOTime.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOTime.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOTime.o: /usr/include/bits/time.h /usr/include/limits.h
-IOTime.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOTime.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOTime.o: /usr/include/sys/types.h /usr/include/endian.h
-IOTime.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOTime.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOTime.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOTime.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOTime.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOTime.o: /usr/include/alloca.h /usr/include/errno.h
-IOTime.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOTime.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOTime.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOTime.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOTime.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOTime.o: /usr/include/aio.h /usr/include/signal.h /usr/include/bits/signum.h
-IOTime.o: /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h
-IOTime.o: /usr/include/bits/sigcontext.h /usr/include/asm/sigcontext.h
-IOTime.o: /usr/include/bits/sigstack.h IOVersion.h
-IOTime.o: /usr/include/g++-2/iostream.h /usr/include/g++-2/streambuf.h
-IOTime.o: /usr/include/g++-2/fstream.h /usr/include/unistd.h
-IOTime.o: /usr/include/bits/posix_opt.h /usr/include/bits/confname.h
-IOTime.o: /usr/include/getopt.h /usr/include/pthread.h /usr/include/sched.h
-IOTime.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOTime.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOTime.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOTime.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOTime.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOTime.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h
-Pulsar.o: IOCommon.h /usr/include/stdio.h /usr/include/features.h
-Pulsar.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-Pulsar.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-Pulsar.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-Pulsar.o: /usr/include/bits/types.h /usr/include/libio.h
-Pulsar.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-Pulsar.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-Pulsar.o: /usr/include/bits/time.h /usr/include/limits.h
-Pulsar.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-Pulsar.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-Pulsar.o: /usr/include/sys/types.h /usr/include/endian.h
-Pulsar.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-Pulsar.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-Pulsar.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-Pulsar.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-Pulsar.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-Pulsar.o: /usr/include/alloca.h /usr/include/errno.h
-Pulsar.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-Pulsar.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-Pulsar.o: /usr/include/math.h /usr/include/bits/huge_val.h
-Pulsar.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-Pulsar.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-Pulsar.o: /usr/include/aio.h /usr/include/signal.h /usr/include/bits/signum.h
-Pulsar.o: /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h
-Pulsar.o: /usr/include/bits/sigcontext.h /usr/include/asm/sigcontext.h
-Pulsar.o: /usr/include/bits/sigstack.h IOVersion.h
-Pulsar.o: /usr/include/g++-2/iostream.h /usr/include/g++-2/streambuf.h
-Pulsar.o: /usr/include/g++-2/fstream.h /usr/include/unistd.h
-Pulsar.o: /usr/include/bits/posix_opt.h /usr/include/bits/confname.h
-Pulsar.o: /usr/include/getopt.h /usr/include/pthread.h /usr/include/sched.h
-Pulsar.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-Pulsar.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-Pulsar.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-Pulsar.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-Pulsar.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-Pulsar.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOManager.h
-Pulsar.o: IOGrunt.h IOTarget.h IOTest.h IOAccess.h vipl.h IOCQ.h
-Pulsar.o: IOTransfers.h VINic.h IOVIPL.h /usr/include/dlfcn.h
-Pulsar.o: /usr/include/bits/dlfcn.h IOPort.h /usr/include/g++-2/strstream.h
-Pulsar.o: /usr/include/g++-2/strfile.h IOMessage.h IOPerformance.h IOTime.h
-Pulsar.o: /usr/include/sys/sysinfo.h /usr/include/linux/kernel.h
-Pulsar.o: /usr/include/sys/socket.h /usr/include/net/if.h
-Pulsar.o: /usr/include/stropts.h /usr/include/bits/stropts.h
-Pulsar.o: /usr/include/sys/resource.h /usr/include/bits/resource.h
-Pulsar.o: /usr/include/asm/resource.h /usr/include/ctype.h
-IOCQAIO.o: IOCQAIO.h IOCQ.h IOTransfers.h IOCommon.h /usr/include/stdio.h
-IOCQAIO.o: /usr/include/features.h /usr/include/sys/cdefs.h
-IOCQAIO.o: /usr/include/gnu/stubs.h
-IOCQAIO.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOCQAIO.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOCQAIO.o: /usr/include/bits/types.h /usr/include/libio.h
-IOCQAIO.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOCQAIO.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOCQAIO.o: /usr/include/bits/time.h /usr/include/limits.h
-IOCQAIO.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOCQAIO.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOCQAIO.o: /usr/include/sys/types.h /usr/include/endian.h
-IOCQAIO.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOCQAIO.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOCQAIO.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOCQAIO.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOCQAIO.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOCQAIO.o: /usr/include/alloca.h /usr/include/errno.h
-IOCQAIO.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOCQAIO.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOCQAIO.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOCQAIO.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOCQAIO.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOCQAIO.o: /usr/include/aio.h /usr/include/signal.h
-IOCQAIO.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOCQAIO.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOCQAIO.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOCQAIO.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOCQAIO.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOCQAIO.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOCQAIO.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOCQAIO.o: /usr/include/pthread.h /usr/include/sched.h
-IOCQAIO.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOCQAIO.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOCQAIO.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOCQAIO.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOCQAIO.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOCQAIO.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h vipl.h
-ByteOrder.o: IOCommon.h /usr/include/stdio.h /usr/include/features.h
-ByteOrder.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-ByteOrder.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-ByteOrder.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-ByteOrder.o: /usr/include/bits/types.h /usr/include/libio.h
-ByteOrder.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-ByteOrder.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-ByteOrder.o: /usr/include/bits/time.h /usr/include/limits.h
-ByteOrder.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-ByteOrder.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-ByteOrder.o: /usr/include/sys/types.h /usr/include/endian.h
-ByteOrder.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-ByteOrder.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-ByteOrder.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-ByteOrder.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-ByteOrder.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-ByteOrder.o: /usr/include/alloca.h /usr/include/errno.h
-ByteOrder.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-ByteOrder.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-ByteOrder.o: /usr/include/math.h /usr/include/bits/huge_val.h
-ByteOrder.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-ByteOrder.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-ByteOrder.o: /usr/include/aio.h /usr/include/signal.h
-ByteOrder.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-ByteOrder.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-ByteOrder.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-ByteOrder.o: IOVersion.h /usr/include/g++-2/iostream.h
-ByteOrder.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-ByteOrder.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-ByteOrder.o: /usr/include/bits/confname.h /usr/include/getopt.h
-ByteOrder.o: /usr/include/pthread.h /usr/include/sched.h
-ByteOrder.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-ByteOrder.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-ByteOrder.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-ByteOrder.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-ByteOrder.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-ByteOrder.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h IOTest.h
-ByteOrder.o: IOAccess.h vipl.h IOMessage.h
-IOGlobals.o: IOCommon.h /usr/include/stdio.h /usr/include/features.h
-IOGlobals.o: /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h
-IOGlobals.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stddef.h
-IOGlobals.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h
-IOGlobals.o: /usr/include/bits/types.h /usr/include/libio.h
-IOGlobals.o: /usr/include/_G_config.h /usr/include/bits/stdio_lim.h
-IOGlobals.o: /usr/include/string.h /usr/include/malloc.h /usr/include/time.h
-IOGlobals.o: /usr/include/bits/time.h /usr/include/limits.h
-IOGlobals.o: /usr/include/bits/posix1_lim.h /usr/include/bits/local_lim.h
-IOGlobals.o: /usr/include/linux/limits.h /usr/include/bits/posix2_lim.h
-IOGlobals.o: /usr/include/sys/types.h /usr/include/endian.h
-IOGlobals.o: /usr/include/bits/endian.h /usr/include/sys/select.h
-IOGlobals.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
-IOGlobals.o: /usr/include/sys/sysmacros.h /usr/include/sys/stat.h
-IOGlobals.o: /usr/include/bits/stat.h /usr/include/fcntl.h
-IOGlobals.o: /usr/include/bits/fcntl.h /usr/include/stdlib.h
-IOGlobals.o: /usr/include/alloca.h /usr/include/errno.h
-IOGlobals.o: /usr/include/bits/errno.h /usr/include/linux/errno.h
-IOGlobals.o: /usr/include/asm/errno.h /usr/include/sys/timeb.h
-IOGlobals.o: /usr/include/math.h /usr/include/bits/huge_val.h
-IOGlobals.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
-IOGlobals.o: /usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/float.h
-IOGlobals.o: /usr/include/aio.h /usr/include/signal.h
-IOGlobals.o: /usr/include/bits/signum.h /usr/include/bits/siginfo.h
-IOGlobals.o: /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h
-IOGlobals.o: /usr/include/asm/sigcontext.h /usr/include/bits/sigstack.h
-IOGlobals.o: IOVersion.h /usr/include/g++-2/iostream.h
-IOGlobals.o: /usr/include/g++-2/streambuf.h /usr/include/g++-2/fstream.h
-IOGlobals.o: /usr/include/unistd.h /usr/include/bits/posix_opt.h
-IOGlobals.o: /usr/include/bits/confname.h /usr/include/getopt.h
-IOGlobals.o: /usr/include/pthread.h /usr/include/sched.h
-IOGlobals.o: /usr/include/bits/sched.h /usr/include/bits/pthreadtypes.h
-IOGlobals.o: /usr/include/bits/sigthread.h /usr/include/netinet/in.h
-IOGlobals.o: /usr/include/stdint.h /usr/include/bits/wordsize.h
-IOGlobals.o: /usr/include/bits/socket.h /usr/include/bits/sockaddr.h
-IOGlobals.o: /usr/include/asm/socket.h /usr/include/asm/sockios.h
-IOGlobals.o: /usr/include/bits/in.h /usr/include/bits/byteswap.h

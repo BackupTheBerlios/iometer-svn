@@ -1,3 +1,27 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / Pulsar.cpp                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: <to be set>                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Addition command line option for passing an         ## */
+/* ##                 alternative network name to Iometer (which that     ## */
+/* ##                 one is using to communicate with this Dynamo).      ## */
+/* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied the iometer-initial-datatypes.patch file.   ## */
+/* ##                 (changing the datatype of the "temp" variable in    ## */
+/* ##                 the GetStatus(int*, int*, int) method).             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -41,6 +65,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Pulsar.cpp: Main file for Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #include "IOCommon.h"
 #include "IOManager.h"
@@ -57,9 +82,11 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /////////////////////////////////////////////////////////////////////////////
 static void Syntax( const char* errmsg = NULL );
 
-static void ParseParam(	const char* pszParam, BOOL bLast,
-						char iometer[MAX_NETWORK_NAME],
-						char manager_name[MAX_WORKER_NAME] );
+static void ParseParam(	const char* pszParam,
+                        BOOL bLast,
+			char iometer[MAX_NETWORK_NAME],
+			char manager_name[MAX_WORKER_NAME],
+			char manager_computer_name[MAX_NETWORK_NAME] );
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -85,7 +112,7 @@ int main( int argc, char *argv[] )
 	//provide a temporary global ptr to the version string for Syntax() to use
 	g_pVersionStringWithDebug = manager.GetVersionString(TRUE);
 	for (int counter=1; counter<argc; counter++)
-		ParseParam(argv[counter], counter==argc-1, iometer, manager.manager_name);
+		ParseParam(argv[counter], counter==argc-1, iometer, manager.manager_name, manager.prt->network_name);
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
 
 	// If there were command line parameters, indicate that they were recognized.
@@ -138,7 +165,7 @@ int main( int argc, char *argv[] )
 	{
 		// it succeeded. We leave out atleast 25 file descriptors for non-targets
 		// and compare with the hard limit.
-		int targets = MAX_TARGETS + 25;
+		unsigned int targets = MAX_TARGETS + 25;
 		if ( rlimitp.rlim_max < targets )
 		{
 			cout << "Only " << rlimitp.rlim_max << " file descriptors available" << endl;
@@ -207,37 +234,46 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	}
 
 	cout << endl;
-	cout << "Version " << g_pVersionStringWithDebug << endl << endl;
-
+	cout << "Version " << g_pVersionStringWithDebug << endl;
+	cout << endl;
 	cout << "SYNTAX" << endl;
+	cout << endl;
 #ifndef SOLARIS
 	cout << "dynamo /?" << endl;
 #else
 	// Solaris 2.7 must have the switch (? is used for its own purpose).
 	cout << "dynamo \\?" << endl;
 #endif
-	cout << "dynamo [iometer_computer_name [manager_name]]" << endl;
-	cout << "dynamo [/i iometer_computer_name] [/n manager_name]" << endl << endl;
-
-	cout << "   ? - show Dynamo version number and command line syntax" << endl << endl;
-
+	cout << "dynamo [iometer_computer_name [manager_name [manager_network_name]]]" << endl;
+	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_network_name]" << endl;
+	cout << endl;
+	cout << "   ? - show Dynamo version number and command line syntax" << endl;
+	cout << endl;
 	cout << "   iometer_computer_name - the name of the computer running Iometer" << endl;
 	cout << "      This is only needed if Dynamo and Iometer are running on different" << endl;
 	cout << "      computers.  Without this parameter, Dynamo will search for Iometer" << endl;
-	cout << "      on the local host." << endl << endl;
-
+	cout << "      on the local host." << endl;
+	cout << endl;
 	cout << "   manager_name - the name of this Dynamo" << endl;
 	cout << "      This name is the one Iometer will use as the manager name, important" << endl;
 	cout << "      when restoring config files.  This defaults to the host's name." << endl;
-
+	cout << endl;
+	cout << "   manager_network_name - the network name of this Dynamo" << endl;
+	cout << "      This name or IP address is the one Iometer will use to communicate" << endl;
+	cout << "      with this manager. The default is the IP adress of the host's first" << endl;
+	cout << "      NIC." << endl;
+	cout << endl;
+	
 	exit( 0 );
 }
 
 
 
-void ParseParam( const char* pszParam, BOOL bLast,
-				 char iometer[MAX_NETWORK_NAME],
-				 char manager_name[MAX_WORKER_NAME] )
+void ParseParam( const char* pszParam,
+                 BOOL bLast,
+		 char iometer[MAX_NETWORK_NAME],
+		 char manager_name[MAX_WORKER_NAME],
+		 char manager_computer_name[MAX_NETWORK_NAME] )
 {
 	static int param_count = 0;
 	static BOOL switches = FALSE;
@@ -292,6 +328,16 @@ void ParseParam( const char* pszParam, BOOL bLast,
 			else
 			{
 				strcpy(manager_name, pszParam);
+			}
+			return;
+		case 'M':
+			if ( pszParam[0] == '/' || pszParam[0] == '-' )
+			{
+				Syntax("Manager network name should follow the /M switch.");
+			}
+			else
+			{
+				strcpy(manager_computer_name, pszParam);
 			}
 			return;
 		default:
@@ -358,6 +404,9 @@ void ParseParam( const char* pszParam, BOOL bLast,
 			return;
 		case 2:
 			strcpy(manager_name, pszParam);
+			return;
+		case 3:
+			strcpy(manager_computer_name, pszParam);
 			return;
 		default:
 			Syntax("Too many parameters.");

@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOManager.cpp                                             ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is Dynamo's main class. It coordinates Dynamo's  ## */
+/* ##               work and handles the communication with IOMeter.      ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-04 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Applied proc-speed-fix.txt patch file               ## */
+/* ##                 (dropping a type cast in the Login() method).       ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -51,7 +72,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // IOManagerSolaris.cpp and IOManagerLinux.cpp respectively.
 //
 //////////////////////////////////////////////////////////////////////
-
+/* ######################################################################### */
 
 #include "IOCommon.h"
 #include "IOManager.h"
@@ -199,9 +220,9 @@ BOOL Manager::Login( char* port_name )
 		strcpy(data_msg.data.manager_info.names[0], manager_name);
 	}
 	strcpy( data_msg.data.manager_info.names[1], prt->network_name );
-	data_msg.data.manager_info.port_number = prt->network_port;
-	data_msg.data.manager_info.processor_speed = (int) perf_data[WHOLE_TEST_PERF].processor_speed;
-	data_msg.data.manager_info.processors = perf_data[WHOLE_TEST_PERF].processor_count;
+	data_msg.data.manager_info.port_number     = prt->network_port;
+	data_msg.data.manager_info.processor_speed = perf_data[WHOLE_TEST_PERF].processor_speed;
+	data_msg.data.manager_info.processors      = perf_data[WHOLE_TEST_PERF].processor_count;
 
 #ifdef __sparc
 	// Calculate processor_speed_to_nsecs for use in rdtsc.c

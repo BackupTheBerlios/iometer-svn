@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / Network.cpp                                               ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This class covers the communication between network   ## */
+/* ##               workers in Dynamo.                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Different changes to support compilation with       ## */
+/* ##                 gcc 3.2 (known as cout << hex error).               ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -49,6 +70,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // both Iometer and Dynamo, but is currently used only in Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #if defined (_WIN32) || defined (_WIN64)
 #include <afx.h>
@@ -62,7 +84,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Network::Network()
 {
-	errmsg = new ostrstream;
+	errmsg = new ostringstream;
 }
 
 Network::~Network()
@@ -80,13 +102,13 @@ void Network::OutputErrMsg()
 {
 	if ( !errmsg )
 	{
-		errmsg = new ostrstream;
+		errmsg = new ostringstream;
 		*errmsg << "Port::OutputErrMsg() called with invalid errmsg value!" << ends;
 	}
 
 #ifdef _WINDOWS
 	// Iometer
-	ErrorMessage( errmsg->str() );
+	ErrorMessage( errmsg->str().c_str() );
 #else
 	// Dynamo
 	cout << errmsg->str() << endl;
@@ -94,7 +116,11 @@ void Network::OutputErrMsg()
 
 	// str() returns pointer to buffer and freezes it, we must call freeze(FALSE) to 
 	// unfreeze the buffer before we can delete the object
-	errmsg->rdbuf()->freeze( FALSE );
+        // ---
+	// REMARK: freeze() no longer needed because new are now
+	// using ostringstream instead of ostrstream.	
+	//
+	// errmsg->rdbuf()->freeze( FALSE );
 	delete errmsg;
-	errmsg = new ostrstream;
+	errmsg = new ostringstream;
 }

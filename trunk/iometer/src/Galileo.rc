@@ -1103,6 +1103,9 @@ END
 LANGUAGE 9, 1
 #pragma code_page(1252)
 #endif
+#ifndef JLB051002
+#include "IOVersion.h"
+#endif
 #include "res\Iometer.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif

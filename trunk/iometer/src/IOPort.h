@@ -1,3 +1,25 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer & Dynamo) / IOPort.h                                      ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Contains the class definition of the Port class,      ## */
+/* ##               which covers the communication between Iometer        ## */
+/* ##               and Dynamo.                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Different changes to support compilation with       ## */
+/* ##                 gcc 3.2 (known as cout << hex error).               ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -48,18 +70,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file is used by both Iometer and Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef PORT_DEFINED
 	#define PORT_DEFINED
 
-#if defined (_WIN32) || defined (_WIN64)
-#include <strstream>
+#include <sstream>
 using namespace std;
-#else
-#ifdef UNIX
-#include <strstream.h>
-#endif // UNIX
-#endif // WIN32 || _WIN64
+
 #include "IOCommon.h"
 #include "IOMessage.h"
 
@@ -119,7 +137,7 @@ protected:
 	// private data members common to all Ports
 	BOOL				synchronous;
 	char				name[MAX_NETWORK_NAME];
-	ostrstream			*errmsg;
+	ostringstream			*errmsg;
 
 	// private functions common to all Ports (implemented by Port)
 	virtual void		OutputErrMsg();

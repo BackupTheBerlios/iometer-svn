@@ -1,3 +1,33 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOPerformanceLinux.cpp                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: The GNU/Linux variant of the Performance class.       ## */
+/* ##               This class does two jobs:                             ## */
+/* ##               1.) Collects basic informations like the number       ## */
+/* ##                   of CPU's.                                         ## */
+/* ##               2.) Collection of system-wide performance             ## */
+/* ##                   informations.                                     ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: - This content of this file should be merged into     ## */
+/* ##                 the generic IOPerformance.cpp file.                 ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-09 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Modified Get_CPU_Counters to add the Jiffies for    ## */
+/* ##                 user mode with low priority (nice) to the user      ## */
+/* ##                 mode utilization as well as the total utilization.  ## */
+/* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Applied the iometer-initial-datatypes.patch file    ## */
+/* ##                 (brings some minor changes to main() function).     ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -43,6 +73,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // OS, for Linux.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #define PERFORMANCE_DETAILS	0 // Turn on to display additional performance messages.
 
@@ -72,13 +103,13 @@ Performance::Performance() {
 		exit(1);
 	}
 
+        // Set the clock ticks per second
+	clock_tick = sysconf(_SC_CLK_TCK);
+	
 	// Initialize all the arrays to 0.
-	memset(raw_cpu_data, 0,
-				 (MAX_CPUS * CPU_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
-	memset(raw_ni_data, 0,
-				 (MAX_NUM_INTERFACES * NI_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
-	memset(raw_tcp_data, 0,
-				 (TCP_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
+	memset(raw_cpu_data, 0, (MAX_CPUS * CPU_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
+	memset(raw_ni_data,  0, (MAX_NUM_INTERFACES * NI_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
+	memset(raw_tcp_data, 0, (TCP_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
 }
 
 
@@ -137,6 +168,10 @@ int Performance::Get_Processor_Count()
 	  ++cpuCount;
 	  ++search; // Make sure we don't find the same CPU again!
 	}
+
+        // Decrease result by one, because on a single processor
+	// machine, the code above counts "cpu" and "cpu0"!
+	cpuCount--;
 	return(cpuCount);
 }
 
@@ -195,11 +230,13 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot) {
 	cout << "   Getting system performance data." << endl << flush;
 #endif
 
-	time_counter[snapshot] = rdtsc();
+/* ##### REM: BEGIN ##### */
+//	time_counter[snapshot] = rdtsc();
+	time_counter[snapshot] = jiffies();
+/* ##### REM: END ##### */
 	if (snapshot == LAST_SNAPSHOT) {
 		// calculate time diff in clock ticks..
-		timediff = (time_counter[LAST_SNAPSHOT] -
-								time_counter[FIRST_SNAPSHOT]);
+		timediff = (time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
 	}
 	
 	switch (perf_data_type)	{
@@ -219,36 +256,55 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot) {
 
 void Performance::Get_CPU_Counters(int snapshot)
 {
-	int	numScans, c;
-	char tmpBuf[40];
-	
-	//
-	// See the comment on Get_Procesor_Count, above, for an example of the
-	// "/proc/stat" output.
-	//
+	int	  numScans, c, i;
+	char      tmpBuf[40];
+	__int64   jiffiesCpuNiceUtilization;
+
+        // First few rows of the /proc/stat output.
+        // --------------------------------------------------------------------
+	// cpu  20969 2260 50042 1069377
+	// cpu0 20969 2260 50042 1069377
+	// page 1279455 540189
+	// swap 30 483
+	// intr 1896409 1142648 2 0 0 128558 0 0 0 2 0 34836 465132 4 0 91210 34017 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	// ...
+        // --------------------------------------------------------------------
 	FILE *cpuStat = fopen("/proc/stat", "r");
 	assert(cpuStat != NULL);
-	for (processor_count = 0;
-			 processor_count < MAX_CPUS; 
-			 ++processor_count) {
-		numScans = fscanf(cpuStat, "%s %lld %*s %lld",
-											tmpBuf,
-											&raw_cpu_data[processor_count]
-											             [CPU_USER_UTILIZATION][snapshot],
-											&raw_cpu_data[processor_count]
-											             [CPU_PRIVILEGED_UTILIZATION][snapshot]);
-		if ((numScans != 3) || (strncmp(tmpBuf, "cpu", 3) != 0)) {
-			// We're done reading CPU data. Time to leave this loop.
-			break;
+	fscanf(cpuStat, "cpu %*s %*s %*s %*s\n");	
+	for(i = 0; i < processor_count; i++) {
+		numScans = fscanf(cpuStat, "%s", tmpBuf);
+                if((numScans == 1) && (strlen(tmpBuf) >= 3) && (strncmp(tmpBuf, "cpu", 3) == 0)) {
+			fscanf(cpuStat, " %lld %lld %lld %*s\n", &raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot],
+			                                         &jiffiesCpuNiceUtilization,
+					                         &raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot]);
+			raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
+			raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] = raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] + raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
+			continue;
 		}
 		do {
 			c = getc(cpuStat);
 		} while ((c != '\n') && (c != EOF));
+		break;
+	}
+        for(;;) {
+		numScans = fscanf(cpuStat, "%s", tmpBuf);
+		if((numScans == 1) && (strlen(tmpBuf) == 4) && (strncmp(tmpBuf, "intr", 4) == 0)) {
+			fscanf(cpuStat, " %lld ", &raw_cpu_data[0][CPU_IRQ][snapshot]);
+			break;
+		}		
+		do {
+			c = getc(cpuStat);
+		} while ((c != '\n') && (c != EOF));
+		if(c == EOF) {
+			break;
+		}
 	}
 	fclose(cpuStat);
-	if (processor_count > 1) {
-		--processor_count; /* We'll have "cpu " and "cpu0"..."cpun". */
-	}
+	
+//	if (processor_count > 1) {
+//		--processor_count; /* We'll have "cpu " and "cpu0"..."cpun". */
+//	}
 	//
 	// We get out interrupt info from "/proc/interrupts". Sample output:
 	//////////////////////////////////////////////////////////////////////
@@ -265,14 +321,14 @@ void Performance::Get_CPU_Counters(int snapshot)
 	// NMI:          0
 	//////////////////////////////////////////////////////////////////////
 
-	FILE *interStat = fopen("/proc/interrupts", "r");
-	assert(interStat != NULL);
-	for (;;) {
-		int result;
-
-		do {
-			c = getc(interStat);
-		} while ((c != '\n') && (c != EOF));
+//	FILE *interStat = fopen("/proc/interrupts", "r");
+//	assert(interStat != NULL);
+//	for (;;) {
+//		int result;
+//
+//		do {
+//			c = getc(interStat);
+//		} while ((c != '\n') && (c != EOF));
 		/*
 		 * The following code is based on the assumption that any IRQ
 		 * entry in /proc/interrupts will begin with a space followed by
@@ -283,20 +339,20 @@ void Performance::Get_CPU_Counters(int snapshot)
 		 * "cat /proc/interrupts" looks like the comment above, and
 		 * change this code to match if it doesn't.
 		 */
-		if (getc(interStat) != ' ') {
-			break;
-		}
-		if (fscanf(interStat, "%d:", &result) != 1) {
-			break;
-		}
-		for (int i = 0; i < processor_count; ++i) {
-			long long interruptCount;
-			numScans = fscanf(interStat, "%lld", &interruptCount);
-			assert(numScans == 1);
-			raw_cpu_data[i][CPU_IRQ][snapshot] += interruptCount;
-		}
-	}
-	fclose(interStat);
+//		if (getc(interStat) != ' ') {
+//			break;
+//		}
+//		if (fscanf(interStat, "%d:", &result) != 1) {
+//			break;
+//		}
+//		for (int i = 0; i < processor_count; ++i) {
+//			long long interruptCount;
+//			numScans = fscanf(interStat, "%lld", &interruptCount);
+//			assert(numScans == 1);
+//			raw_cpu_data[i][CPU_IRQ][snapshot] += interruptCount;
+//		}
+//	}
+//	fclose(interStat);
 }
 
 void Performance::Get_TCP_Counters(int snapshot) {}
@@ -570,16 +626,24 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 				// but we are more fortunate here.
 				// See the corresponding Notes at the end of this file for a description.
 				//
-				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
-						 - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * 
-						 clock_tick / timediff;
-				cpu_results->CPU_utilization[cpu][stat] = result;	
+				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT] - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * clock_tick / timediff;
+				cpu_results->CPU_utilization[cpu][stat] = result;
+/* ##### REM:BEGIN ##### */
+// cerr << "Before ...: " << rdtsc() << " " << jiffies() << " " << clock_tick << " " << timediff << endl;
+// sleep(1);
+// cerr << "After ....: " << rdtsc() << " " << clock_tick << " " << jiffies() << endl;
+// #if defined (i386)
+// cerr << "===> i386 <===" << endl;
+// #endif
+// cerr << "Calculate_CPU_Stats(IRQ) " << cpu << " " << stat << " " << raw_cpu_data[cpu][stat][LAST_SNAPSHOT] << " " << raw_cpu_data[cpu][stat][FIRST_SNAPSHOT] << endl;
+// cerr << "Calculate_CPU_Stats(IRQ) " << clock_tick << " " << timediff << " " << (time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]) << endl;
+/* ##### REM:END ##### */
+
 			}
 			else
 			{
 				// All other CPU statistics.
-				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
-							- raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
+				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT] - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
 
 				if (result < 0.0) 
 				{
@@ -590,7 +654,7 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 					// So, it is better to comment it out rather than have the message
 					// pop up on the screen at regular intervals.
 					//
-					// cout << "***** Error : CPU utilization outside valid range 0% - 100% *****" << endl;
+					// cout << "***** Error : CPU utilization outside valid timerange 0% - 100% *****" << endl;
 				}
 				if  (result > 1.0)
 				{
@@ -598,12 +662,20 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 				}
 
 				cpu_results->CPU_utilization[cpu][stat] = (result * 100);
+
+/* ##### REM:BEGIN ##### */
+//cerr << "Calculate_CPU_Stats(OTHER) " << cpu << " " << stat << " " << raw_cpu_data[cpu][stat][LAST_SNAPSHOT] << " " << raw_cpu_data[cpu][stat][FIRST_SNAPSHOT] << endl;
+/* ##### REM:END ##### */
 			}
 #endif
 			#if PERFORMANCE_DETAILS || _DETAILS
 				cout << "CPU " << cpu << " recorded stat " << stat << " = " 
 					<< cpu_results->CPU_utilization[cpu][stat] << endl;
 			#endif
+
+/* ##### REM:BEGIN ##### */
+//cerr << "Calculate_CPU_Stats " << cpu << " " << stat << " " << cpu_results->CPU_utilization[cpu][stat] << endl;
+/* ##### REM:END ##### */
 		}
 	}
 }

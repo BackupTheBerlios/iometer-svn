@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOManagerLinux.cpp                                        ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This file contains the Linux related methods of       ## */
+/* ##               Dynamo's main class (IOManager.cpp).                  ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Modified EXCLUDE_FILESYS to support NFS devices     ## */
+/* ##                 per default (was excluded by default).              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -53,7 +74,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>
 #include <sys/swap.h>
 
-#define EXCLUDE_FILESYS			"proc nfs swap devpts"
+// Another values for EXCLUDE_FILESYS are "nfs",...
+#define EXCLUDE_FILESYS			"proc swap devpts"
 static char *mnttab;
 
 #define USED_DEVS_MAX_SIZE (4 * 1024)

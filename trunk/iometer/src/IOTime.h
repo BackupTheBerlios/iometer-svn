@@ -1,3 +1,25 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOTime.h                                                  ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Implements the GNU/Linux variant for the timing       ## */
+/* ##               relevant functions (for the time measurments).        ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Added the jiffies() function which parses the       ## */
+/* ##                 /proc/stat file for the total number of Jiffies     ## */
+/* ##                 since system startup.                               ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -47,6 +69,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file is used by both Iometer and Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef TIME_DEFINED
 #define TIME_DEFINED
@@ -64,19 +87,31 @@ extern "C" DWORDLONG rdtsc();
  * Stolen from Linux kernel source.
  */
 extern inline DWORDLONG rdtsc(void) {
+// Original code (returning the cpu cycle counter)
 	unsigned int lo, hi;
-
 	__asm__ __volatile__("rdtsc" : "=a" (lo), "=d" (hi));
 	return(lo | ((DWORDLONG)hi << 32));
+// Alternative code (returning the cpu cycle counter too)
+//	unsigned long long int x;
+//	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+//	return(x);
 }
 #else /* !i386 */
-
 extern inline DWORDLONG rdtsc(void) {
 	/* Totally cheesy rewrite of rdtsc! */
 	return((DWORDLONG)time(NULL) * 200);
 }
-
 #endif /* i386 */
+
+extern inline DWORDLONG jiffies(void) {
+	DWORDLONG jiffies_user, jiffies_nice, jiffies_system, jiffies_idle;
+	FILE *fp = fopen("/proc/stat", "r");
+	fscanf(fp, "cpu %*s %*s %*s %*s\n");
+	fscanf(fp, "cpu0 %lld %lld %lld %lld\n", &jiffies_user, &jiffies_nice, &jiffies_system, &jiffies_idle);
+	fclose(fp);
+	return(jiffies_user + jiffies_nice + jiffies_system + jiffies_idle);
+}
+
 #endif /* LINUX */
 
 #if defined (_WIN32) || defined (_WIN64)

@@ -1,3 +1,23 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOCQAIO.cpp                                               ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: <to be set>                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied the iometer-initial-datatypes.patch file.   ## */
+/* ##                 (changing the datatype of the "temp" variable in    ## */
+/* ##                 the GetStatus(int*, int*, int) method).             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -43,7 +63,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // is an implementation of the abstract class CQ.
 //
 //////////////////////////////////////////////////////////////////////
-
+/* ######################################################################### */
 
 #include "IOCQAIO.h"
 
@@ -69,7 +89,7 @@ CQAIO::CQAIO()
 ReturnVal CQAIO::GetStatus( int *bytes, int *data, int delay )
 {
 	Transaction	*transaction = NULL;
-	ULONG_PTR	temp;
+	DWORD		temp;
 	BOOL		result;
 	DWORD		error_no;
 

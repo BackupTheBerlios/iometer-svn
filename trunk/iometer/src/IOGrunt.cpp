@@ -1,3 +1,25 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOGrunt.cpp                                               ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is Dynamo's worker class.                        ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Applied Matt D. Robinson's iometer.patch file       ## */
+/* ##                 (modifies the Set_Access() method to ensure that    ## */
+/* ##                 there is an allocated buffer for each worker        ## */
+/* ##                 thread - needed for large amounts of I/O through    ## */
+/* ##                 ServerWorks chipsets).                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -46,6 +68,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // created only for workers that are active in the current test.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #include "IOGrunt.h"
 #include "IOTargetDisk.h"
@@ -450,8 +473,25 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 	// Allocate a data buffer large enough to support the maximum requested 
 	// transfer.  We do this only if the current buffer is too small and
 	// we're using per worker data buffers.
-	if ( !data_size || data_size >= access_spec.max_transfer )
+	if ( data_size >= access_spec.max_transfer ) {
+		cout << "Grunt: Grunt data buffer size " << data_size << " >= " 
+			 << access_spec.max_transfer << ", returning" << endl;
 		return TRUE;
+	} else if ( !data_size ) {
+		// We always want to use our own buffers, not the manager's
+		// buffer.  This is due to a bug in some ServerWorks chipsets
+		// (confirmed on the HE-SL chipset) where performing both
+		// read and write operations to the same cache line can cause
+		// the PCI bridge (the CIOB5) to hang indefinitely until a
+		// third PCI bus request comes in.
+		//
+		// Using per-grunt buffers eliminates that problem, as you
+		// aren't thrashing on the same buffer for both read and
+		// write operations.
+		data_size = access_spec.max_transfer;
+		cout << "Grunt: Growing grunt data buffer from " << data_size << " to " 
+			 << access_spec.max_transfer << endl;
+	}
 
 	// Allocating a larger buffer.
 	#if _DEBUG
@@ -460,11 +500,15 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 	#endif
 
 #if defined (_WIN32) || defined (_WIN64)
-	VirtualFree( data, 0, MEM_RELEASE );
+	if ( data ) {
+		VirtualFree( data, 0, MEM_RELEASE );
+	}
 	if ( !(data = VirtualAlloc( NULL, access_spec.max_transfer,
 		MEM_COMMIT, PAGE_READWRITE )) )
 #else // UNIX
-	free( data );
+	if ( data ) {
+		free( data );
+	}
 	errno = 0;
 	if ( !(data = valloc(access_spec.max_transfer) ))
 #endif

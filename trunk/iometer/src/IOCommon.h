@@ -1,3 +1,35 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer & Dynamo) / IOCommon.h                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is THE central headerfile for Iometer as well    ## */
+/* ##               as Dynamo.                                            ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: - All Defines, Includes etc. should be moved to this  ## */
+/* ##                 file to cleanup the code.                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Different changes to support compilation with       ## */
+/* ##                 gcc 3.2 (known as cout << hex error).               ## */
+/* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added LONG_PTR and DWORD_PTR typedef to the Windows ## */
+/* ##                 part to get compiled.                               ## */
+/* ##               2003-02-04 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied proc-speed-fix.txt patch file               ## */
+/* ##                 (changes the data type of processor_speed).         ## */
+/* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Increase of MAX_TARGETS from 256 to 512. This was   ## */
+/* ##                 needed for a successfull login of a Dynamo instance ## */
+/* ##                 on a Iometer frontend (Version 2001.07.19).         ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -49,9 +81,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file is used by both Iometer and Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
-
-#ifndef	IOCOMMON_DEFINED
-#define IOCOMMON_DEFINED
+/* ######################################################################### */
+#ifndef	___IOCOMMON_H_DEFINED___
+#define ___IOCOMMON_H_DEFINED___
 
 #ifndef UNIX
 #define	VC_EXTRALEAN
@@ -86,6 +118,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 using namespace std;
 
+typedef unsigned long   LONG_PTR;
+typedef unsigned long   DWORD_PTR;
+
 #endif // !UNIX
 
 #include <math.h>
@@ -117,8 +152,10 @@ extern void	GetAppFileVersionString(char **ppStrStandard, char **ppStrWithDebug)
 "ERROR: Unknown Endianness."
 #endif
 
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
@@ -332,7 +369,7 @@ enum ReturnVal {
 #define MAX_NAME			64
 #define	MAX_CPUS			32
 #define	MAX_WORKERS			100
-#define MAX_TARGETS			256
+#define MAX_TARGETS			512
 #define MAX_NETWORK_NAME	128
 #define MAX_NUM_INTERFACES	32
 #define MAX_WORKER_NAME		128
@@ -405,7 +442,7 @@ struct	Manager_Info
 	char	names[2][MAX_NETWORK_NAME];
 	unsigned short port_number;  // used only with TCP/IP.
 	int		processors;
-	int		processor_speed;
+	double		processor_speed;
 };
 
 
@@ -550,4 +587,5 @@ inline void reorder(Raw_Result&);
 #endif // UNIX
 
 
-#endif	// IOCOMMON_DEFINED
+
+#endif	// ___IOCOMMON_H_DEFINED___
