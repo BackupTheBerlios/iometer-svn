@@ -95,7 +95,6 @@ OBJECTS= IOGlobals.o \
 	 IOGrunt.o \
 	 IOTarget.o IOTargetDisk.o IOTargetTCP.o \
 	 IOPort.o IOPortTCP.o \
-	 IOMessage.o IOTest.o \
 	 Network.o NetTCP.o \
 	 ByteOrder.o \
 	 IOPerformance.o IOPerformanceLinux.o \
