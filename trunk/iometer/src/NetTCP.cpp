@@ -1,70 +1,84 @@
-/*
-Intel Open Source License 
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / NetTCP.cpp                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Implements the NetAsyncTCP class for asynchronous     ## */
+/* ##               TCP/IP sockets for communicating between network      ## */
+/* ##               workers.                                              ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
 
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// NetAsyncTCP.cpp: Implementation of the Network class for asynchronous
-// TCP/IP sockets.
-//
-// Network objects are used for connections between network workers
-// in Dynamo (contrast Port, which is used for communication between
-// Dynamo and Iometer).
-//
-//////////////////////////////////////////////////////////////////////
-
-#if defined (_WIN32) || defined (_WIN64)
-#include <afx.h>
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include <afx.h>
 #endif
 
 #include "NetTCP.h"
-#if defined (_WIN32) || defined (_WIN64)
-#include "mswsock.h"
-#else // ! WIN32 || _WIN64
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include "mswsock.h"
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <netinet/tcp.h>
 
-#define SD_SEND	 0x01
-#define WSAENOTCONN		ENOTCONN
-#define WSA_IO_PENDING	ERROR_IO_PENDING
+ #define SD_SEND	 0x01
+ #define WSAENOTCONN		ENOTCONN
+ #define WSA_IO_PENDING	ERROR_IO_PENDING
 
-#define wsprintf sprintf
+ #define wsprintf sprintf
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 
@@ -80,14 +94,14 @@ LONG NetAsyncTCP::sockets_in_use = 0;
 
 NetAsyncTCP::NetAsyncTCP()
 {
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	int retval;
 	WSADATA wd;
 #endif
 
 	server_socket = INVALID_SOCKET;
 	client_socket = INVALID_SOCKET;
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	server_fp.fd = client_fp.fd = -1;
 	server_socket = (SOCKET) &server_fp;
 	client_socket = (SOCKET) &client_fp;
@@ -97,13 +111,13 @@ NetAsyncTCP::NetAsyncTCP()
 	listening = FALSE;
 #endif
 
-#endif // UNIX
+#endif // IOMTR_OSFAMILY_UNIX
 
 	server_address.sin_family = AF_INET; // use Internet Protocol
 	client_address.sin_family = AF_INET; // use Internet Protocol
 	SetTimeout( 0, 0 );
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Initialize WinSock if it has not yet been initialized in this process.
 	if ( InterlockedIncrement ( &sockets_in_use ) == 1 )
 	{
@@ -131,7 +145,7 @@ NetAsyncTCP::~NetAsyncTCP()
 {
 	Destroy();
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Clean up WinSock if nobody else is using it in this process.
 	if ( InterlockedDecrement ( &sockets_in_use ) == 0 )
 	{
@@ -221,7 +235,7 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 	#endif
 
 	// Create socket.
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp;
 	fp = (struct File *)*s;
 	fp->fd = socket(AF_INET, SOCK_STREAM, PF_UNSPEC);
@@ -234,7 +248,7 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 		fp->fd = (int) INVALID_SOCKET;
 		return ReturnError;
 	}
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	*s = socket( AF_INET, SOCK_STREAM, PF_UNSPEC );
 
 	if ( *s == INVALID_SOCKET )
@@ -244,7 +258,8 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 		OutputErrMsg();
 		return ReturnError;
 	}
-
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	// Set and verify socket options.
 	SetOptions( s );
@@ -261,12 +276,15 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 //
 ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 {
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 	socklen_t buflen;
-#else
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	int buflen;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-#ifdef UNIX
+
+#if defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *)*s;
 #endif
 
@@ -275,10 +293,12 @@ ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 	#endif
 
 	// Bind socket.
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	if ( bind ( fp->fd, (struct sockaddr *) address, sizeof(*address) ) != 0 )
-#else
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( bind ( *s, (struct sockaddr *) address, sizeof(*address) ) != 0 )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
 		*errmsg << "*** Error " << Error( WSAGetLastError() )
@@ -289,10 +309,12 @@ ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 
 	// get actual port number in use
 	buflen = sizeof(*address);
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	if ( getsockname ( fp->fd, (struct sockaddr *) address, &buflen ) != 0 )
-#else
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( getsockname ( *s, (struct sockaddr *) address, &buflen ) != 0 )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
 		*errmsg << "*** Error " << WSAGetLastError() << " getting information "
@@ -322,20 +344,24 @@ ReturnVal NetAsyncTCP::ConnectSocket( SOCKADDR_IN *address )
 			 << ntohs( address->sin_port ) << "." << endl;
 	#endif
 
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	if ( connect(((struct File *)client_socket)->fd, (struct sockaddr *) address, sizeof(*address)) == SOCKET_ERROR )
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( connect(client_socket, (struct sockaddr *) address, sizeof(*address)) == SOCKET_ERROR )
-#endif // UNIX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	{
 		#if NETWORK_DETAILS || _DEBUG
 			// WSAECONNREFUSED means the server isn't up yet or is busy, 
 			// don't print an error message
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 			if ( errno != ECONNREFUSED ) 
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 			if ( WSAGetLastError() != WSAECONNREFUSED ) 
-#endif // UNIX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 			{
 				*errmsg << "*** Error " << WSAGetLastError() 
 						<< " connecting to " << "socket " 
@@ -370,7 +396,7 @@ ReturnVal NetAsyncTCP::Connect( const char *ip_address,
 	address.sin_port = htons(port_number); // connect to this port
 
 	result = ConnectSocket( &address );
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	if ( result != ReturnSuccess )
 	{
 		// According to connect(3XN):
@@ -387,7 +413,7 @@ ReturnVal NetAsyncTCP::Connect( const char *ip_address,
 			return ReturnError;
 		}
 	}
-#endif // UNIX
+#endif // IOMTR_OSFAMILY_UNIX
 	return result;
 }
 
@@ -413,13 +439,16 @@ void NetAsyncTCP::SetTimeout( int sec, int usec )
 //
 ReturnVal NetAsyncTCP::Accept()
 {
-	fd_set		sock_set;		// used by select function.
-#ifdef LINUX
+	fd_set	  sock_set;		// used by select function.
+#if defined(IOMTR_OS_LINUX)
 	socklen_t addr_len;
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	int	  addr_len;		// used by accept.
 #else
-	int			addr_len;		// used by accept.
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-#ifdef UNIX
+
+#if defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *)server_socket;
 #endif
 
@@ -432,27 +461,29 @@ ReturnVal NetAsyncTCP::Accept()
 
 	// It's ok to listen more than once on a socket.
 	// allow only a single connection.
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	#ifdef WORKAROUND_LISTEN_BUG
 	if ( ! listening )
 	{
 	#endif // WORKAROUND_LISTEN_BUG
 		if ( listen ( fp->fd, 1 ) != 0 )
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 		if ( listen ( server_socket, 1 ) != 0 ) 
-#endif // UNIX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		{
 			*errmsg << "*** Error " << WSAGetLastError() 
 				<< " listening to socket in NetAsyncTCP::Listen()." << ends;
 			OutputErrMsg();
 			return ReturnError;
 		}
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	#ifdef WORKAROUND_LISTEN_BUG
 		listening =	TRUE;
 	}
 	#endif // WORKAROUND_LISTEN_BUG
-#endif // UNIX
+#endif // IOMTR_OSFAMILY_UNIX
 
 	// Accept connections to socket.
 	#if NETWORK_DETAILS || _DEBUG
@@ -461,17 +492,19 @@ ReturnVal NetAsyncTCP::Accept()
 
 	// Check the server socket for a connection request.  
 	FD_ZERO( &sock_set );				// clear the fd_set structure.
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	FD_SET( fp->fd, &sock_set);
 
 	// if timeout is NULL, operation blocks until successful.
 	switch ( select( maxfd, &sock_set, NULL, NULL, &timeout ) )	
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	FD_SET( server_socket, &sock_set ); // Add the server socket to it.
 
 	// if timeout is NULL, operation blocks until successful.
 	switch ( select( 0, &sock_set, NULL, NULL, &timeout ) )
-#endif // UNIX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	{
 	case 1:
 		// A connection was requested.  Accept it.
@@ -481,7 +514,7 @@ ReturnVal NetAsyncTCP::Accept()
 			cout << "Creating client socket." << endl;
 		#endif
 
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 		((struct File *)client_socket)->fd = accept (fp->fd,
 						(struct sockaddr *) &client_address, &addr_len);
 
@@ -493,7 +526,7 @@ ReturnVal NetAsyncTCP::Accept()
 			((struct File *)client_socket)->fd = (int)INVALID_SOCKET;
 			return ReturnError;
 		}
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 		client_socket = accept ( server_socket, 
 						(struct sockaddr *) &client_address, &addr_len );
 
@@ -504,7 +537,9 @@ ReturnVal NetAsyncTCP::Accept()
 			OutputErrMsg();
 			return ReturnError;
 		}
-#endif // UNIX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 
 		// Set and verify socket options.
 		SetOptions( &client_socket );
@@ -545,10 +580,12 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 		cout << "Waiting for other end to disconnect." << endl;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( client_socket == INVALID_SOCKET )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( fp->fd == (int)INVALID_SOCKET )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		#if NETWORK_DETAILS || _DETAILS
@@ -558,11 +595,14 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	}
 
 	// If we're not connected to anything, return.
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	if ( getpeername( fp->fd, &address, &addr_len ) == SOCKET_ERROR ) 
-#else
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( getpeername( client_socket, &address, &addr_len ) == SOCKET_ERROR ) 
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
+
 	{
 		#if NETWORK_DETAILS || _DETAILS
 			cout << "Not connected to anything.  Aborting WaitForDisconnect()." << endl;
@@ -573,15 +613,18 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	SetTimeout( 1, 0 );
 	FD_ZERO( &readfds );
 
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	FD_SET( fp->fd, &readfds);
 	if ( select( maxfd, &readfds, NULL, NULL, &timeout ) )
-#else
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	FD_SET( client_socket, &readfds );
 	SetTimeout( 1, 0 );		// wait 1 second for the connection to close
 
 	if ( select( 0, &readfds, NULL, NULL, &timeout ) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
+
 	{
 		// This must mean that client_socket was closed.
 		return ReturnSuccess;
@@ -627,15 +670,17 @@ ReturnVal NetAsyncTCP::Receive( LPVOID buffer, DWORD bytes, LPDWORD return_value
 	asynchronous_io->Offset = 0;
 	asynchronous_io->OffsetHigh = 0;
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	wsa_buf.len = bytes;
 	wsa_buf.buf = (char*)buffer;
 
 	// Do the read.
 	if ( WSARecv( (client_socket), &wsa_buf, 1, return_value, &flags, 
 		asynchronous_io, NULL ) == 0 )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( ReadFile( client_socket, buffer, bytes, return_value, asynchronous_io ) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		// Read succeeded.
@@ -682,15 +727,17 @@ ReturnVal NetAsyncTCP::Send( LPVOID buffer, DWORD bytes, LPDWORD return_value,
 	asynchronous_io->Offset = 0;
 	asynchronous_io->OffsetHigh = 0;
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	wsa_buf.len = bytes;
 	wsa_buf.buf = (char*)buffer;
 
 	// Do the write.
 	if ( WSASend( (client_socket), &wsa_buf, 1, return_value, NULL, 
 			asynchronous_io, NULL ) == 0 )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( WriteFile( client_socket, buffer, bytes, return_value, asynchronous_io ) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		// Write succeeded.
@@ -736,13 +783,15 @@ DWORD NetAsyncTCP::Peek()
 	// we have to provide a buffer, so we provide just one character of buffer
 	char buf[1];
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	wsa_buf.buf = buf;
 	wsa_buf.len = sizeof(buf);
 
 	if ( Receive( buf, 1, &bytes_available, NULL, MSG_PEEK ) == ReturnSuccess )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( recv ( ((struct File *)client_socket)->fd, buf, sizeof(buf), MSG_PEEK ) == ReturnSuccess )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		#if NETWORK_DETAILS || _DETAILS
@@ -773,10 +822,12 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 		cout << "Closing socket." << endl;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( *s == INVALID_SOCKET )
-#else // UNIX
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)*s)->fd == (int)INVALID_SOCKET )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		#if NETWORK_DETAILS || _DETAILS
@@ -789,11 +840,13 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 		cout << "Closing socket." << endl;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( closesocket ( *s ) != 0 )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	WSASetLastError(0);
 	if ( close ( ((struct File *)*s)->fd ) != 0 )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		*errmsg << "*** Error " << WSAGetLastError() 
@@ -802,10 +855,12 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 		return ReturnError;
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	*s = INVALID_SOCKET;
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	((struct File *)*s)->fd = (int)INVALID_SOCKET;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 	return ReturnSuccess;
@@ -823,7 +878,7 @@ ReturnVal NetAsyncTCP::Close( BOOL close_server )
 	if ( close_server )
 	{
 		s = &server_socket;
-#if defined(UNIX) && defined(WORKAROUND_LISTEN_BUG)
+#if defined(IOMTR_OSFAMILY_UNIX) && defined(WORKAROUND_LISTEN_BUG)
 		listening = FALSE;
 #endif // UNIX && WORKAROUND_LISTEN_BUG
 	}
@@ -844,7 +899,7 @@ void NetAsyncTCP::SetOptions( SOCKET *s )
 	LINGER lstruct = {TRUE, 0};
 
 	
-#if (NETWORK_DETAILS || _DEBUG) && !defined(LINUX)
+#if (NETWORK_DETAILS || _DEBUG) && !defined(IOMTR_OS_LINUX)
 	BOOL CHECK_setoption;
 	LINGER	CHECK_lstruct;
 	int size;
@@ -853,7 +908,7 @@ void NetAsyncTCP::SetOptions( SOCKET *s )
 
 	// SET the socket option settings
 	///////////////////////////////////
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *) *s;
 	// When closing the connection, do a hard close.
 	if ( setsockopt( fp->fd, SOL_SOCKET, SO_LINGER, (char *) &lstruct, sizeof(lstruct) ) == SOCKET_ERROR )
@@ -864,7 +919,7 @@ void NetAsyncTCP::SetOptions( SOCKET *s )
 	// Don't delay sending data.
 	if ( setsockopt( fp->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &setoption, sizeof(setoption) ) == SOCKET_ERROR )
 		cout << "*** Couldn't set TCP_NODELAY option" << endl;
-#else
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	// When closing the connection, do a hard close.
 	if ( setsockopt( *s, SOL_SOCKET, SO_LINGER, (char *) &lstruct, sizeof(lstruct) ) == SOCKET_ERROR )
 		cout << "*** Couldn't set SO_LINGER option" << endl;
@@ -874,12 +929,14 @@ void NetAsyncTCP::SetOptions( SOCKET *s )
 	// Don't delay sending data.
 	if ( setsockopt( *s, IPPROTO_TCP, TCP_NODELAY, (char *) &setoption, sizeof(setoption) ) == SOCKET_ERROR )
 		cout << "*** Couldn't set TCP_NODELAY option" << endl;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 	// CHECK the socket option settings
 	/////////////////////////////////////
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	#if NETWORK_DETAILS || _DEBUG
 		// When closing the connection, do a hard close.
 		size = sizeof(CHECK_lstruct);
@@ -918,7 +975,7 @@ char *NetAsyncTCP::Error(int error_num)
 
 	switch (error_num)
 	{
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	case WSANOTINITIALISED:
 		wsprintf( errmsg, "WSANOTINITIALIZED - WinSock not initialized." );
 		break;

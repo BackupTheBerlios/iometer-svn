@@ -9,11 +9,51 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-04-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-04-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Improved error messages for better support.         ## */
 /* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Updated the global debug flag (_DEBUG) handling     ## */
@@ -26,72 +66,24 @@
 /* ##               - Added new header holding the changelog.             ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-/*
-Intel Open Source License 
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
 
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOPortTCP.cpp: Implementation of the Port class using TCP/IP sockets.
-//
-// Port objects are used for communication between Dynamo and Iometer.  The 
-// Port class is an abstract (pure virtual) class that defines the interface
-// and includes code common to all implementations.  The class PortTCP
-// provides a socket-based implementation of Port.
-//
-// This file is used by both Iometer and Dynamo.
-//
-//////////////////////////////////////////////////////////////////////
-/* ######################################################################### */
-
-#if defined (_WIN32) || defined (_WIN64)
-#include <afx.h>
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include <afx.h>
 #endif
+
 #include "IOPortTCP.h"
 
-#if defined (_WIN32) || defined (_WIN64)
-#include "mswsock.h"
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include "mswsock.h"
 #endif
 
-#ifdef LINUX
-#include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
+#if defined(IOMTR_OS_LINUX)
+ #include <sys/time.h>
+ #include <sys/types.h>
+ #include <unistd.h>
 #endif
+
 
 
 // Needed for MFC Library support for assisting in finding memory leaks
@@ -103,13 +95,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //       will be a MFC hacker who could advice here.
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
-#if defined (_WIN32) || defined (_WIN64)
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #ifdef _DEBUG
+  #define new DEBUG_NEW
+  #undef THIS_FILE
+  static char THIS_FILE[] = __FILE__;
+ #endif
 #endif
-#endif
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -133,7 +126,7 @@ PortTCP::PortTCP( BOOL synch )
 
 	// initialize WinSock -- do this only if it has not yet been initialized in this process
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( sockets_in_use++ == 0 )
 	{
 		#if _DEBUG
@@ -160,7 +153,7 @@ PortTCP::PortTCP( BOOL synch )
 	// This data will not be used, but we can't tell AcceptEx() not to give it to us, so
 	// we need to provide the buffer anyway.
 	accept_ex_buffer = new char[ sizeof(struct sockaddr_in) + 16 + sizeof(struct sockaddr_in) + 16 + 1 ];
-#endif // WIN32 || _WIN64
+#endif // IOMTR_OS_WIN32 || IOMTR_OS_WIN64
 // Note: synch is not used.
 }
 
@@ -171,7 +164,7 @@ PortTCP::~PortTCP()
 
 	// clean up WinSock -- do this only if nobody else is using it in this process
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( sockets_in_use-- == 0 ) 
 	{
 		#if PORT_DETAILS || _DETAILS
@@ -188,7 +181,7 @@ PortTCP::~PortTCP()
 	}
 
 	delete accept_ex_buffer;
-#endif // WIN32 || _WIN64
+#endif // IOMTR_OS_WIN32 || IOMTR_OS_WIN64
 }
 
 
@@ -200,7 +193,7 @@ PortTCP::~PortTCP()
 BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned short port_number )
 { 
 	struct sockaddr_in sin;
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 	socklen_t buflen;
 #else
 	int buflen;
@@ -259,7 +252,7 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 	{
 		server_socket = socket( AF_INET, SOCK_STREAM, PF_UNSPEC );
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	else
 	{
 		server_socket = WSASocket( AF_INET, SOCK_STREAM, PF_UNSPEC, NULL, 0, WSA_FLAG_OVERLAPPED );
@@ -384,7 +377,7 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 	{
 		client_socket = socket( AF_INET, SOCK_STREAM, PF_UNSPEC );
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	else
 	{
 		client_socket = WSASocket( AF_INET, SOCK_STREAM, PF_UNSPEC, NULL, 0, WSA_FLAG_OVERLAPPED );
@@ -426,11 +419,13 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 			#if PORT_DETAILS || _DETAILS
 				// WSAECONNREFUSED means the server isn't up yet or is busy,
 				// don't print an error message
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 				if ( errno != ECONNREFUSED ) 
-#else // !UNIX
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 				if ( WSAGetLastError() != WSAECONNREFUSED ) 
-#endif // UNIX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
 				{
 					*errmsg << "===> ERROR: Connecting to socket " << name << " failed." << endl
 						<< "     [PortTCP::Connect() in " << __FILE__ << " line " << __LINE__ << "]" << endl
@@ -438,7 +433,7 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 					OutputErrMsg();
 				}
 			#endif
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 			// According to connect(3XN):
 			//      If connect() fails, the state of the socket
 			//      is  unspecified.  Portable  applications
@@ -469,7 +464,7 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 				OutputErrMsg();
 				return FALSE;
 			}
-#endif // UNIX
+#endif // IOMTR_OSFAMILY_UNIX
 			Sleep( RETRY_DELAY );
 		}
 	}
@@ -533,7 +528,7 @@ BOOL PortTCP::Accept()
 			return TRUE;
 		}
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	else
 	{ 
 		DWORD bytes_received;
@@ -596,14 +591,16 @@ BOOL PortTCP::Accept()
 			}
 		}
 	}
-#else /* Not win32 || _WIN64 */
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Attempting asynchronous connection in Unix." << endl
 			<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return(FALSE);
 	}
-#endif // WIN32 || _WIN64 // (asynch code)
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif   // (asynch code)
 }
 
 
@@ -629,19 +626,21 @@ BOOL PortTCP::GetAcceptResult()
 		return ( client_socket != (int)INVALID_SOCKET );
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORD bytes_read;
 	BOOL result;
 
 	result = GetOverlappedResult( (HANDLE)client_socket, &accept_overlapped, &bytes_read, FALSE );
 
 	return result;
-#else // !WIN32 || _WIN64
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	*errmsg << "===> ERROR: Asynchronous socket accept attempted under Unix." << endl
 		<< "     [PortTCP::GetAcceptResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 	OutputErrMsg();
 	return(FALSE);
-#endif // WIN32 || _WIN64
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
 }
 
 
@@ -671,18 +670,20 @@ DWORDLONG PortTCP::Receive( LPVOID msg, DWORD size )
 	{
 		return SynchReceive( msg, size );
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	else
 	{
 		return AsynchReceive( msg, size );
 	}
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::Receive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return(0);
 	}
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 }
 
@@ -735,7 +736,7 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 	{
 		return PORT_ERROR;
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 
 	DWORD bytes_read;
 
@@ -765,13 +766,15 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 		}
 		return PORT_ERROR;
 	}
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::AsynchReceive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return(PORT_ERROR);
 	}
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 }
 
@@ -793,7 +796,7 @@ DWORDLONG PortTCP::GetReceiveResult()
 		return PORT_ERROR;
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORD bytes_read;
 
 	if ( GetOverlappedResult( (HANDLE)client_socket, &receive_overlapped, &bytes_read, FALSE ) )
@@ -804,13 +807,15 @@ DWORDLONG PortTCP::GetReceiveResult()
 	{
 		return PORT_ERROR;
 	}
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::GetReceiveResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return(PORT_ERROR);
 	}
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 }
 
@@ -890,7 +895,7 @@ DWORDLONG PortTCP::AsynchSend( LPVOID msg, DWORD size )
 		return PORT_ERROR;
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORD bytes_written;
 
 	if ( !InitOverlapped( &send_overlapped ) )
@@ -915,13 +920,15 @@ DWORDLONG PortTCP::AsynchSend( LPVOID msg, DWORD size )
 		}
 		return PORT_ERROR;
 	}
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::AsynchSend() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return(PORT_ERROR);
 	}
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 }
 
@@ -937,7 +944,7 @@ DWORDLONG PortTCP::GetSendResult()
 		return PORT_ERROR;
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORD bytes_written;
 
 	if ( GetOverlappedResult( (HANDLE)client_socket, &send_overlapped, &bytes_written, FALSE ) )
@@ -948,13 +955,15 @@ DWORDLONG PortTCP::GetSendResult()
 	{
 		return PORT_ERROR;
 	}
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::GetSendResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 		OutputErrMsg();
 		return(PORT_ERROR);
 	}
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 }
 
@@ -965,10 +974,12 @@ DWORDLONG PortTCP::GetSendResult()
 //
 DWORD PortTCP::Peek()
 {
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 	int		bytes_available = 0;
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	DWORD           bytes_available = 0;
 #else
-	DWORD bytes_available = 0;
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	BOOL		success = FALSE;
 	fd_set		sock_set;        //For use with select
@@ -989,7 +1000,7 @@ DWORD PortTCP::Peek()
 		}
 		success = ( bytes_available != SOCKET_ERROR );
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	else
 	{
 		DWORD flags;	// flags must be provided as a (DWORD *), so we need to have a DWORD variable
@@ -1042,7 +1053,7 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 
 	if ( shutdown ( *s, SD_BOTH ) != 0 )
 	{
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		// WSAENOTCONN = "socket is not connected", which occurs on the server side if the socket is
 		// closed with no Accept() active -- this is no problem since we're just closing it anyway
 		if ( WSAGetLastError() != WSAENOTCONN ) 
@@ -1063,10 +1074,12 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 		cout << "Closing " << socket_name << " socket." << endl;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( closesocket ( *s ) != 0 )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( close ( *s ) != 0 )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		*errmsg << "===> ERROR: Closing socket " << socket_name << " failed." << endl

@@ -8,10 +8,50 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-05-07 (yakker@aparity.com)                       ## */
+/* ##  Changes ...: 2003-07-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Implemented the IOMTR_[OSFAMILY|OS|CPU]_* global    ## */
+/* ##                 define as well as their integrity checks.           ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-05-07 (yakker@aparity.com)                       ## */
 /* ##               - Applied the iometerCIOB5.2003.05.02.patch file      ## */
 /* ##                 (avoiding cache line collisions and performance     ## */
 /* ##                 lock-ups for some chipsets).                        ## */
@@ -26,69 +66,26 @@
 /* ##                 ServerWorks chipsets).                              ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-/*
-Intel Open Source License 
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
 
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOGrunt.cpp: Implementation of the Grunt (worker) class for Dynamo.
-// There is one Grunt for each worker.  This class performs all I/O to
-// the targets and records its own results.  Much of this code is executed
-// by a separate worker thread.  Note, though, that although there is
-// always a Grunt for every worker in Iometer's Topology pane, threads are
-// created only for workers that are active in the current test.
-//
-//////////////////////////////////////////////////////////////////////
-/* ######################################################################### */
 
 #include "IOGrunt.h"
 #include "IOTargetDisk.h"
 #include "IOTargetTCP.h"
+
 #ifdef NO_DYNAMO_VI
+ //nop
 #else
-#include "IOTargetVI.h"
+ #include "IOTargetVI.h"
 #endif
-#ifdef SOLARIS
-#include <thread.h>
+
+#if defined(IOMTR_OS_SOLARIS)
+ #include <thread.h>
 #endif
-#ifdef LINUX
-#include <assert.h>
+#if defined(IOMTR_OS_LINUX)
+ #include <assert.h>
 #endif
+
 
 //
 // Initializing Grunt variables before their first use.
@@ -133,12 +130,14 @@ Grunt::~Grunt()
 
 	// Release grunt's I/O data buffers if they are in use.
 	if ( data_size )
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 		VirtualFree( read_data, 0, MEM_RELEASE );
 		VirtualFree( write_data, 0, MEM_RELEASE );
-#else // UNIX
+#elif defined(IOMTR_OSFAMILY_UNIX)
 		free( read_data );
 		free( write_data );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	Free_Transaction_Arrays();
@@ -197,7 +196,8 @@ BOOL Grunt::Size_Target_Array( int count, const Target_Spec *target_specs )
 			targets[i] = new TargetDisk;
 		else if ( IsType( target_specs[i].type, GenericTCPType ) )
 			targets[i] = new TargetTCP;
-#ifdef NO_DYNAMO_VI
+#if defined(NO_DYNAMO_VI)
+ // nop
 #else
 		else if ( IsType( target_specs[i].type, GenericVIType ) )
 			targets[i] = new TargetVI;
@@ -233,7 +233,7 @@ BOOL Grunt::Resize_Transaction_Arrays()
 		needed_queue_size += targets[i]->spec.queue_depth;
 	}
 
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	if (io_cq->SetQueueSize(needed_queue_size) == FALSE)
 		return FALSE;
 #endif
@@ -370,7 +370,8 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 	// Create appropriate completion queue object based on targets.
 	// If the Grunt will manage VI targets, the targets will provide a
 	// pointer to the completion queue to use.
-#ifdef NO_DYNAMO_VI
+#if defined(NO_DYNAMO_VI)
+ // nop
 #else
 	if ( IsType( type, GenericVIType ) )
 	{
@@ -381,7 +382,7 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 		io_cq = &((TargetVI*)targets[0])->vi.vi_cq;
 	}
 	else
-#endif // NO_DYNAMO_VI */
+#endif // NO_DYNAMO_VI
 	{
 		// Create completion queue and verify its creation.
 		if ( !(io_cq = new CQAIO) )
@@ -511,17 +512,19 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 			 << access_spec.max_transfer << endl;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( read_data ) {
 		VirtualFree( read_data, 0, MEM_RELEASE );
 	}
 	if ( !(read_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
-#else // UNIX
+#elif defined(IOMTR_OSFAMILY_UNIX)
 	if ( read_data ) {
 		free( read_data );
 	}
 	errno = 0;
 	if ( !(read_data = valloc(access_spec.max_transfer) ))
+#else
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		// Could not allocate a larger buffer.  Signal failure.
@@ -530,17 +533,19 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 		return FALSE;
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( write_data ) {
 		VirtualFree( write_data, 0, MEM_RELEASE );
 	}
 	if ( !(write_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
-#else // UNIX
+#elif defined(IOMTR_OSFAMILY_UNIX)
 	if ( write_data ) {
 		free( write_data );
 	}
 	errno = 0;
 	if ( !(write_data = valloc(access_spec.max_transfer) ))
+#else
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		// Could not allocate a larger buffer.  Signal failure.
@@ -563,8 +568,8 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 //
 BOOL Grunt::Prepare_Disks()
 {
-#ifdef UNIX
-  pthread_t newThread;
+#if defined(IOMTR_OSFAMILY_UNIX)
+        pthread_t newThread;
 #endif
 
 	grunt_state = TestPreparing;
@@ -587,14 +592,16 @@ BOOL Grunt::Prepare_Disks()
 			prepare_thread[i].parent = this;
 			prepare_thread[i].id = i;
 			cout << "   " << targets[i]->spec.name << " preparing." << endl;
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 			_beginthread( Prepare_Disk_Wrapper, 0, (void *) &(prepare_thread[i]) );
-#else
+#elif defined(IOMTR_OSFAMILY_UNIX)
 			// Assuming that thr_create call will not fail !!!
 
 			pthread_create(&newThread, NULL, (void *(*)(void *))Prepare_Disk_Wrapper, 
 										 (void *) &(prepare_thread[i]));
 			pthread_detach(newThread);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 		}
 	}
@@ -631,13 +638,15 @@ void Grunt::Prepare_Disk( int disk_id )
 
 	// Allocate a large (64k for 512 byte sector size) buffer for the preparation.
 	buffer_size = disk->spec.disk_info.sector_size * 128;
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	VirtualFree( buffer, 0, MEM_RELEASE );
 	if ( !(buffer = VirtualAlloc( NULL, buffer_size, MEM_COMMIT, PAGE_READWRITE )) )
-#else // UNIX
+#elif defined(IOMTR_OSFAMILY_UNIX)
 	free( buffer );
 	errno = 0;
 	if ( !(buffer = valloc(buffer_size) ))
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
 		cout << "*** Could not allocate buffer to prepare disk." << endl;
@@ -647,7 +656,7 @@ void Grunt::Prepare_Disk( int disk_id )
 	}
 
 	// Open the disk for preparation.
-#if defined(UNIX)
+#if defined(IOMTR_OSFAMILY_UNIX)
 	// The disk::prepare() operation writes to a file iobw.tst till it uses up
 	// all the available disk space. Now, Solaris allows a file to be created
 	// with a (logical) size that is larger than the actual size of the file.
@@ -661,8 +670,10 @@ void Grunt::Prepare_Disk( int disk_id )
 	// portion throws up an ENOSPC error. To avoid this problem, we use the
 	// O_APPEND flag which always sets the write offset to the eof.
 	if ( !disk->Open( &grunt_state, O_APPEND ) )
-#else // default
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( !disk->Open( &grunt_state ) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
 		cout << "*** Could not open disk." << endl;
@@ -681,10 +692,12 @@ void Grunt::Prepare_Disk( int disk_id )
 		disk->Close( NULL );
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 	VirtualFree( buffer, 0, MEM_RELEASE );
-#else // UNIX
+#elif defined(IOMTR_OSFAMILY_UNIX)
 	free( buffer );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	cout << "   " << disk->spec.name << " done." << endl;
 	InterlockedDecrement( (long *) &not_ready );
@@ -1306,7 +1319,7 @@ void Grunt::Do_Partial_IO( Transaction *transaction, int bytes_done )
 //
 void Grunt::Start_Test()
 {
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
   pthread_t newThread;
 #endif
 	// Clear the results.
@@ -1326,12 +1339,14 @@ void Grunt::Start_Test()
 	InterlockedExchange( (long *) &not_ready, 1 );
 	// Tell the grunt to begin opening its devices, but not to perform I/O yet.
 	InterlockedExchange( (long *) &grunt_state, TestOpening );
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	pthread_create(&newThread, NULL,
 		       (void *(*)(void *))Grunt_Thread_Wrapper, (void *)this);
 	pthread_detach(newThread);
-#else // WIN_NT
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
 	_beginthread( Grunt_Thread_Wrapper, 0, (void*)this );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 }
 
@@ -1347,15 +1362,21 @@ void Grunt::Begin_IO()
 
 	// Wait for all threads to finish opening their devices.
 	while ( not_ready )
-#ifdef UNIX
-#ifdef SOLARIS
+	{
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #if defined(IOMTR_OS_SOLARIS)
 		thr_yield();
+ #elif defined(IOMTR_OS_LINUX)
+ 		sleep(0);
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
+ #endif
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+		Sleep( 0 );
 #else
-	sleep(0);
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-#else // WIN_NT is default
-	Sleep( 0 );
-#endif
+	}
 
 	InterlockedExchange( (long *) &grunt_state, TestRampingUp );
 }
@@ -1371,15 +1392,18 @@ void Grunt::Begin_IO()
 // a = 4c + 1 (c user defined)
 // b is odd
 //
-#if defined(LINUX) || defined(SOLARIS)
+
 //
 // When we use gcc, we add "LL" to take out a warning about integer overflow.
 //
-#define A 136204069LL			// 3x7x11x13x17x23x   29x4 + 1
-#define B 28500701229LL		// 3x7x11x13x17x23x27x29x31
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #define A 136204069LL		// 3x7x11x13x17x23x   29x4 + 1
+ #define B 28500701229LL	// 3x7x11x13x17x23x27x29x31
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #define A 136204069		// 3x7x11x13x17x23x   29x4 + 1
+ #define B 28500701229		// 3x7x11x13x17x23x27x29x31
 #else
-#define A 136204069			// 3x7x11x13x17x23x   29x4 + 1
-#define B 28500701229		// 3x7x11x13x17x23x27x29x31
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 
