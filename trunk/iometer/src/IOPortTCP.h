@@ -140,7 +140,7 @@ protected:
 	char				*accept_ex_buffer;
 
 	// static private data members shared by all PortTCP's
-	static unsigned int	sockets_in_use;
+	static unsigned int		sockets_in_use;
 
 	// private functions used only by PortTCP
 	BOOL				CloseSocket( SOCKET *s, char *socket_name ); // utility function
