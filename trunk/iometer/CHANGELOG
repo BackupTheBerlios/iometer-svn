@@ -8,6 +8,10 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - iometer-2003.05.10-IoMtrGlobalDefines2.patch by Daniel Scheibli
+    (introduces the IOMTR_* global defines to consolidate the different
+    global defines coming with the different platforms - ease future
+    ports).
   - iometer-2003.05.10-IsBigEndianFunction.patch by Daniel Scheibli
     (Does endian type detection for CPU during runtime. This function
     replaces the [BIG|LITTLE]_ENDIAN_ARCH global defines).

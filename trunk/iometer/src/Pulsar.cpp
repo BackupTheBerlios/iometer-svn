@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Implemented a test call of the IsBigEndian()        ## */
 /* ##                 function to ensure, that we are able to detect      ## */
 /* ##                 the endian type of the CPU.                         ## */
@@ -70,15 +73,25 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
+
 #include "IOCommon.h"
 #include "IOManager.h"
-#ifdef UNIX
-#include <sys/resource.h>
-#include <ctype.h>
+
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #include <sys/resource.h>
+ #include <ctype.h>
+ #if defined(IOMTR_OS_SOLARIS)
+  #include <synch.h>
+ #elif defined(IOMTR_OS_LINUX)
+  // nop
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
 #endif
-#ifdef SOLARIS
-#include <synch.h>
-#endif
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Forward declarations
@@ -101,7 +114,7 @@ int main( int argc, char *argv[] )
 {
 	Manager	manager;
 	char	iometer[MAX_NETWORK_NAME];
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 	struct aioinit aioDefaults;
 
 	memset(&aioDefaults, 0, sizeof(aioDefaults));
@@ -148,12 +161,14 @@ int main( int argc, char *argv[] )
          }
 	cout << endl;
 
-#ifdef UNIX
-#ifdef LINUX
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #if defined(IOMTR_OS_LINUX)
 	signal(SIGALRM, SIG_IGN);
-#else
+ #elif defined(IOMTR_OS_SOLARIS)
 	sigignore(SIGALRM);
-#endif
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif 
 
 	// Initialize the lock on UNIX platforms.
 	if (pthread_mutex_init(&lock_mt, NULL))
@@ -221,7 +236,7 @@ int main( int argc, char *argv[] )
 		cout << "       ************ WARNING **************" << endl;
 	}
 #endif // DYNAMO_DESTRUCTIVE
-#endif // UNIX
+#endif // IOMTR_OSFAMILY_UNIX
 
 	// Ensure, that the endian type of the CPU is detectable
 	if ( (IsBigEndian() != 0) && (IsBigEndian() != 1) )
@@ -266,11 +281,13 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << endl;
 	cout << "SYNTAX" << endl;
 	cout << endl;
-#ifndef SOLARIS
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo /?" << endl;
-#else
+#elif defined(IOMTR_OS_SOLARIS)
 	// Solaris 2.7 must have the switch (? is used for its own purpose).
 	cout << "dynamo \\?" << endl;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	cout << "dynamo [iometer_computer_name [manager_name [manager_network_name]]]" << endl;
 	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_network_name]" << endl;
@@ -293,9 +310,9 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "      NIC." << endl;
 	cout << endl;
 	cout << "   excluded_fs_type - type of filesystems to exclude from device search" << endl;
-         cout << "      This string should contian the filesystem types that are not reported" << endl;
-         cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
-         cout << endl;
+        cout << "      This string should contian the filesystem types that are not reported" << endl;
+        cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
+        cout << endl;
 
 	
 	exit( 0 );
@@ -395,15 +412,17 @@ void ParseParam( const char* pszParam,
 		default:
 			{
 				char tmpary[2] = {last_switch, 0};
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 				Syntax("Unrecognized switch: " + (CString)tmpary + ".");
-#else // !WIN32 || _WIN64
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 				char temp_array[128];
 				strcpy(temp_array, "Unrecognized switch: ");
 				strcat(temp_array, tmpary);
 				strcat(temp_array, ".");
 				Syntax(temp_array);
-#endif // WIN32 || _WIN64
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 			}
 			return;
 		}

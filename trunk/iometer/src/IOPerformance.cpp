@@ -53,7 +53,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Massive cleanup of this file (grouping the          ## */
+/* ##                 different blocks together).                         ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed IOTime.h inclusion (now in IOCommon.h)      ## */
 /* ##               - Integrated the License Statement into this header.  ## */
 /* ##               2003-03-04 (joe@eiler.net)                            ## */
@@ -67,22 +72,19 @@
 /* ##                 Get_Processor_Speed() method).                      ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-
-
 #define PERFORMANCE_DETAILS	0 // Turn on to display additional performance messages.
+#if !defined(IOMTR_OS_LINUX)
 
 
-
-#ifndef LINUX
 
 #include "IOPerformance.h"
-#ifdef UNIX
-#ifdef SOLARIS
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/processor.h>
-#endif // SOLARIS
-#endif // UNIX
+#if defined(IOMTR_OS_SOLARIS)
+ #include <sys/types.h>
+ #include <unistd.h>
+ #include <sys/processor.h>
+#endif
+
+
 
 //
 // Initializing system performance data.
@@ -91,15 +93,19 @@ Performance::Performance()
 {
 	int i;
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Allocating buffer to receive performance data.
 	if ( !( perf_data = (LPBYTE) malloc( MAX_PERF_SIZE ) ) )
 	{
 		cout << "*** Unable to allocate space for performance data." << endl << flush;
 		exit( 1 );
 	}
-	perf_size = MAX_PERF_SIZE;
+	perf_size   = MAX_PERF_SIZE;
 	perf_object = NULL;
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	// Obtaining the number of CPUs in the system and their speed.
@@ -119,7 +125,7 @@ Performance::Performance()
 		exit( 1 );
 	}
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Setting the NT CPU performance counters to extract.
 	cpu_perf_counter_info[CPU_TOTAL_UTILIZATION].index = PERF_CPU_TOTAL_UTILIZATION;
 	cpu_perf_counter_info[CPU_USER_UTILIZATION].index = PERF_CPU_USER_UTILIZATION;
@@ -141,9 +147,7 @@ Performance::Performance()
 		tcp_perf_counter_info[i].offset = IOERROR;
 	for ( i = 0; i < NI_RESULTS; i++ )
 		ni_perf_counter_info[i].offset = IOERROR;
-#endif // WIN32 || _WIN64
-
-#ifdef SOLARIS
+#elif defined(IOMTR_OS_SOLARIS)
 	// Initialize all the arrays to 0.
 	memset(raw_cpu_data, 0, (MAX_CPUS * CPU_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
 	memset(raw_ni_data, 0, (MAX_NUM_INTERFACES * NI_RESULTS * MAX_SNAPSHOTS * sizeof(_int64)));
@@ -235,11 +239,14 @@ Performance::Performance()
 		streamfd = 0;
 	}
 	else streamfd = -1;
-#endif /* SOLARIS */
-
-#ifdef LINUX
-#endif /* LINUX */
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 }
+
+
 
 
 
@@ -248,15 +255,19 @@ Performance::Performance()
 //
 Performance::~Performance()
 {
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	free( perf_data );
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	free(ctlbuf);
 	free(databuf);
 	kstat_close(kc);
 	streamfd = -1;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 }
+
+
 
 
 
@@ -265,56 +276,11 @@ Performance::~Performance()
 //
 int Performance::Get_Processor_Count()
 {
-#ifdef UNIX
-#ifdef SOLARIS
+#if defined(IOMTR_OS_SOLARIS)
 	return (sysconf(_SC_NPROCESSORS_CONF));
-#endif // SOLARIS
-#ifdef LINUX
-	/*
-	 * The file "/proc/stat" enumerates the CPUs, one per line, each line starting
-	 * with the string "cpu". I prepend a '\n' to the file, then search for the
-	 * string "\ncpu"; that way, I will find every time that "cpu" appears as the
-	 * first thing in a line.
-	 *
-	 * Example /proc/stat file:
-	 **********************************************************************
-	 * cpu  1847686 355419 509281 14738354
-	 * disk 69683 0 22232 0
-	 * disk_rio 18236 0 302 0
-	 * disk_wio 51447 0 21930 0
-	 * disk_rblk 145876 0 2374 0
-	 * disk_wblk 411576 0 173352 0
-	 * page 76934 442943
-	 * swap 1410 2465
-	 * intr 21377391 17450740 101201 0 2 2 0 3 0 1 0 0 69197 724623 1 340233 2691388 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	 * ctxt 175242460
-	 * btime 942875987
-	 **********************************************************************
-	 */
-	char stats[16 * 1024 + 1], *search;
-	int fd, byteCount, cpuCount;
-	fd = open("/proc/stat", O_RDONLY);
-	if (fd < 0) {
-	  cout << "*** Unable to determine number of processors in system.";
-	  return 0;
-	}
-	byteCount = read(fd, stats + 1, sizeof(stats) - 1);
-	close(fd);
-	if ((byteCount < 0) || (byteCount == sizeof(stats) - 1)) {
-	  cout << "*** Unable to determine number of processors in system.";
-	  return 0;
-	}
-	stats[0] = '\n'; // Make the first line begin with a \n, like the others.
-	stats[byteCount + 1] = '\0';
-	search = stats;
-	cpuCount = 0;
-	while ((search = strstr(search, "\ncpu")) != NULL) {
-	  ++cpuCount;
-	  ++search; // Make sure we don't find the same CPU again!
-	}
-	return(cpuCount);
-#endif
-#else // WIN_NT
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	SYSTEM_INFO	system_info;
 
 	SetLastError( 0 );
@@ -326,8 +292,12 @@ int Performance::Get_Processor_Count()
 	}
 	cout << "Number of processors: " << system_info.dwNumberOfProcessors << endl;
 	return (int) system_info.dwNumberOfProcessors;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 }
+
+
 
 
 
@@ -353,51 +323,17 @@ double Performance::Get_Processor_Speed()
 		 300,  280,  275,  266,  250,  240,  233,  220,  210,
 		 200,  180,  175,  166,  150,  140,  133,  120,  110,
 		 100,   80,   75,   66,   50,   40,   33,   25,   20 };
-
 	DWORD speed;
-#ifndef SOLARIS
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64) 
 	int speed_magnitude; /* 0=MHz,1=GHz */
 	DWORD type;
 	DWORD size_of_speed = sizeof( DWORD );
-#endif
-#ifdef UNIX
-#ifdef SOLARIS
-	processor_info_t infop;
-	int j, status;
 
-	for (j = 0; j < MAX_CPUS; j++)
-	{
-		status = p_online((processorid_t)j, P_STATUS);
-		if ((status == -1) || (status == EINVAL))
-			continue;
-
-		// Ok we found a processor.
-		// This call should succeed. Else it means that the system has no processors !!!
-		// ("its haunted" !!!) or that this call is unsupported.
-		if (processor_info((processorid_t)j, &infop) < 0)
-		{
-			cout << "*** Could not determine processor speed." << endl << flush;
-			return (double) 0.0;
-		}
-		// found a processor and also the obtained the infop structure. So break.
-		break;
-	}
-	if (j == MAX_CPUS)
-	{
-		cout << "*** Could not determine processor speed." << endl << flush;
-		return (double) 0.0;
-	}
-
-	// If there are more than one processors, well, we get the speed of the first one.
-	speed = infop.pi_clock;
-#endif // SOLARIS
-#ifdef LINUX
-#endif // LINUX
-#else // WIN_NT
-//#ifndef WIN64_COUNTER_WORKAROUND
 	BOOL rdtsc_or_itc_supported = TRUE;
 	HKEY processor_speed_key;
-#ifndef _WIN64
+
+#if defined(IOMTR_OS_WIN32)
 	// Try RDTSC and see if it causes an exception.  (This code is NT-specific 
 	// because Solaris does not support __try/__except.)
 	__try
@@ -412,8 +348,7 @@ double Performance::Get_Processor_Speed()
 	{
 		rdtsc_or_itc_supported = FALSE;
 	}
-#endif // !_WIN64
-#ifdef _WIN64
+#elif defined(IOMTR_OS_WIN64)
 	//*** Trying to read ITC instead of using GetTickCount.  See IOTime.h.
 
 	// Try ITC and see if it causes an exception.  (This code is NT-specific 
@@ -426,18 +361,17 @@ double Performance::Get_Processor_Speed()
 	{
 		rdtsc_or_itc_supported = FALSE;
 	}
-#endif // _WIN64
+#endif
 
 	if ( !rdtsc_or_itc_supported )
 	{
-#ifndef _WIN64
-		cout << "*** Processor does not support RDTSC instruction!" << endl <<
-			    "    Dynamo requires this for high-resolution timing." << endl;
-#endif // !_WIN64
-#ifdef _WIN64
-		cout << "*** Processor does not support ITC instruction!" << endl <<
-			    "    Dynamo requires this for high-resolution timing." << endl;
-#endif // _WIN64
+#if defined(IOMTR_OS_WIN32)
+		cout << "*** Processor does not support RDTSC instruction!"    << endl <<
+			"    Dynamo requires this for high-resolution timing." << endl;
+#elif defined(IOMTR_OS_WIN64)
+		cout << "*** Processor does not support ITC instruction!"      << endl <<
+			"    Dynamo requires this for high-resolution timing." << endl;
+#endif
 		return (double) 0.0;
 	}
 	// Retrieving the estimated speed from the NT system registry.
@@ -472,18 +406,48 @@ double Performance::Get_Processor_Speed()
 		speed *= 1000; /* convert the GHz value to MHz */
 	}
 
-#endif // WIN_NT
-//#ifdef WIN64_COUNTER_WORKAROUND
+	//#ifdef WIN64_COUNTER_WORKAROUND
    	// *** Removed ***
 	//
 	//currently Win64 uses GetTickCOunt whose units are in milliseconds.
 	//
-    //return (double) MILLISECOND;
-    //
+    	//return (double) MILLISECOND;
+   	//
 	// *** End Removed ***
+#elif defined(IOMTR_OS_SOLARIS)
+	processor_info_t infop;
+	int j, status;
 
+	for (j = 0; j < MAX_CPUS; j++)
+	{
+		status = p_online((processorid_t)j, P_STATUS);
+		if ((status == -1) || (status == EINVAL))
+			continue;
 
-//#endif	
+		// Ok we found a processor.
+		// This call should succeed. Else it means that the system has no processors !!!
+		// ("its haunted" !!!) or that this call is unsupported.
+		if (processor_info((processorid_t)j, &infop) < 0)
+		{
+			cout << "*** Could not determine processor speed." << endl << flush;
+			return (double) 0.0;
+		}
+		// found a processor and also the obtained the infop structure. So break.
+		break;
+	}
+	if (j == MAX_CPUS)
+	{
+		cout << "*** Could not determine processor speed." << endl << flush;
+		return (double) 0.0;
+	}
+
+	// If there are more than one processors, well, we get the speed of the first one.
+	speed = infop.pi_clock;
+#elif defined(LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 
 	for ( int i = 0; i < SPEED_VALUE_COUNT; i++ )
 	{
@@ -514,6 +478,8 @@ double Performance::Get_Processor_Speed()
 	}
 	return (double) (speed * 1000000);
 }
+
+
 
 
 
@@ -552,17 +518,20 @@ PERF_DATA_BLOCK: A simple header for all of the performance data returned.
 	PERF_OBJECT_TYPE t:
 		...
 */
-
 //
 // Extracting system performance data.  The data is accessed through the NT registry, but stored elsewhere.
 //
 void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 {
-#ifndef SOLARIS
-	long	query_result;				// Value returned trying to query performance data.
-	DWORD	perf_object_size;			// Size of buffer allocated to storing performance data.
+#if defined(IOMTR_OS_SOLARIS)
+	long	query_result;			// Value returned trying to query performance data.
+	DWORD	perf_object_size;		// Size of buffer allocated to storing performance data.
 	char	perf_data_type_name[10];	// ASCII representation of performance data index.
-	_int64	perf_update_freq;			// Frequency that performance counters are updated.
+	_int64	perf_update_freq;		// Frequency that performance counters are updated.
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64) 
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	// Get the performance data stored by the system.
@@ -570,7 +539,7 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 		cout << "   Getting system performance data." << endl << flush;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	perf_object_size = perf_size;
 	_itoa( perf_data_type, perf_data_type_name, 10 );  // convert index to a string
 
@@ -649,15 +618,6 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 			perf_time = (double)(time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]) / perf_update_freq;
 		else
 		{
-//
-// *** Removed:  Need to add back in if using getTickCount.
-//
-//#ifndef WIN64_COUNTER_WORKAROUND //the new getTickCount doesn't take snapshots fast enough for the test 
-//			cout << "*** Unable to get time or frequency of performance update." << endl << flush;
-//#endif
-//
-// *** End Removed.
-//
 			perf_time = (double) 0.0;	// Error gathering performance time, mark as invalid.
 		}
 		#if _DEBUG
@@ -665,7 +625,7 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 		#endif
 	}
 	Extract_Counters( perf_data_type, snapshot );
-#else // ! WINDOWS => UNIX
+#elif defined(IOMTR_OS_SOLARIS)
 	time_counter[snapshot] = gethrtime();
 	if (snapshot == LAST_SNAPSHOT)
 		// calculate time diff in clock ticks..
@@ -686,15 +646,221 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 	default:
 		break;
 	}
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 }
 
-#ifdef UNIX
+
+
+
+
+//
+// Calculating CPU statistics based on snapshots of performance counters.
+//
+void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
+{
+	int		cpu, stat;		// Loop control variables.
+
+	// Loop though all CPUs and determine various utilization statistics.
+	cpu_results->count = processor_count;
+	for ( cpu = 0; cpu < processor_count; cpu++ )
+	{
+		// Loop through the counters and calculate performance.
+		for ( stat = 0; stat < CPU_RESULTS; stat++ )
+		{
+			#if PERFORMANCE_DETAILS
+				cout << "Calculating stat " << stat << " for CPU " << cpu << endl;
+			#endif
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+			// If we've never set the counter offsets, then we've never successfully retrieved
+			// the performance data.  Set all of the values to 0.
+			if ( cpu_perf_counter_info[stat].offset == IOERROR )
+			{
+				cout << "*** Offset to CPU performance counter not defined for stat " 
+					 << stat << "." << endl;
+				cpu_results->CPU_utilization[cpu][stat] = (double)0.0;
+			}
+			else
+			{
+				cpu_results->CPU_utilization[cpu][stat] = Calculate_Stat( 
+					raw_cpu_data[cpu][stat][FIRST_SNAPSHOT],
+					raw_cpu_data[cpu][stat][LAST_SNAPSHOT],
+					cpu_perf_counter_info[stat].type );
+			}
+#elif defined(IOMTR_OS_SOLARIS)
+			double result;
+			if (stat == CPU_IRQ)
+			{
+				// we have to calculate Interrupts/sec.
+				// This is similar to calculating Network packets per second
+				// but we are more fortunate here.
+				// See the corresponding Notes at the end of this file for a description.
+				//
+				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
+						 - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * 
+						 clock_tick / timediff;
+				cpu_results->CPU_utilization[cpu][stat] = result;	
+			}
+			else
+			{
+				// All other CPU statistics.
+				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
+							- raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
+
+				if (result < 0.0) 
+				{
+					result = 0.0;
+					//
+					// CPU Utilization figures are outside valid range far too often.
+					// Ok, not in every cycle but frequent still.
+					// So, it is better to comment it out rather than have the message
+					// pop up on the screen at regular intervals.
+					//
+					// cout << "***** Error : CPU utilization outside valid range 0% - 100% *****" << endl;
+				}
+				if  (result > 1.0)
+				{
+					result = 1.0;
+				}
+
+				cpu_results->CPU_utilization[cpu][stat] = (result * 100);
+			}
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
+			#if PERFORMANCE_DETAILS || _DETAILS
+				cout << "CPU " << cpu << " recorded stat " << stat << " = " 
+					<< cpu_results->CPU_utilization[cpu][stat] << endl;
+			#endif
+		}
+	}
+}
+
+
+
+
+
+//
+// Calculate network performance statistics based on snapshots of performance counters.
+//
+void Performance::Calculate_TCP_Stats( Net_Results *net_results )
+{
+	int		stat;		// Loop control variable.
+
+	// Loop through the counters and calculate performance.
+	for ( stat = 0; stat < TCP_RESULTS; stat++ )
+	{
+		// If we've never set the counter offsets, then we've never successfully retrieved
+		// the performance data.  Set all of the values to 0.
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+		if ( tcp_perf_counter_info[stat].offset == IOERROR )
+		{
+			net_results->tcp_stats[stat] = (double)0.0;
+		}
+		else
+		{
+			net_results->tcp_stats[stat] = Calculate_Stat( 
+				raw_tcp_data[stat][FIRST_SNAPSHOT],
+				raw_tcp_data[stat][LAST_SNAPSHOT],
+				tcp_perf_counter_info[stat].type );
+		}
+#elif defined(IOMTR_OS_SOLARIS)
+		double result;
+		result = ((double) raw_tcp_data[stat][LAST_SNAPSHOT] - 
+			raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
+		result *= clock_tick;		// note that timediff is in CLK_TCKs and not seconds
+		net_results->tcp_stats[stat] = result;
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
+		#if PERFORMANCE_DETAILS || _DETAILS
+			cout << "TCP recorded stat " << stat << " = " 
+				<< net_results->tcp_stats[stat] << endl;
+		#endif
+	}
+}
+
+
+
+
+
+//
+// Calculate network performance statistics based on snapshots of performance counters.
+//
+void Performance::Calculate_NI_Stats( Net_Results *net_results )
+{
+	int		net, stat;		// Loop control variables.
+
+	// Loop through the counters and calculate performance.
+	net_results->ni_count = network_interfaces;
+	for ( net = 0; net < network_interfaces; net++ )
+	{
+		for ( stat = 0; stat < NI_RESULTS; stat++ )
+		{
+			// If we've never set the counter offsets, then we've never successfully retrieved
+			// the performance data.  Set all of the values to 0.
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+			if ( ni_perf_counter_info[stat].offset == IOERROR )
+			{
+				net_results->ni_stats[net][stat] = (double)0.0;
+			}
+			else
+			{
+				net_results->ni_stats[net][stat] = Calculate_Stat( 
+					raw_ni_data[net][stat][FIRST_SNAPSHOT],
+					raw_ni_data[net][stat][LAST_SNAPSHOT],
+					ni_perf_counter_info[stat].type );
+			}
+#elif defined(IOMTR_OS_SOLARIS)
+			double result;
+			//
+			// Note:
+			//		The array time_counter[] stores time in nanoseconds.
+			// Earlier, we used to divide by the calculated value of timediff and then
+			// multiply the result by clock_ticks per second to get the NI_data per
+			// second which was theoretically correct (and mathematically same as what 
+			// we are doing now) but reported wrong values while working with such 
+			// large numbers.
+			//
+			result = ((double) raw_ni_data[net][stat][LAST_SNAPSHOT] - 
+				raw_ni_data[net][stat][FIRST_SNAPSHOT]) * 1000000000.0 / 
+				((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
+
+			net_results->ni_stats[net][stat] = result;
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
+			#if PERFORMANCE_DETAILS || _DETAILS
+				cout << "   Network interface " << net << " recorded stat " << stat << " = " 
+					<< net_results->ni_stats[net][stat] << endl;
+			#endif
+		}
+	}
+}
+
+
+
+
+
+#if defined(IOMTR_OS_SOLARIS)
 void Performance::Get_CPU_Counters(int snapshot)
 {
 	kstat_t		*ksp;
 	cpu_stat_t	*cpu_stat;
-	int			current_cpu = 0;
+	int		 current_cpu = 0;
 	
 	for (ksp = kc->kc_chain; ksp != NULL; ksp = ksp->ks_next)
 	{
@@ -729,64 +895,13 @@ void Performance::Get_CPU_Counters(int snapshot)
 	return;
 }
 
-void Performance::Get_NI_Counters(int snapshot)
-{
-	kstat_t		*ksp;
-	kstat_named_t *knamed;
-	int			current_nic = 0 , i;
-
-	for (ksp = kc->kc_chain; ksp != NULL; ksp = ksp->ks_next)
-	{
-		if (ksp->ks_type != KSTAT_TYPE_NAMED)
-			continue;
-
-		// NET data is NAMED data.
-		if (strcmp(ksp->ks_name, nic_names[current_nic]) == 0)
-		{
-			// found the interface we are looking for.
-			if (0 > kstat_read(kc, ksp, NULL))
-			{
-				cout << "kstat_read() failed with error " << errno << endl;
-				exit(1);
-			}
-			// store data into raw_ni_data. First initialize for this snapshot to 
-			// prevent a buildup of values.
-			raw_ni_data[current_nic][NI_PACKETS][snapshot] = 0;
-			raw_ni_data[current_nic][NI_ERRORS][snapshot] = 0;
-
-			for (i=0; i < ksp->ks_ndata; i++)
-			{
-				knamed = KSTAT_NAMED_PTR(ksp)  + i;
-				if (strcmp(knamed->name, "opackets") == 0)
-					raw_ni_data[current_nic][NI_PACKETS][snapshot] += knamed->value.ui32;
-				if (strcmp(knamed->name, "ipackets") == 0)
-					raw_ni_data[current_nic][NI_PACKETS][snapshot] += knamed->value.ui32;
-				if (strcmp(knamed->name, "oerrors") == 0)
-					raw_ni_data[current_nic][NI_ERRORS][snapshot] += knamed->value.ui32;
-				if (strcmp(knamed->name, "ierrors") == 0)
-				{
-					raw_ni_data[current_nic][NI_IN_ERRORS][snapshot] = knamed->value.ui32;
-					raw_ni_data[current_nic][NI_ERRORS][snapshot] += knamed->value.ui32;
-				}
-			}
-			if (current_nic++ > network_interfaces)
-				break;
-		}
-	}
-	return;
-}
 
 
 void Performance::Get_TCP_Counters(int snapshot)
 {
-	struct opthdr			*opthdr;
+	struct opthdr		*opthdr;
 	struct T_optmgmt_req	*optreq;
-#ifndef SOLARIS
-	struct T_optmgmt_ack	*optack;
-	struct T_error_ack		*errack;
-#endif
-	int						flags = 0, retval;
-
+	int			 flags = 0, retval;
 
 	// We have already taken care of this in the constructor.
 	// streamfd will be -1 iff !superuser.
@@ -899,10 +1014,56 @@ void Performance::Get_TCP_Counters(int snapshot)
 	close(streamfd);
 	return;
 }
-#endif
 
 
-#if defined (_WIN32) || defined (_WIN64)
+
+void Performance::Get_NI_Counters(int snapshot)
+{
+	kstat_t		*ksp;
+	kstat_named_t *knamed;
+	int			current_nic = 0 , i;
+
+	for (ksp = kc->kc_chain; ksp != NULL; ksp = ksp->ks_next)
+	{
+		if (ksp->ks_type != KSTAT_TYPE_NAMED)
+			continue;
+
+		// NET data is NAMED data.
+		if (strcmp(ksp->ks_name, nic_names[current_nic]) == 0)
+		{
+			// found the interface we are looking for.
+			if (0 > kstat_read(kc, ksp, NULL))
+			{
+				cout << "kstat_read() failed with error " << errno << endl;
+				exit(1);
+			}
+			// store data into raw_ni_data. First initialize for this snapshot to 
+			// prevent a buildup of values.
+			raw_ni_data[current_nic][NI_PACKETS][snapshot] = 0;
+			raw_ni_data[current_nic][NI_ERRORS][snapshot] = 0;
+
+			for (i=0; i < ksp->ks_ndata; i++)
+			{
+				knamed = KSTAT_NAMED_PTR(ksp)  + i;
+				if (strcmp(knamed->name, "opackets") == 0)
+					raw_ni_data[current_nic][NI_PACKETS][snapshot] += knamed->value.ui32;
+				if (strcmp(knamed->name, "ipackets") == 0)
+					raw_ni_data[current_nic][NI_PACKETS][snapshot] += knamed->value.ui32;
+				if (strcmp(knamed->name, "oerrors") == 0)
+					raw_ni_data[current_nic][NI_ERRORS][snapshot] += knamed->value.ui32;
+				if (strcmp(knamed->name, "ierrors") == 0)
+				{
+					raw_ni_data[current_nic][NI_IN_ERRORS][snapshot] = knamed->value.ui32;
+					raw_ni_data[current_nic][NI_ERRORS][snapshot] += knamed->value.ui32;
+				}
+			}
+			if (current_nic++ > network_interfaces)
+				break;
+		}
+	}
+	return;
+}
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 //
 // Obtaining the desired performance counters from the returned performance data.
 //
@@ -944,6 +1105,158 @@ void Performance::Extract_Counters( DWORD perf_data_type, int snapshot )
 }
 
 
+
+//
+// Extracting counters for NT CPU performance data.
+//
+void Performance::Extract_CPU_Counters( int snapshot )
+{
+	char	cpu_name[3], cpu_reg_name[3];
+	int		cpu, stat, i;
+
+	// Loop through all processors and record performance information.
+	for ( cpu = 0; cpu < processor_count; cpu++ )
+	{
+		// Find the desired processor instance.
+		if ( !Locate_Perf_Instance( cpu ) )
+			return;
+
+		// Verify that the instance found is for the current processor, 
+		// otherwise perform an enhaustive search.
+		_itoa( cpu, cpu_name, 10 );
+
+                strcpy((char*)cpu_reg_name, (char*)((LPBYTE)perf_instance + perf_instance->NameOffset));
+
+                if (perf_instance->NameLength = 6)
+                {
+                        strcat((char*)cpu_reg_name, 
+				(char*)((LPBYTE)perf_instance +
+                              	perf_instance->NameOffset)+2);
+                }
+
+                if ( strncmp( cpu_name, cpu_reg_name, 2 ) )
+                {
+			#if _DEBUG
+				cout << "Performing exhaustive search for processor instance " << cpu << endl;
+			#endif
+
+			// Check all processor instances and 
+			// try to match one with the desired processor.
+			for ( i = 0; i < perf_object->NumInstances; i++ )
+			{
+			if ( !Locate_Perf_Instance( i ) )
+				return;
+			#if PERFORMANCE_DETAILS || _DETAILS
+                        cout << "Looking at processor name: " 
+				<< (char *)cpu_reg_name << endl;
+			#endif
+			// Match the name of the current instance with 
+			// 	the name of the desired cpu.
+			if ( !strncmp( cpu_name, (char*)((LPBYTE)perf_instance+ 
+					perf_instance->NameOffset), 2 ) )
+			break;	// Found the correct instance.
+			}
+			if ( i == perf_object->NumInstances )
+			{
+			cout << "*** Unable to locate performance instance of processor " << cpu_name << endl;
+			return;
+			}
+		}
+
+		// Saving CPU specific counters.
+		for ( stat = 0; stat < CPU_RESULTS; stat++ )
+		{
+			#if PERFORMANCE_DETAILS || _DETAILS
+				cout << "Extracting CPU stat " << stat 
+					<< " for CPU " << cpu_name << endl;
+			#endif
+			raw_cpu_data[cpu][stat][snapshot] = 
+				Extract_Counter( &(cpu_perf_counter_info[stat]) );
+		}
+	}
+}
+
+
+
+//
+// Extracting counters for NT network performance data.
+//
+void Performance::Extract_TCP_Counters( int snapshot )
+{
+	int		stat;
+
+	// Saving network TCP specific counters.
+	if ( !Locate_Perf_Instance() )
+		return;
+	for ( stat = 0; stat < TCP_RESULTS; stat++ )
+	{
+		#if PERFORMANCE_DETAILS || _DETAILS
+			cout << "Extracting TCP stat " << stat << endl;
+		#endif
+		raw_tcp_data[stat][snapshot] = Extract_Counter( &(tcp_perf_counter_info[stat]) );
+	}
+}
+
+
+
+//
+// Extracting counters for NT network interface performance data.
+//
+void Performance::Extract_NI_Counters( int snapshot )
+{
+	int		stat;
+
+	// Automatically setting the number of network interfaces that data is available for.
+	network_interfaces = 0;
+	do
+	{
+		// Find the desired network NI interface instance.
+		if ( !Locate_Perf_Instance(network_interfaces) )
+			return;
+
+		// Saving network NI specific counters.
+		for ( stat = 0; stat < NI_RESULTS; stat++ )
+		{
+			#if PERFORMANCE_DETAILS || _DETAILS
+				cout << "Extracting NI stat " << stat << " for NI " 
+					<< network_interfaces << endl;
+			#endif
+			raw_ni_data[network_interfaces][stat][snapshot] = 
+				Extract_Counter( &(ni_perf_counter_info[stat]) );
+		}
+		network_interfaces++;
+	} while ( network_interfaces < perf_object->NumInstances );
+}
+
+
+
+//
+// Extracting and returning a performance counter.  Perf_counter must already be set to a valid
+// performance counter block by calling Locate_Perf_Instance.
+//
+_int64 Performance::Extract_Counter( const Perf_Counter_Info *counter_info )
+{
+	// Verify that we know where to locate the counter.
+	if ( counter_info->offset == IOERROR )
+	{
+		cout << "*** Unable to extract performance counter, offset not set." << endl << flush;
+		return (_int64)0;
+	}
+
+	switch ( counter_info->type & PERF_SIZE_MASK )
+	{
+	case PERF_SIZE_LARGE:
+		return (_int64)((LARGE_INTEGER*)((LPBYTE)perf_counters + counter_info->offset))->QuadPart;
+	case PERF_SIZE_DWORD:
+		return (_int64)*((DWORD*)((LPBYTE)perf_counters + counter_info->offset));
+	default:					// other counter types exist, but are not currently used - signal error
+		cout << "*** Unknown size of performance data." << endl << flush;
+	}
+	return (_int64)0;
+}
+
+
+
 //
 // Locating the desired performance object from the returned performance data.
 //
@@ -983,6 +1296,54 @@ BOOL Performance::Locate_Perf_Object( DWORD perf_object_index )
 	}
 	return TRUE;
 }
+
+
+
+//
+// Locating the specific instance, base 0, of a performance object and finding its counters.
+// You must call Locate_Perf_Object to locate a valid performance object before calling this.
+//
+BOOL Performance::Locate_Perf_Instance( int instance )
+{
+	// See if the current performance object supports multiple instances.
+	// The performance object should have previously been set by Locate_Perf_Object.
+	if ( perf_object->NumInstances == PERF_NO_INSTANCES )
+	{
+		// Verify that we were not expecting multiple instances to be supported.
+		if ( instance != PERF_NO_INSTANCES )
+		{
+			cout << "*** One performance instance was found, but more were expected." << endl << flush;
+			return FALSE;
+		}
+
+		// Only one instance supported, just set a pointer to the performance counters.
+		perf_instance = NULL;
+		perf_counters = (PERF_COUNTER_BLOCK*)((LPBYTE)perf_object + perf_object->DefinitionLength);
+	}
+	else
+	{
+		// Verify that we were expecting to find multiple instances.
+		if ( instance == PERF_NO_INSTANCES )
+		{
+			cout << "*** Multiple performance instances were found, but not expected." << endl << flush;
+			return FALSE;
+		}
+
+		// Multiple instances supported.  Locate the counters to the correct one.
+		// Get a pointer to the first instance.
+		perf_instance = (PERF_INSTANCE_DEFINITION*)((LPBYTE)perf_object + perf_object->DefinitionLength);
+
+		// Walk through instances until we find the one we want.
+		for ( int i = 0; i < instance; i++ )
+		{
+			perf_counters = (PERF_COUNTER_BLOCK*)((LPBYTE)perf_instance + perf_instance->ByteLength);
+			perf_instance = (PERF_INSTANCE_DEFINITION*)((LPBYTE)perf_counters + perf_counters->ByteLength);
+		}
+		perf_counters = (PERF_COUNTER_BLOCK*)((LPBYTE)perf_instance + perf_instance->ByteLength);
+	}
+	return TRUE;
+}
+
 
 
 //
@@ -1045,84 +1406,6 @@ BOOL Performance::Set_Counter_Info( DWORD perf_data_type )
 
 
 
-//
-// Locating the specific instance, base 0, of a performance object and finding its counters.
-// You must call Locate_Perf_Object to locate a valid performance object before calling this.
-//
-BOOL Performance::Locate_Perf_Instance( int instance )
-{
-	// See if the current performance object supports multiple instances.
-	// The performance object should have previously been set by Locate_Perf_Object.
-	if ( perf_object->NumInstances == PERF_NO_INSTANCES )
-	{
-		// Verify that we were not expecting multiple instances to be supported.
-		if ( instance != PERF_NO_INSTANCES )
-		{
-			cout << "*** One performance instance was found, but more were expected." << endl << flush;
-			return FALSE;
-		}
-
-		// Only one instance supported, just set a pointer to the performance counters.
-		perf_instance = NULL;
-		perf_counters = (PERF_COUNTER_BLOCK*)((LPBYTE)perf_object + perf_object->DefinitionLength);
-	}
-	else
-	{
-		// Verify that we were expecting to find multiple instances.
-		if ( instance == PERF_NO_INSTANCES )
-		{
-			cout << "*** Multiple performance instances were found, but not expected." << endl << flush;
-			return FALSE;
-		}
-
-		// Multiple instances supported.  Locate the counters to the correct one.
-		// Get a pointer to the first instance.
-		perf_instance = (PERF_INSTANCE_DEFINITION*)((LPBYTE)perf_object + perf_object->DefinitionLength);
-
-		// Walk through instances until we find the one we want.
-		for ( int i = 0; i < instance; i++ )
-		{
-			perf_counters = (PERF_COUNTER_BLOCK*)((LPBYTE)perf_instance + perf_instance->ByteLength);
-			perf_instance = (PERF_INSTANCE_DEFINITION*)((LPBYTE)perf_counters + perf_counters->ByteLength);
-		}
-		perf_counters = (PERF_COUNTER_BLOCK*)((LPBYTE)perf_instance + perf_instance->ByteLength);
-	}
-	return TRUE;
-}
-
-
-
-//
-// Extracting and returning a performance counter.  Perf_counter must already be set to a valid
-// performance counter block by calling Locate_Perf_Instance.
-//
-_int64 Performance::Extract_Counter( const Perf_Counter_Info *counter_info )
-{
-	// Verify that we know where to locate the counter.
-	if ( counter_info->offset == IOERROR )
-	{
-		cout << "*** Unable to extract performance counter, offset not set." << endl << flush;
-		return (_int64)0;
-	}
-
-	switch ( counter_info->type & PERF_SIZE_MASK )
-	{
-	case PERF_SIZE_LARGE:
-		return (_int64)((LARGE_INTEGER*)((LPBYTE)perf_counters + counter_info->offset))->QuadPart;
-	case PERF_SIZE_DWORD:
-		return (_int64)*((DWORD*)((LPBYTE)perf_counters + counter_info->offset));
-	default:					// other counter types exist, but are not currently used - signal error
-		cout << "*** Unknown size of performance data." << endl << flush;
-	}
-	return (_int64)0;
-}
-#endif
-
-
-//
-// Calculating the performance value for a given counter pair based on its saved information.
-//
-#if defined (_WIN32) || defined (_WIN64)
 double Performance::Calculate_Stat( _int64 start_value, _int64 end_value, DWORD counter_type )
 {
 	double	count_difference;	// Difference between two snapshots of a counter.
@@ -1290,309 +1573,14 @@ double Performance::Calculate_Stat( _int64 start_value, _int64 end_value, DWORD 
 		return (double)0.0;
 	}
 }
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else    
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 
 
-#if defined (_WIN32) || defined (_WIN64)
-//
-// Extracting counters for NT CPU performance data.
-//
-void Performance::Extract_CPU_Counters( int snapshot )
-{
-	char	cpu_name[3], cpu_reg_name[3];
-	int		cpu, stat, i;
-
-	// Loop through all processors and record performance information.
-	for ( cpu = 0; cpu < processor_count; cpu++ )
-	{
-		// Find the desired processor instance.
-		if ( !Locate_Perf_Instance( cpu ) )
-			return;
-
-		// Verify that the instance found is for the current processor, 
-		// otherwise perform an enhaustive search.
-		_itoa( cpu, cpu_name, 10 );
-
-                strcpy((char*)cpu_reg_name, (char*)((LPBYTE)perf_instance + perf_instance->NameOffset));
-
-                if (perf_instance->NameLength = 6)
-                {
-                        strcat((char*)cpu_reg_name, 
-				(char*)((LPBYTE)perf_instance +
-                              	perf_instance->NameOffset)+2);
-                }
-
-                if ( strncmp( cpu_name, cpu_reg_name, 2 ) )
-                {
-			#if _DEBUG
-				cout << "Performing exhaustive search for processor instance " << cpu << endl;
-			#endif
-
-			// Check all processor instances and 
-			// try to match one with the desired processor.
-			for ( i = 0; i < perf_object->NumInstances; i++ )
-			{
-			if ( !Locate_Perf_Instance( i ) )
-				return;
-			#if PERFORMANCE_DETAILS || _DETAILS
-                        cout << "Looking at processor name: " 
-				<< (char *)cpu_reg_name << endl;
-			#endif
-			// Match the name of the current instance with 
-			// 	the name of the desired cpu.
-			if ( !strncmp( cpu_name, (char*)((LPBYTE)perf_instance+ 
-					perf_instance->NameOffset), 2 ) )
-			break;	// Found the correct instance.
-			}
-			if ( i == perf_object->NumInstances )
-			{
-			cout << "*** Unable to locate performance instance of processor " << cpu_name << endl;
-			return;
-			}
-		}
-
-		// Saving CPU specific counters.
-		for ( stat = 0; stat < CPU_RESULTS; stat++ )
-		{
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "Extracting CPU stat " << stat 
-					<< " for CPU " << cpu_name << endl;
-			#endif
-			raw_cpu_data[cpu][stat][snapshot] = 
-				Extract_Counter( &(cpu_perf_counter_info[stat]) );
-		}
-	}
-}
-#endif
 
 
-//
-// Calculating CPU statistics based on snapshots of performance counters.
-//
-void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
-{
-	int		cpu, stat;		// Loop control variables.
-
-	// Loop though all CPUs and determine various utilization statistics.
-	cpu_results->count = processor_count;
-	for ( cpu = 0; cpu < processor_count; cpu++ )
-	{
-		// Loop through the counters and calculate performance.
-		for ( stat = 0; stat < CPU_RESULTS; stat++ )
-		{
-			#if PERFORMANCE_DETAILS
-				cout << "Calculating stat " << stat << " for CPU " << cpu << endl;
-			#endif
-
-#if defined (_WIN32) || defined (_WIN64)
-			// If we've never set the counter offsets, then we've never successfully retrieved
-			// the performance data.  Set all of the values to 0.
-			if ( cpu_perf_counter_info[stat].offset == IOERROR )
-			{
-				cout << "*** Offset to CPU performance counter not defined for stat " 
-					 << stat << "." << endl;
-				cpu_results->CPU_utilization[cpu][stat] = (double)0.0;
-			}
-			else
-			{
-				cpu_results->CPU_utilization[cpu][stat] = Calculate_Stat( 
-					raw_cpu_data[cpu][stat][FIRST_SNAPSHOT],
-					raw_cpu_data[cpu][stat][LAST_SNAPSHOT],
-					cpu_perf_counter_info[stat].type );
-			}
-#else // UNIX
-			double result;
-			if (stat == CPU_IRQ)
-			{
-				// we have to calculate Interrupts/sec.
-				// This is similar to calculating Network packets per second
-				// but we are more fortunate here.
-				// See the corresponding Notes at the end of this file for a description.
-				//
-				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
-						 - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * 
-						 clock_tick / timediff;
-				cpu_results->CPU_utilization[cpu][stat] = result;	
-			}
-			else
-			{
-				// All other CPU statistics.
-				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
-							- raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
-
-				if (result < 0.0) 
-				{
-					result = 0.0;
-					//
-					// CPU Utilization figures are outside valid range far too often.
-					// Ok, not in every cycle but frequent still.
-					// So, it is better to comment it out rather than have the message
-					// pop up on the screen at regular intervals.
-					//
-					// cout << "***** Error : CPU utilization outside valid range 0% - 100% *****" << endl;
-				}
-				if  (result > 1.0)
-				{
-					result = 1.0;
-				}
-
-				cpu_results->CPU_utilization[cpu][stat] = (result * 100);
-			}
-#endif
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "CPU " << cpu << " recorded stat " << stat << " = " 
-					<< cpu_results->CPU_utilization[cpu][stat] << endl;
-			#endif
-		}
-	}
-}
-
-
-#if defined (_WIN32) || defined (_WIN64)
-//
-// Extracting counters for NT network performance data.
-//
-void Performance::Extract_TCP_Counters( int snapshot )
-{
-	int		stat;
-
-	// Saving network TCP specific counters.
-	if ( !Locate_Perf_Instance() )
-		return;
-	for ( stat = 0; stat < TCP_RESULTS; stat++ )
-	{
-		#if PERFORMANCE_DETAILS || _DETAILS
-			cout << "Extracting TCP stat " << stat << endl;
-		#endif
-		raw_tcp_data[stat][snapshot] = Extract_Counter( &(tcp_perf_counter_info[stat]) );
-	}
-}
-#endif
-
-
-//
-// Calculate network performance statistics based on snapshots of performance counters.
-//
-void Performance::Calculate_TCP_Stats( Net_Results *net_results )
-{
-	int		stat;		// Loop control variable.
-
-	// Loop through the counters and calculate performance.
-	for ( stat = 0; stat < TCP_RESULTS; stat++ )
-	{
-		// If we've never set the counter offsets, then we've never successfully retrieved
-		// the performance data.  Set all of the values to 0.
-#if defined (_WIN32) || defined (_WIN64)
-		if ( tcp_perf_counter_info[stat].offset == IOERROR )
-		{
-			net_results->tcp_stats[stat] = (double)0.0;
-		}
-		else
-		{
-			net_results->tcp_stats[stat] = Calculate_Stat( 
-				raw_tcp_data[stat][FIRST_SNAPSHOT],
-				raw_tcp_data[stat][LAST_SNAPSHOT],
-				tcp_perf_counter_info[stat].type );
-		}
-#else
-		double result;
-		result = ((double) raw_tcp_data[stat][LAST_SNAPSHOT] - 
-			raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
-		result *= clock_tick;		// note that timediff is in CLK_TCKs and not seconds
-		net_results->tcp_stats[stat] = result;
-#endif
-
-		#if PERFORMANCE_DETAILS || _DETAILS
-			cout << "TCP recorded stat " << stat << " = " 
-				<< net_results->tcp_stats[stat] << endl;
-		#endif
-	}
-}
-
-
-#if defined (_WIN32) || defined (_WIN64)
-//
-// Extracting counters for NT network interface performance data.
-//
-void Performance::Extract_NI_Counters( int snapshot )
-{
-	int		stat;
-
-	// Automatically setting the number of network interfaces that data is available for.
-	network_interfaces = 0;
-	do
-	{
-		// Find the desired network NI interface instance.
-		if ( !Locate_Perf_Instance(network_interfaces) )
-			return;
-
-		// Saving network NI specific counters.
-		for ( stat = 0; stat < NI_RESULTS; stat++ )
-		{
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "Extracting NI stat " << stat << " for NI " 
-					<< network_interfaces << endl;
-			#endif
-			raw_ni_data[network_interfaces][stat][snapshot] = 
-				Extract_Counter( &(ni_perf_counter_info[stat]) );
-		}
-		network_interfaces++;
-	} while ( network_interfaces < perf_object->NumInstances );
-}
-#endif
-
-
-//
-// Calculate network performance statistics based on snapshots of performance counters.
-//
-void Performance::Calculate_NI_Stats( Net_Results *net_results )
-{
-	int		net, stat;		// Loop control variables.
-
-	// Loop through the counters and calculate performance.
-	net_results->ni_count = network_interfaces;
-	for ( net = 0; net < network_interfaces; net++ )
-	{
-		for ( stat = 0; stat < NI_RESULTS; stat++ )
-		{
-			// If we've never set the counter offsets, then we've never successfully retrieved
-			// the performance data.  Set all of the values to 0.
-#if defined (_WIN32) || defined (_WIN64)
-			if ( ni_perf_counter_info[stat].offset == IOERROR )
-			{
-				net_results->ni_stats[net][stat] = (double)0.0;
-			}
-			else
-			{
-				net_results->ni_stats[net][stat] = Calculate_Stat( 
-					raw_ni_data[net][stat][FIRST_SNAPSHOT],
-					raw_ni_data[net][stat][LAST_SNAPSHOT],
-					ni_perf_counter_info[stat].type );
-			}
-#else // UNIX
-			double result;
-			//
-			// Note:
-			//		The array time_counter[] stores time in nanoseconds.
-			// Earlier, we used to divide by the calculated value of timediff and then
-			// multiply the result by clock_ticks per second to get the NI_data per
-			// second which was theoretically correct (and mathematically same as what 
-			// we are doing now) but reported wrong values while working with such 
-			// large numbers.
-			//
-			result = ((double) raw_ni_data[net][stat][LAST_SNAPSHOT] - 
-				raw_ni_data[net][stat][FIRST_SNAPSHOT]) * 1000000000.0 / 
-				((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
-
-			net_results->ni_stats[net][stat] = result;
-#endif
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "   Network interface " << net << " recorded stat " << stat << " = " 
-					<< net_results->ni_stats[net][stat] << endl;
-			#endif
-		}
-	}
-}
-
-#endif /* !Linux */
+#endif   // !IOMTR_OS_LINUX
