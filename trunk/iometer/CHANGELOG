@@ -8,6 +8,8 @@ ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-2003.12.16-post.DS2.DanielGlobalAccessSpecs.patch by
+     Daniel Scheibli (adds a set of sample Global Access Specifications).
    - iometer-netware.patch by Thayne Harmon (modifies the usage output
      to reflect volume exclusion, adoped Makefile to use Code Warrier 8).
    - iometer-2003.12.16-post.DS2.DanielIcfVersionStringWithDash.patch

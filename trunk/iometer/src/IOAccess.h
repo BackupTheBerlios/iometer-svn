@@ -79,7 +79,10 @@ typedef struct
 
 struct Access_Spec
 {
-	int of_size;
+	int of_size;	// Indicates how many percent this Access_Spec
+	                // acquires in AccessSpecList (so the sum of
+					// all Access_Spec's of_size fields has to be
+					// 100 in total)
 	int reads;
 	int random;
 	int delay;

@@ -50,7 +50,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-04-24 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added the InsertDefaultSpecs() method.              ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -106,7 +108,8 @@ public:
 
 protected:
 // Private Functions
-	void	InsertIdleSpec();	// Creates the idle spec and inserts it's pointer into the poiter array.
+	void	InsertIdleSpec();		// Creates the idle spec and inserts it's pointer into the poiter array.
+	void	InsertDefaultSpecs();	// Inserts the different default specifications.
 
 	void	DeleteAll();		// Deletes all entries in the access spec list.
 
