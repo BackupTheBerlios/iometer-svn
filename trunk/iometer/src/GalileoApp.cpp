@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-20 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the registry key from "Intel" to            ## */
+/* ##                 "iometer.org"                                       ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -155,8 +158,9 @@ BOOL CGalileoApp::InitInstance()
 	//init file version strings
 	GetAppFileVersionString(&m_pVersionString, &m_pVersionStringWithDebug);
 
-	SetRegistryKey( "Intel" );	// Stores information in the registry under
-								// HKEY_CURRENT_USER\Software\Intel.
+	SetRegistryKey( "iometer.org" );	// Stores information in the registry under
+						// HKEY_CURRENT_USER\Software\iometer.org
+						// \Iometer\Settings\Version
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 

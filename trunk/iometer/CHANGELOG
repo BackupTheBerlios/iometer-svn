@@ -42,7 +42,7 @@ ChangeLog (2004.nn.nn):
      longer option but required now)
 - Cleanup:
    - Corrected the CPU speed detection output as it was proposed
-     Kenneth Morse.
+     Kenneth Morse (rounding issue).
    - Changed the "truly batch oriented" patch behaviour (basically rolled
      back the changes due to the bug report of Kris Strecker).
    - Removed an old left over _DETAIL define depended code (for debugging)
@@ -52,6 +52,7 @@ ChangeLog (2004.nn.nn):
      Guide.
    - Added first comments about the coding style to the Developers Guide.
 - Others:
+   - Changed the Registry Key for the Windows GUI to "iometer.org".
    - Modified the About dialog to reflect the Open Source status of Iometer.
    - Changed the license of the iomtr_kstat module to the GPL.
    - Added md5sum's for each package to the project homepage.
