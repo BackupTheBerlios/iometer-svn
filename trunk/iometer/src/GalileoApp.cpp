@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / GalileoApp.cpp                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: The central class of the Iometer application.         ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -42,6 +61,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // start-up and shut-down code, for Iometer.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #include "stdafx.h"
 #include "GalileoDefs.h"
@@ -52,7 +72,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ManagerList.h"
 #include "Legalbox.h"
 #include "IOPortTCP.h"
-#include "IOPortPipe.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -520,18 +539,9 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 		login_port = new PortTCP( FALSE );	// asynchronous port
 		if ( !login_port->Create( NULL, NULL, 0, WELL_KNOWN_TCP_PORT ) )
 		{
-#ifdef _DEBUG
-			ErrorMessage("Could not create TCP/IP port for Dynamo login, trying named pipe instead");
-#endif
-
-			delete login_port;
-			login_port = new PortPipe( FALSE );	// asynchronous port
-			if ( !login_port->Create( WELL_KNOWN_PIPE ) )
-			{
-				ErrorMessage("Could not create TCP/IP port or named pipe for Dynamo login!");
-				login_state = failed;
-				return FALSE; // go away and don't come back (for a while)
-			}
+			ErrorMessage("Could not create TCP/IP port for Dynamo login!");
+			login_state = failed;
+			return FALSE; // go away and don't come back (for a while)
 		}
 
 		login_state = open;

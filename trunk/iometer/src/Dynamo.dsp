@@ -127,10 +127,6 @@ SOURCE=.\IOPort.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\IOPortPipe.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\IOPortTCP.cpp
 # End Source File
 # Begin Source File

@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / Manager.h                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: <to be set>                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -42,6 +61,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // workers and provides functions for manager-level actions.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef MANAGER_DEFINED
 	#define MANAGER_DEFINED
@@ -68,9 +88,7 @@ public:
 	char		network_name[MAX_NETWORK_NAME];	// Network address of the computer.
 	//
 	// Note that network_name is derived from the address Dynamo is connecting from,
-	// but it should NOT be used to refer to the Dynamo link.  In the case of a pipe
-	// connection, the Dynamo address contains specific pipe number information that
-	// is not stored in network_name.
+	// but it should NOT be used to refer to the Dynamo link.
 	//
 	// Uniquely distinguishes managers with the same name.
 	// To fill in this value, call ManagerList::IndexManagers().

@@ -13,7 +13,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Different changes to support compilation with       ## */
 /* ##                 gcc 3.2 (known as cout << hex error).               ## */
@@ -63,8 +66,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Port objects are used for communication between Dynamo and Iometer.  The 
 // Port class is an abstract (pure virtual) class that defines the interface
-// and includes code common to all implementations.  The classes PortTCP and
-// PortPipe provide socket-based and pipe-based implementations of Port.  
+// and includes code common to all implementations.  The class PortTCP
+// provides a socket-based implementations of Port.  
 //
 // This file is used by both Iometer and Dynamo.
 //

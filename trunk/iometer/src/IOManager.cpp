@@ -13,7 +13,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-04 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##               2003-02-04 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Applied proc-speed-fix.txt patch file               ## */
 /* ##                 (dropping a type cast in the Login() method).       ## */
@@ -85,9 +88,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include "IOPortTCP.h"
-#ifndef UNIX
-#include "IOPortPipe.h"
-#endif
 #include "IOTargetDisk.h"
 #include "IOTargetVI.h"
 
@@ -109,19 +109,8 @@ Manager::Manager()
 	prt = new PortTCP;
 	if ( !prt->Create() )
 	{
-#ifndef UNIX
-		cout << "*** Could not create TCP/IP port, trying named pipe instead." << endl;
-		delete prt;
-		prt = new PortPipe;
-		if ( !prt->Create() )
-		{
-			cout << "*** Could not create named pipe, giving up." << endl;
-			exit( 1 );
-		}
-#else // UNIX
 		cout << "*** Could not create a TCP/IP Port. exiting....." << endl;
 		exit(1);
-#endif
 	}
 	
 	record = FALSE;
@@ -246,30 +235,6 @@ BOOL Manager::Login( char* port_name )
 			return FALSE;
 		}
 	}
-#ifndef UNIX
-	else if ( prt->type == PORT_TYPE_PIPE )
-	{
-		login_port = new PortPipe;
-
-		// Seeing if the name of the computer running Iometer was provided.
-		char iometer[MAX_NETWORK_NAME];			// Name of Iometer machine.
-
-		if ( strlen(port_name) )
-		{
-			strcpy( iometer, "" );
-			strcat( iometer, port_name );
-			strcat( iometer, KNOWN_PIPE );
-		}
-		else
-			strcpy( iometer, WELL_KNOWN_PIPE );
-
-		if ( !login_port->Connect( iometer ) )
-		{
-			cout << "*** Could not create named pipe to connect with Iometer!" << endl;
-			return FALSE;
-		}
-	}
-#endif // !UNIX
 	else
 	{
 		cout << "*** Invalid port type in Manager::Login()" << endl;
@@ -309,10 +274,6 @@ BOOL Manager::Login( char* port_name )
 			// Waiting for login to be accepted.
 			if ( prt->Accept() )
 				cout << "   Login accepted." << endl << flush;
-#if defined (_WIN32) || defined (_WIN64)
-			else if ( GetLastError() == ERROR_PIPE_CONNECTED )
-				cout << "   Login accepted.  Port already connected." << endl << flush;
-#endif
 			return TRUE;
 		default:
 			cout << endl << "*** Bad login status reply received - don't know what to do" << endl;

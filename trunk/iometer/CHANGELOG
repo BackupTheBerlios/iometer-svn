@@ -8,6 +8,8 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - iometer-2003.02.15-NoPipe.patch by Daniel Scheibli (removes the 
+    Windows Pipes support for communication which simplifies the code).
   - iometer-2003.02.15_Get_NI_Counter.patch by Joe Eiler (brings the
     handling for network interfaces that does not contain statistics
     in /proc/net/dev - as for example with Intel Link Aggreation).    

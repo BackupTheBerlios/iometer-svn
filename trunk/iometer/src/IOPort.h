@@ -14,7 +14,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Different changes to support compilation with       ## */
 /* ##                 gcc 3.2 (known as cout << hex error).               ## */
@@ -64,8 +67,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Port objects are used for communication between Dynamo and Iometer.  The 
 // Port class is an abstract (pure virtual) class that defines the interface
-// and includes code common to all implementations.  The classes PortTCP and
-// PortPipe provide socket-based and pipe-based implementations of Port.  
+// and includes code common to all implementations.  The class PortTCP
+// provides a socket-based implementations of Port.  
 //
 // This file is used by both Iometer and Dynamo.
 //
@@ -89,10 +92,7 @@ using namespace std;
 
 #define PORT_TYPE_INVALID	0
 #define PORT_TYPE_TCP		1
-#define PORT_TYPE_PIPE		2
 
-#define	WELL_KNOWN_PIPE		"\\\\.\\pipe\\iometer"
-#define KNOWN_PIPE			"\\pipe\\iometer"
 #define WELL_KNOWN_TCP_PORT	1066
 
 #define MESSAGE_PORT_SIZE	MESSAGE_SIZE * 3	// make pipe buffer big enough for 3 messages (arbitrary number?)
@@ -109,7 +109,7 @@ public:
 	// public functions common to all Ports (pure virtual, not implemented by Port)
 	virtual	BOOL		Create( char* port_name = NULL, char* remote_name = NULL, 
 							DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0 ) = NULL;
-	virtual BOOL		Connect( char* port_name = WELL_KNOWN_PIPE, 
+	virtual BOOL		Connect( char* port_name = NULL, 
 							unsigned short port_number = WELL_KNOWN_TCP_PORT ) = NULL;
 	virtual BOOL		Accept() = NULL;
 	virtual BOOL		Disconnect() = NULL;
@@ -130,8 +130,8 @@ public:
 
 	// public data members common to all Ports
 	char				network_name[MAX_NETWORK_NAME];
-	unsigned short		network_port;	// used only by PortTCP, ignored by PortPipe
-	int					type; // PORT_TYPE_INVALID, PORT_TYPE_TCP, or PORT_TYPE_PIPE
+	unsigned short		network_port;	// used only by PortTCP (was ignored by PortPipe)
+	int					type; // PORT_TYPE_INVALID or PORT_TYPE_TCP
 
 protected:
 	// private data members common to all Ports

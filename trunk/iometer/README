@@ -214,8 +214,6 @@ A.1 Iometer
     - IOGlobals.cpp 
     - IOPort.h 
     - IOPort.cpp 
-    - IOPortPipe.h 
-    - IOPortPipe.cpp 
     - IOPortTCP.h 
     - IOPortTCP.cpp
     - IOSTREAM 
@@ -336,15 +334,12 @@ A.2 Dynamo
 
     - IOPort.h                (Port)
     - IOPort.cpp              (Port)
-    - IOPortPipe.h            (PortPipe)
-    - IOPortPipe.cpp          (PortPipe)
     - IOPortTCP.h             (PortTCP)
     - IOPortTCP.cpp           (PortTCP)
 
       The job of the Port class is to handle the communication between
-      Iometer and Dynamo. PortTCP and PortPipe (only supported on the
-      Windows platform) are implementing the two supported to do so.
-      Instantiation is done by the Manager class.
+      Iometer and Dynamo. PortTCP is implementing the supported to do
+      so. Instantiation is done by the Manager class.
  
     - IOMessage.h             (<none>)
     - IOTest.h                (<none>)

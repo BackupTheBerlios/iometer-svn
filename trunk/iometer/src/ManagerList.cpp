@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / ManagerList.cpp                                          ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: <to be set>                                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -45,12 +64,12 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // object in an instance of Iometer (CGalileoApp::manager_list).
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #include "stdafx.h"
 #include "ManagerList.h"
 #include "GalileoView.h"
 #include "IOPortTCP.h"
-#include "IOPortPipe.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -148,7 +167,7 @@ Manager* ManagerList::AddManager( Manager_Info *manager_info )
 	manager->processors = manager_info->processors;
 	manager->processor_speed = (double)manager_info->processor_speed;
 
-	// Connect to the new manager using TCP/IP or named pipe as appropriate
+	// Connect to the new manager using TCP/IP as appropriate
 	if ( theApp.login_port->type == PORT_TYPE_TCP )
 	{
 		strcpy(manager->network_name, manager_info->names[1]);
@@ -161,52 +180,6 @@ Manager* ManagerList::AddManager( Manager_Info *manager_info )
 			ErrorMessage( "Could not connect to new manager using "
 				"TCP/IP port in ManagerList::AddManager" );
 			return NULL;
-		}
-	}
-	else if ( theApp.login_port->type == PORT_TYPE_PIPE )
-	{
-		CString temp_computer_name;
-		CString temp_network_name;
-
-		temp_network_name = "\\\\" + (CString)manager->computer_name + "\\";
-		strcpy( manager->network_name, (LPCTSTR)temp_network_name );
-
-		manager->port = new PortPipe;
-
-		// Compare the network name to the Iometer machine name.
-		unsigned long computer_name_length = MAX_COMPUTERNAME_LENGTH + 1;
-		GetComputerName( temp_computer_name.GetBuffer( MAX_COMPUTERNAME_LENGTH ), 
-			&computer_name_length );
-		temp_computer_name.ReleaseBuffer();
-		temp_computer_name = "\\\\" + temp_computer_name + "\\";
-
-		// See if Dynamo logged in from another machine or on same 
-		// machine as Iometer.
-		if ( CompareNames( (char*)(LPCTSTR)temp_computer_name, manager_info->names[1] ) )
-		{
-			// Dynamo is on same machine.  Connect back without using 
-			// the network.
-			temp_computer_name = manager_info->names[1];
-			temp_computer_name = temp_computer_name.Mid( 2 );
-			temp_computer_name = "\\\\." + temp_computer_name.Mid( 
-				temp_computer_name.Find( '\\' ) );
-			if ( !manager->port->Connect( (char*)(LPCTSTR)temp_computer_name ) )
-			{
-				ErrorMessage( "Could not connect to new manager using "
-					"local named pipe in ManagerList::AddManager" );
-				return NULL;
-			}
-		}
-		else
-		{
-			// Connecting to network attached manager to signify successful login.
-			// Do not connect to "network_name".  See Manager.h for detailed comments.
-			if ( !manager->port->Connect( manager_info->names[1] ) )
-			{
-				ErrorMessage( "Could not connect to new manager using "
-					"network named pipe in ManagerList::AddManager" );
-				return NULL;
-			}
 		}
 	}
 	else

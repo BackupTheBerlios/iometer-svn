@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer & Dynamo) / IOPortTCP.h                                   ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Contains the class definition of the Port class,      ## */
+/* ##               which covers the communication between Iometer        ## */
+/* ##               and Dynamo (implementing the TCP/IP transport).       ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Cut out the Windows Pipes support for               ## */
+/* ##                 communication efforts.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -43,12 +64,13 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Port objects are used for communication between Dynamo and Iometer.  The 
 // Port class is an abstract (pure virtual) class that defines the interface
-// and includes code common to all implementations.  The classes PortTCP and
-// PortPipe provide socket-based and pipe-based implementations of Port.  
+// and includes code common to all implementations.  The class PortTCP
+// provides a socket-based implementation of Port.  
 //
 // This file is used by both Iometer and Dynamo.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef PORTTCP_DEFINED
 	#define PORTTCP_DEFINED
@@ -82,7 +104,7 @@ public:
 	// public functions common to all Ports (implemented here, pure virtual in Port)
 	virtual	BOOL		Create( char* port_name = NULL, char* remote_name = NULL, 
 							DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0 );
-	virtual BOOL		Connect( char* port_name = WELL_KNOWN_PIPE, 
+	virtual BOOL		Connect( char* port_name = NULL, 
 							unsigned short port_number = WELL_KNOWN_TCP_PORT );
 	virtual BOOL		Accept();
 	virtual BOOL		Disconnect();
