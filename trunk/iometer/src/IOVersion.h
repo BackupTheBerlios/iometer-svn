@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-12-16 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the version to current date.                ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -102,7 +104,8 @@ extern "C"
 //#define IOVER_FILEVERSION				"2003.02.15\0"
 //#define IOVER_FILEVERSION				"2003.02.15-post\0"
 //#define IOVER_FILEVERSION				"2003.05.10\0"
-#define IOVER_FILEVERSION				"2003.05.10-post\0"
+//#define IOVER_FILEVERSION				"2003.05.10-post\0"
+#define IOVER_FILEVERSION				"2003.12.16\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
 
 

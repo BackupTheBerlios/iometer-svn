@@ -10,18 +10,6 @@ Additional Release Notes for Iometer (2003.02.08 and above)
 
 Table of Contents
 
-Iometer User's Guide
-
-   * 1.3   What's new? (remarks about comparability)
-   
-   * 3     Running Iometer (remarks about Linux)
-   
-   * 13.5  Selecting a Statistic for Display (remarks about Linux)
-
-   * 19.3b Specifying a Manager Network Name (new)
-   * 19.3c Specifying excluded filesystem types (new)      
-   * 19.4  Omitting Switches (changed)
-
 Iometer Developer's Guide
 
    * 1     Introduction
@@ -42,100 +30,6 @@ Iometer Developer's Guide
    * A     File descriptions
    * A.1   Iometer
    * A.2   Dynamo 
-
-  ------------------------------------------------------------------------
-
-Iometer User's Guide (based on the PDF from October 20, 1999)
-
-  ------------------------------------------------------------------------
-
-1.3 What's new?
-
-NOTE: It is important to keep in mind, that results might not be
-      comparable between two different Iometer versions. For example
-      if there was an error in the older version you will see this
-      effect.
-
-  ------------------------------------------------------------------------
-
-3 Running Iometer
-
-NOTE: If you have a problem while running Iometer/Dynamo or found a
-      bug you should consult the "Known Issues" page first: 
-
-      http://www.iometer.org/doc/issues.html
-
-      There you will find workarounds for this known issues. If you
-      have a new issue you might join the iometer-user mailing list
-      (see http://lists.sourceforge.net/lists/listinfo/iometer-user)
-      and ask the community for help. If it is a real bug, then please
-      go ahead an file it at:
-
-      http://sourceforge.net/tracker/?group_id=40179&atid=427254
-
-  ------------------------------------------------------------------------
-
-13.5 Selecting a Statistic for Display
-
- o CPU submenu
-
-    - %User Time: ...
-      
-      Under Linux we count the time spend in user space as well as
-      user space with low priority (nice).
-
-    - %Privileged Time: ...
-
-      Under Linux, this is the time spend in system mode (kernel).
-
-    - %DPC Time: ...
-
-      Not supported under Linux - reports 0.0% all the time.
- 
-    - %Interrupt Time: ...
-
-      Not supported under Linux - reports 0.0% all the time.
- 
-  ------------------------------------------------------------------------
-
-19.3b Specifiying a Manager Network Name
-
-You may specify the network name of the Dynamo instance you are executing
-by using the /m switch, followed by the network name of the computer or
-its IP address. For example:
-
-dynamo /m 192.168.2.42
-
-If you do not specify this parameter, Dynamo uses the IP address of the
-first network interface card (NIC).
-
-  ------------------------------------------------------------------------
-  
-19.3c Specifiying excluded filesystem types
-
-For the case, that you would like to exclude different file systems from
-the device search (which later will be shown on the Disk Targets tap of
-Iometer), you can do this with the /x switch. For example:
-
-dynamo /x "proc shm swap devpts nfs"
-
-Please notice, that this switch is used for UNIX operating systems only.
-The default for Linux is "proc shm swap devpts" and for Solaris we have
-"proc specfs config" as a default.
-
-  ------------------------------------------------------------------------
-
-19.4 Omitting Switches
-
-You may omit the command line switches if you prefer. Dynamo assumes the
-first parameter found is a computer name, the second (if one) is a manager
-name and the third (if one) is the manager network name. For example:
-
-dynamo xanadu genie 192.168.2.42
-
-This looks for Iometer on machine "xanadu", then logs in using manager
-name "genie". Iometer will use the IP address 192.168.2.42 to communicate
-with the Dynamo instance.
 
   ------------------------------------------------------------------------
 
