@@ -346,9 +346,13 @@ A.1 Iometer
 
     - GalileoCmdLine.h         (<none>)
     - GalileoCmdLine.cpp       (<none>)
-    ...
 
-    - AccessSpecList.cpp
+    - AccessSpecList.cpp       (AccessSpecList)
+
+      Implements the Global Access Specifications list shown in the dialog
+      with the same name. This list contains "Idle", "Default" and a number
+      of samples ready to use.
+
     - GalileoDoc.h
     - GalileoDoc.cpp
     - ICF_ifstream.h
