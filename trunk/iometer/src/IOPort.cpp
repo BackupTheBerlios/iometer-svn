@@ -52,7 +52,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Modified error message output destinction (Window   ## */
 /* ##                 vs. Console) using _GALILEO_ define.                ## */
 /* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
@@ -139,8 +143,8 @@ BOOL Port::IsOperationComplete( OVERLAPPED *olap )
 
 	if ( olap->hEvent )
 	{
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-		cout << "Async Port objects not supported on UNIX" << endl;
+#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+		cout << "Async Port objects not supported on UNIX or NetWare" << endl;
 		return FALSE;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		DWORD d = WaitForSingleObject ( olap->hEvent, 0 );

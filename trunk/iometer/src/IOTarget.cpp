@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -91,7 +95,7 @@ Target::~Target()
 // a = 4c + 1 (c user defined)
 // b is odd
 //
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
  #define A 136204069LL		// 3x7x11x13x17x23x29x4 + 1
  #define B 28500701229LL	// 3x7x11x13x17x23x27x29x31
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)

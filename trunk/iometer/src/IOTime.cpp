@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-12 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-02-12 (mingz@ele.uri.edu)                        ## */
 /* ##               - Implemented rdtsc under xscale via CCNT.            ## */
 /* ##               2004-02-07 (mingz@ele.uri.edu)                        ## */
 /* ##               - Changed call from im_kstat to iomtr_kstat           ## */
@@ -155,6 +159,21 @@ extern int ccntfd;
   // Was the following 2 lines in before, but for which CPU (nevertheless it is useless!)?
   //	/* Totally cheesy rewrite of rdtsc! */
   //	return((DWORDLONG)time(NULL) * 200);
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
+// ----------------------------------------------------------------------------
+#elif defined(IOMTR_OSFAMILY_NETWARE)
+ #if defined(IOMTR_CPU_I386)
+ __declspec ( naked ) extern DWORDLONG rdtsc()
+ {
+	__asm__
+	{
+		_emit 0Fh	// Store low  32-bits of counter in EAX.
+		_emit 31h	// Store high 32-bits of counter in EDX.
+		ret
+	}
+ }
+ #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
 // ----------------------------------------------------------------------------
@@ -295,11 +314,12 @@ extern int ccntfd;
  {
 	return __rdtsc();
  }
- 
 // ----------------------------------------------------------------------------
 #else
  #error ===> ERROR: You have to do some coding here to get the port done!
 #endif
 // ----------------------------------------------------------------------------
+
+
 
 

@@ -50,7 +50,11 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-07-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -61,7 +65,7 @@
 
 
 #include "IOAccess.h"
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  pthread_mutex_t lock_mt;
 #endif
 
@@ -81,8 +85,8 @@ void Access::Initialize( const Access_Specs specs )
 		for ( i = start_percent; ( i < ( start_percent + specs[spec_no].of_size ) &&
 			( i < MAX_ACCESS_SPECS )); i++ )
 		{
-			access_grid[i].size		= specs[spec_no].size;
-			access_grid[i].read		= specs[spec_no].reads;
+			access_grid[i].size	= specs[spec_no].size;
+			access_grid[i].read	= specs[spec_no].reads;
 			access_grid[i].random	= specs[spec_no].random;
 			access_grid[i].delay	= specs[spec_no].delay;
 			access_grid[i].burst	= specs[spec_no].burst;

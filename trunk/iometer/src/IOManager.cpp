@@ -49,7 +49,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved the Dump_*_Results() functions (used for      ## */
 /* ##                 debugging purposes) from here to ByteOrder.cpp      ## */
 /* ##               - Moved the *_double_swap() functions for the         ## */
@@ -96,10 +100,10 @@
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include "winsock2.h"
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
+#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
  #include <netdb.h>
  #include <arpa/inet.h>
- #include <sys/types.h> 
+ #include <sys/types.h>
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -120,6 +124,7 @@ Manager::Manager()
 {
 	data_size = 0;
 	data = NULL;
+	swap_devices = NULL;
 	SetLastError( 0 );
 
 	//init file version strings
@@ -150,12 +155,19 @@ Manager::~Manager()
 
 	prt->Close();
 	delete prt;
-	
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+	if(data != NULL)	
+		free(data);
+	if(swap_devices != NULL)	
+		free(swap_devices);	
+#elif defined(IOMTR_OS_NETWARE)
+	if(data != NULL)	
+		NXMemFree(data);
+	if(swap_devices != NULL)	
+		NXMemFree(swap_devices);
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	VirtualFree( data, 0, MEM_RELEASE );
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
-	free(data);
-	free(swap_devices);
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -198,9 +210,9 @@ BOOL Manager::Login( char* port_name )
 	// The version number is included in two places for backward compatibility.
 	msg.purpose = LOGIN;
 	strcpy(data_msg.data.manager_info.version, m_pVersionStringWithDebug);
-#ifdef _DEBUG
+ #ifdef _DEBUG
 	cout << "dynamo version: " << data_msg.data.manager_info.version << endl;
-#endif
+ #endif
 	sscanf( data_msg.data.manager_info.version, "%d.%d.%d", &year, &month, &day );
 	msg.data = (year * 10000) + (month * 100) + day;
 
@@ -218,7 +230,7 @@ BOOL Manager::Login( char* port_name )
 	}
 	else
 	{
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
+#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		// This will not work correctly if hostname length > MAX_NETWORK_NAME
 		if (gethostname(manager_name, name_size) < 0)
 		{
@@ -445,11 +457,13 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		printf("   My hostname: \"%s\"\n", hostinfo->h_name);
 
 		i=0;
+	 #if !defined(IOMTR_OS_NETWARE)	  // this blows up - don't know why
 		while ( hostinfo->h_aliases[i] != NULL )
 		{
 			printf("   Alias: \"%s\"\n", hostinfo->h_aliases[i]);
 			i++;
 		}
+	 #endif		
 	#endif
 
 	// report the network addresses.
@@ -1335,14 +1349,18 @@ BOOL Manager::Set_Access( int target, const Test_Spec *spec )
 	// Align all data transfers on a page boundary.  This will work for all disks
 	// with sector sizes that divide evenly into the page size - which is always
 	// the case.
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	VirtualFree( data, 0, MEM_RELEASE );
-	if ( !(data = VirtualAlloc( NULL, grunts[target]->access_spec.max_transfer, 
-		MEM_COMMIT, PAGE_READWRITE )) )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	free(data);
 	errno = 0;
 	if ( !(data = valloc(grunts[target]->access_spec.max_transfer) ))
+#elif defined(IOMTR_OS_NETWARE) 
+	NXMemFree(data);
+	errno = 0;
+	if ( !(data = NXMemAlloc(grunts[target]->access_spec.max_transfer, 1) ))
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	VirtualFree( data, 0, MEM_RELEASE );
+	if ( !(data = VirtualAlloc( NULL, grunts[target]->access_spec.max_transfer, 
+		MEM_COMMIT, PAGE_READWRITE )) )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif

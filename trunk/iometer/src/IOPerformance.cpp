@@ -53,7 +53,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-03-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Corrected the CPU speed detection output as it      ## */
 /* ##                 was proposed Kenneth Morse.                         ## */
 /* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
@@ -83,7 +87,7 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 #define PERFORMANCE_DETAILS	0 // Turn on to display additional performance messages.
-#if !defined(IOMTR_OS_LINUX)
+#if !defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE)
 
 
 
@@ -112,7 +116,7 @@ Performance::Performance()
 	}
 	perf_size   = MAX_PERF_SIZE;
 	perf_object = NULL;
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
  // nop
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
@@ -288,7 +292,7 @@ int Performance::Get_Processor_Count()
 {
 #if defined(IOMTR_OS_SOLARIS)
 	return (sysconf(_SC_NPROCESSORS_CONF));
-#elif defined(IOMTR_OS_LINUX)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
  // nop
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	SYSTEM_INFO	system_info;
@@ -519,7 +523,7 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 	DWORD	perf_object_size;		// Size of buffer allocated to storing performance data.
 	char	perf_data_type_name[10];	// ASCII representation of performance data index.
 	_int64	perf_update_freq;		// Frequency that performance counters are updated.
-#elif defined(IOMTR_OS_LINUX)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
  // nop
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
@@ -637,7 +641,7 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 	default:
 		break;
 	}
-#elif defined(IOMTR_OS_LINUX)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
  // nop
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
@@ -1564,7 +1568,7 @@ double Performance::Calculate_Stat( _int64 start_value, _int64 end_value, DWORD 
 		return (double)0.0;
 	}
 }
-#elif defined(IOMTR_OS_LINUX)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
  // nop
 #else    
  #warning ===> WARNING: You have to do some coding here to get the port done!
@@ -1574,4 +1578,4 @@ double Performance::Calculate_Stat( _int64 start_value, _int64 end_value, DWORD 
 
 
 
-#endif   // !IOMTR_OS_LINUX
+#endif   // !IOMTR_OS_LINUX || !IOMTR_OS_NETWARE

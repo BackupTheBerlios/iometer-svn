@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved BLKSSZGET, BLKBSZGET and BLKGETSIZE64         ## */
 /* ##                 from here to the IOCommon.h file.                   ## */
 /* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
@@ -97,7 +101,13 @@
 #define _DISK_MSGS 0
 
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE)
+  #include <assert.h>
+  #include <math.h>
+  #include <monitor.h>
+  #include <library.h>
+  #include <netware.h>
+#elif defined(IOMTR_OSFAMILY_UNIX)
  #ifdef WORKAROUND_MOD_BUG
   #include <math.h>
  #endif // WORKAROUND_MOD_BUG
@@ -138,12 +148,40 @@ static unsigned long long getSizeOfPhysDisk(const char *devName);
 //
 TargetDisk::TargetDisk()
 {
+#if defined(IOMTR_OSFAMILY_NETWARE)
+	LONG rc;
+#endif
 	sector_align_mask = NOT_POWER_OF_TWO;
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	disk_file = (HANDLE)&file_handle;
 #endif
+
+#if defined(IOMTR_OSFAMILY_NETWARE)
+   	mmAppTag = (LONG)AllocateResourceTag(getnlmhandle(), "dynamo", (LONG)MM_APPLICATION_SIGNATURE);
+	appDef.classobjectsignature = MM_APPLICATION_SIGNATURE;
+	appDef.controlroutine = NULL;
+	appDef.name	= (unsigned char *)"mmDPMeterm";
+	appDef.type = MM_GENERAL_STORAGE_APPLICATION;
+	appDef.identifier = 0xEEDDCCBB;
+
+	if((rc=MM_RegisterObject(&applicationHandle, MM_APPLICATION_CLASS, &appDef, NULL, mmAppTag)) != MM_OK)
+   {
+    	printf("Failed MM_RegisterObject (0x%X)\n", rc);
+    	exit(1);
+   }
+#endif
 }
+
+
+
+
+TargetDisk::~TargetDisk()
+{ 
+#if defined(IOMTR_OS_NETWARE)
+	MM_UnregisterObject(applicationHandle, 0);
+#endif
+};
 
 
 
@@ -165,7 +203,7 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 		retval = Init_Logical( spec.name[0] );
 	else if ( IsType( target_info->type, PhysicalDiskType ) )
 		retval = Init_Physical( atoi( spec.name + 14 ) );
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)  || defined(IOMTR_OS_SOLARIS)
 	if ( IsType( target_info->type, LogicalDiskType ) )
 		retval = Init_Logical( spec.name );
 	else if ( IsType( target_info->type, PhysicalDiskType ) )
@@ -213,7 +251,7 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 #elif defined(IOMTR_CPU_XSCALE)
 		// TODO: Need to double check if this is correct for xscale
 		cout << spec.disk_info.starting_sector << endl;
-		Set_Starting_Sector( spec.disk_info.starting_sector);
+		Set_Starting_Sector( spec.disk_info.starting_sector );
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -226,16 +264,20 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 
 
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-//
-// Initialize a logical disk drive.  Logical drives are accessed through
-// a drive letter and may be local or remote.
-//
-BOOL TargetDisk::Init_Logical( char drive )
+#if defined(IOMTR_OS_NETWARE)
+// NetWare logical drives are accessed through path names.
+BOOL TargetDisk::Init_Logical( char *drive )
 {
 	// Setting spec.name of the drive.
-	sprintf( spec.name, "%c%s", drive, LOGICAL_DISK );
-	sprintf( file_name, "%s%s", spec.name, TEST_FILE );
+	sprintf( spec.name, "%s", drive );
+
+	if (spec.name[strlen(spec.name) - 1] == ':') 
+	{
+		sprintf(file_name, "%s%s", spec.name, TEST_FILE);
+	} else 
+	{
+		sprintf(file_name, "%s:%s", spec.name, TEST_FILE);
+	}
 
 	spec.type = LogicalDiskType;
 	size = 0;
@@ -279,6 +321,26 @@ BOOL TargetDisk::Init_Logical( char *drive )
 	// Getting size information about the drive.
 	return( Set_Sizes() );
 }
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+//
+// Initialize a logical disk drive.  Logical drives are accessed through
+// a drive letter and may be local or remote.
+//
+BOOL TargetDisk::Init_Logical( char drive )
+{
+	// Setting spec.name of the drive.
+	sprintf( spec.name, "%c%s", drive, LOGICAL_DISK );
+	sprintf( file_name, "%s%s", spec.name, TEST_FILE );
+
+	spec.type = LogicalDiskType;
+	size = 0;
+	starting_position = 0;
+	offset = 0;
+	bytes_transferred = 0;
+
+	// Getting size information about the drive.
+	return( Set_Sizes() );
+}
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -287,18 +349,18 @@ BOOL TargetDisk::Init_Logical( char *drive )
 
 
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-//
-// Initialize a physical disk drive.  Physical drives are accessed below
-// the file system layer for RAW access.  As a result, data corruption could
-// occur.  To prevent this, only drives which contain nothing but free space
-// are accessible.
-//
-BOOL TargetDisk::Init_Physical( int drive )
+#if defined(IOMTR_OS_NETWARE)
+BOOL TargetDisk::Init_Physical( char *drive )
 {
+	struct IOObjectGenericInfoDef info;
+	int drive1 = atoi(drive+1);
+
 	// Setting the spec.name of the drive.
-	sprintf( spec.name, "%s%i", PHYSICAL_DISK, drive );
-	strcpy( file_name, spec.name );
+	printf("TargetDisk::Init_Physical: name=%s, mmID=%X\n",drive,drive1);
+	MM_ReturnObjectGenericInfo(drive1, sizeof(struct IOObjectGenericInfoDef), &info);
+	sprintf( spec.name, "[%d] %s", drive1, info.name );
+
+	sprintf(file_name,"%d",drive1);
 
 	spec.type = PhysicalDiskType;
 	size = 0;
@@ -330,6 +392,28 @@ BOOL TargetDisk::Init_Physical( char *drive )
 	}
 
 	sprintf( file_name, "%s/%s", RAW_DEVICE_DIR, spec.name );
+
+	spec.type = PhysicalDiskType;
+	size = 0;
+	starting_position = 0;
+	offset = 0;
+	bytes_transferred = 0;
+
+	// Getting information about the size of the drive.
+	return( Set_Sizes() );
+}
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+//
+// Initialize a physical disk drive.  Physical drives are accessed below
+// the file system layer for RAW access.  As a result, data corruption could
+// occur.  To prevent this, only drives which contain nothing but free space
+// are accessible.
+//
+BOOL TargetDisk::Init_Physical( int drive )
+{
+	// Setting the spec.name of the drive.
+	sprintf( spec.name, "%s%i", PHYSICAL_DISK, drive );
+	strcpy( file_name, spec.name );
 
 	spec.type = PhysicalDiskType;
 	size = 0;
@@ -420,110 +504,7 @@ void TargetDisk::Set_Starting_Sector( int starting_sector )
 // that is align on the sector sizes, and to allow random accesses over
 // the entire drive.
 //
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-BOOL TargetDisk::Set_Sizes( BOOL open_disk )
-{
-	DWORD		i;
-	DWORD		low_size, high_size;
-	DWORD		sectors_per_cluster, free_clusters, total_clusters;
-	DWORD		sector_size;
-	DRIVE_LAYOUT_INFORMATION	disk_layout_info[MAX_PARTITIONS];
-	DISK_GEOMETRY				disk_geo_info;
-	DWORD						disk_info_size;
-
-	// Logical and physical drives are treated differently.
-	if ( open_disk )
-	{
-		if ( !Open( NULL ) )
-			return FALSE;
-	}
-
-	if ( IsType( spec.type, LogicalDiskType ) )
-	{
-		// Getting physical information about the drive.
-		if ( !GetDiskFreeSpace( spec.name, &sectors_per_cluster, &sector_size,
-			&free_clusters, &total_clusters) )
-		{
-			cout << "Error getting sector size of drive " << spec.name 
-				<< "." << endl;
-			if ( open_disk )
-				Close( NULL );
-			return FALSE;
-		}
-		spec.disk_info.sector_size = (int) sector_size;
-
-		// Determining if the test file exists or needs to be made.
-		low_size = GetFileSize( disk_file, &high_size );
-		size = ( ( (DWORDLONG) high_size ) << 32 ) | (DWORDLONG) low_size;
-		Set_Sector_Info();
-		#if _DEBUG
-			cout << "   " << spec.name << " size = " << size << endl;
-		#endif
-		if ( open_disk )
-			Close( NULL );
-
-		// If test file exists, the drive is ready for access.
-		if ( size )
-		{
-			ending_position = size;
-			spec.disk_info.ready = TRUE;
-			return TRUE;
-		}
-
-		DeleteFile( file_name );
-		spec.disk_info.ready = FALSE;
-		return TRUE;
-	}
-	else if ( IsType( spec.type, PhysicalDiskType ) )
-	{
-		// Dealing with a physical drive.
-		// Checking for a partition to exist on the physical drive.
-		// If one is there, then disallowing access to the drive.
-		SetLastError( 0 );
- 		DeviceIoControl( disk_file, IOCTL_DISK_GET_DRIVE_LAYOUT, NULL, 0,
-			disk_layout_info, sizeof( disk_layout_info ), &disk_info_size, NULL );
-
-		// Checking that drive contains nothing but free space.
-		for ( i = 0; i < disk_layout_info[0].PartitionCount; i++ )
-		{
-			if ( disk_layout_info[0].PartitionEntry[i].PartitionLength.HighPart ||
-				disk_layout_info[0].PartitionEntry[i].PartitionLength.LowPart )
-			{
-				if ( open_disk )
-					Close( NULL );
-				return FALSE;
-			}
-		}
-		// Getting information on the size of the drive.
-		DeviceIoControl( disk_file, IOCTL_DISK_GET_DRIVE_GEOMETRY, NULL, 0,
-			&disk_geo_info, sizeof( disk_geo_info ), &disk_info_size, NULL );
-
-		// Calculating the size of the physical drive..
-		size = ( ( (DWORDLONG) disk_geo_info.Cylinders.HighPart ) << 32 ) | 
-			( (DWORDLONG) disk_geo_info.Cylinders.LowPart );
-		size *= (_int64) disk_geo_info.TracksPerCylinder * 
-			(_int64) disk_geo_info.SectorsPerTrack * 
-			(_int64) disk_geo_info.BytesPerSector;
-		spec.disk_info.sector_size = disk_geo_info.BytesPerSector;
-		Set_Sector_Info();
-
-		#if _DEBUG
-			cout << "   " << spec.name << " size = " << size << endl;
-		#endif
-
-		if ( open_disk )
-			Close( NULL );
-		ending_position = size;
-		spec.disk_info.ready = TRUE;
-		return TRUE;
-	}
-	else
-	{
-		cout << "*** Unexpected drive type in TargetDisk::SetSizes()" << endl;
-		return FALSE;
-	}
-}
-#elif defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX)
 //
 // Performs same function as the win32 || _WIN64 version.
 //
@@ -618,6 +599,126 @@ BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 		}
 		return(TRUE);
 	}
+}
+#elif defined(IOMTR_OS_NETWARE)
+//
+// Performs same function as the win32 || _WIN64 version.
+//
+BOOL TargetDisk::Set_Sizes( BOOL open_disk )
+{
+	struct stat fileInfo;
+	struct stat fsInfo;
+	int statResult;
+	int fd = -1;
+	char filesysName[MAX_NAME];
+	struct volume_info spaceInfo;
+	struct IOObjectGenericInfoDef info;
+
+	if (open_disk) 
+	{
+		if (!Open(NULL)) 
+		{
+#ifdef _DEBUG
+			cout << __FUNCTION__ << ": Open on \"" << file_name <<
+				"\" failed (error " << strerror(errno) << ").\n";
+#endif			
+			return(FALSE);
+		}
+		fd = ((struct File *)disk_file)->fd;
+	}
+	if (IsType(spec.type, LogicalDiskType)) 
+	{
+		/*
+		 * For logical disks, we use statfs and stat to find the size of the
+		 * file system, the size of the test file, the sector size for the
+		 * file system, etc. Pretty straightforward, standard Unix stuff.
+		 */
+		strcpy(filesysName, file_name);
+		filesysName[strlen(filesysName) - (strlen(TEST_FILE)+1)] = '\0'; //and the colon
+		if (open_disk) 
+		{
+			statResult = fstat(fd, &fsInfo);
+		} else 
+		{
+			statResult = stat(filesysName, &fsInfo);
+		}
+		
+		netware_vol_info(&spaceInfo, (int *)&fsInfo.st_dev);
+
+		if (statResult < 0) 
+		{
+			printf("%s: Couldn't stat logical disk file!\n", __FUNCTION__);
+			if (open_disk) 
+			{
+				Close(NULL);
+			}
+			return(FALSE);
+		}
+		spec.disk_info.sector_size = spaceInfo.SectorsPerCluster;
+		sector_align_mask = ~((DWORDLONG)spaceInfo.SectorsPerCluster - 1);
+		/* Free blocks is "f_bfree". */
+		if (open_disk) 
+		{
+			statResult = fstat(fd, &fileInfo);
+		} else 
+		{
+			statResult = stat(file_name, &fileInfo);
+		}
+		if (statResult < 0) 
+		{
+			printf("%s: Error %s statting file %s\n", __FUNCTION__, strerror(errno), file_name);
+			if (open_disk) 
+			{
+				Close(NULL);
+			}
+			return(FALSE);
+		}
+//		size = fileInfo.st_size;
+		size = spaceInfo.FreedClusters;
+		if (size == 0) 
+		{
+			spec.disk_info.ready = FALSE;
+			if (open_disk) 
+			{
+				Close(NULL);
+			}
+			unlink(file_name);
+			return(TRUE);
+		}
+		ending_position = size;
+		spec.disk_info.ready = TRUE;
+		if (open_disk) 
+		{
+			Close(NULL);
+		}
+		return(TRUE);
+	} else if ( IsType( spec.type, PhysicalDiskType ) ) // physical
+	{
+		MM_ReturnObjectGenericInfo(atoi(file_name), sizeof(struct IOObjectGenericInfoDef), &info);
+		spec.disk_info.sector_size = info.unitsize;
+		if (spec.disk_info.sector_size == 0) 
+		{
+			cout << __FUNCTION__ << ": Failed to get sector size. Aborting target." << endl;
+			return(FALSE);
+		}
+		size = info.capacity;
+		alignment = 0;
+		sector_align_mask = ~((DWORDLONG)spec.disk_info.sector_size - 1);
+		ending_position = size;
+		offset = 0;
+		bytes_transferred = 0;
+		spec.disk_info.ready = TRUE;
+		if ( open_disk )
+			Close( NULL );
+		return(TRUE);
+	}
+	else
+	{
+		cout << "*** Unexpected drive type in Disk::SetSizes()" << endl << flush;
+		if ( open_disk )
+			Close( NULL );
+		return ( FALSE );
+	}		
 }
 #elif defined(IOMTR_OS_SOLARIS)
 int TargetDisk::Set_Sizes( BOOL open_disk )
@@ -791,6 +892,109 @@ int TargetDisk::Set_Sizes( BOOL open_disk )
 		return ( FALSE );
 	}		
 }
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+BOOL TargetDisk::Set_Sizes( BOOL open_disk )
+{
+	DWORD		i;
+	DWORD		low_size, high_size;
+	DWORD		sectors_per_cluster, free_clusters, total_clusters;
+	DWORD		sector_size;
+	DRIVE_LAYOUT_INFORMATION	disk_layout_info[MAX_PARTITIONS];
+	DISK_GEOMETRY				disk_geo_info;
+	DWORD						disk_info_size;
+
+	// Logical and physical drives are treated differently.
+	if ( open_disk )
+	{
+		if ( !Open( NULL ) )
+			return FALSE;
+	}
+
+	if ( IsType( spec.type, LogicalDiskType ) )
+	{
+		// Getting physical information about the drive.
+		if ( !GetDiskFreeSpace( spec.name, &sectors_per_cluster, &sector_size,
+			&free_clusters, &total_clusters) )
+		{
+			cout << "Error getting sector size of drive " << spec.name 
+				<< "." << endl;
+			if ( open_disk )
+				Close( NULL );
+			return FALSE;
+		}
+		spec.disk_info.sector_size = (int) sector_size;
+
+		// Determining if the test file exists or needs to be made.
+		low_size = GetFileSize( disk_file, &high_size );
+		size = ( ( (DWORDLONG) high_size ) << 32 ) | (DWORDLONG) low_size;
+		Set_Sector_Info();
+		#if _DEBUG
+			cout << "   " << spec.name << " size = " << size << endl;
+		#endif
+		if ( open_disk )
+			Close( NULL );
+
+		// If test file exists, the drive is ready for access.
+		if ( size )
+		{
+			ending_position = size;
+			spec.disk_info.ready = TRUE;
+			return TRUE;
+		}
+
+		DeleteFile( file_name );
+		spec.disk_info.ready = FALSE;
+		return TRUE;
+	}
+	else if ( IsType( spec.type, PhysicalDiskType ) )
+	{
+		// Dealing with a physical drive.
+		// Checking for a partition to exist on the physical drive.
+		// If one is there, then disallowing access to the drive.
+		SetLastError( 0 );
+ 		DeviceIoControl( disk_file, IOCTL_DISK_GET_DRIVE_LAYOUT, NULL, 0,
+			disk_layout_info, sizeof( disk_layout_info ), &disk_info_size, NULL );
+
+		// Checking that drive contains nothing but free space.
+		for ( i = 0; i < disk_layout_info[0].PartitionCount; i++ )
+		{
+			if ( disk_layout_info[0].PartitionEntry[i].PartitionLength.HighPart ||
+				disk_layout_info[0].PartitionEntry[i].PartitionLength.LowPart )
+			{
+				if ( open_disk )
+					Close( NULL );
+				return FALSE;
+			}
+		}
+		// Getting information on the size of the drive.
+		DeviceIoControl( disk_file, IOCTL_DISK_GET_DRIVE_GEOMETRY, NULL, 0,
+			&disk_geo_info, sizeof( disk_geo_info ), &disk_info_size, NULL );
+
+		// Calculating the size of the physical drive..
+		size = ( ( (DWORDLONG) disk_geo_info.Cylinders.HighPart ) << 32 ) | 
+			( (DWORDLONG) disk_geo_info.Cylinders.LowPart );
+		size *= (_int64) disk_geo_info.TracksPerCylinder * 
+			(_int64) disk_geo_info.SectorsPerTrack * 
+			(_int64) disk_geo_info.BytesPerSector;
+		spec.disk_info.sector_size = disk_geo_info.BytesPerSector;
+		Set_Sector_Info();
+
+		#if _DEBUG
+			cout << "   " << spec.name << " size = " << size << endl;
+		#endif
+
+		if ( open_disk )
+			Close( NULL );
+		ending_position = size;
+		spec.disk_info.ready = TRUE;
+		return TRUE;
+	}
+	else
+	{
+		cout << "*** Unexpected drive type in TargetDisk::SetSizes()" << endl;
+		return FALSE;
+	}
+}
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -872,8 +1076,12 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 		// Create an event.
 		olap[i].hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 		SetQueueSize(olap[i].hEvent, 1);
+#elif defined(IOMTR_OSFAMILY_WINDOWS) 
+		// nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 		// Was the event created successfully?
@@ -1071,7 +1279,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 	// Destroy the events.
 	for ( i = 0; i < PREPARE_QDEPTH; i++ )
 	{
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 		// Reset the handles.
 		olap[i].hEvent = (HANDLE)((unsigned int) olap[i].hEvent ^ 0x1);
 #endif
@@ -1100,6 +1308,9 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 		// nothing in the drive.
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|O_LARGEFILE|open_flag, S_IRUSR|S_IWUSR);
+#elif defined(IOMTR_OS_NETWARE)
+		NXFileOpen(0, (void *)file_name, (NXMode_t)(NX_O_RDWR|NX_O_CREAT|open_flag), &((struct File *)disk_file)->fd);
+	 	((struct File *)disk_file)->type = LogicalDiskType;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile( file_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | 
@@ -1113,6 +1324,12 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	{
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
+#elif defined(IOMTR_OS_NETWARE)
+	 	if(MM_ReserveIOObject(&reservationHandle,atoi(file_name),MM_IO_MODE, atoi(file_name),NWalertroutine,applicationHandle))
+	 		((struct File *)disk_file)->fd = -1L;
+	 	else
+	 		((struct File *)disk_file)->fd = (int)reservationHandle;
+	 	((struct File *)disk_file)->type = PhysicalDiskType;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile(file_name, GENERIC_READ | GENERIC_WRITE,
@@ -1136,7 +1353,7 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	#endif
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)	
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)disk_file)->fd == (int)INVALID_HANDLE_VALUE )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
@@ -1158,6 +1375,17 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 
 
 
+#if defined(IOMTR_OSFAMILY_NETWARE)
+LONG NWalertroutine(unsigned long reservationHandle, unsigned long alertToken, unsigned long alertType, unsigned long alertReasion)
+{
+	// drive alerts - i.e deactivation and so on
+	return 0;
+}
+#endif
+
+
+
+
 //
 // Closing the disk handle.
 //
@@ -1166,10 +1394,10 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 	// Note that test_state is not used.  It IS used by network targets.
 
 	// If testing connection rate, the disk may already be closed.
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	if ( disk_file == INVALID_HANDLE_VALUE )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)disk_file)->fd == (int)INVALID_HANDLE_VALUE )
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	if ( disk_file == INVALID_HANDLE_VALUE )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -1184,10 +1412,10 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 		cout << "Closing disk " << spec.name << endl;
 	#endif
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	if ( !CloseHandle( disk_file ) )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	if ( !CloseHandle( disk_file, FILE_ELEMENT) )
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	if ( !CloseHandle( disk_file ) )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -1197,10 +1425,11 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 		SetLastError( 0 );
 		return FALSE;
 	}
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	disk_file = INVALID_HANDLE_VALUE;
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+	
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	((struct File *)disk_file)->fd = (int)INVALID_HANDLE_VALUE;
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	disk_file = INVALID_HANDLE_VALUE;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -1413,7 +1642,7 @@ ReturnVal TargetDisk::Read( LPVOID buffer, Transaction *trans )
 	{
 		// Read succeeded immediately, but completion is pending.  It will
 		// still go to the completion queue.
-#if defined(IOMTR_OSFAMILY_UNIX) && defined(IMMEDIATE_AIO_COMPLETION)
+#if (defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)) && defined(IMMEDIATE_AIO_COMPLETION)
 		// This code blocks reading the completion Q for the immediately completed I/Os.
 		error_no = 0;
 		// this is for the next sequential I/O.
@@ -1498,7 +1727,7 @@ ReturnVal TargetDisk::Write( LPVOID buffer, Transaction *trans )
 	{
 		// Write succeeded immediately, but completion is pending.  It will
 		// still go to the completion queue.
-#if defined(IOMTR_OSFAMILY_UNIX) && defined(IMMEDIATE_AIO_COMPLETION)
+#if (defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)) && defined(IMMEDIATE_AIO_COMPLETION)
 		// This code blocks reading the completion Q for the immediately completed I/Os.
 		error_no = 0;
 		// this is for the next sequential I/O.
@@ -1653,7 +1882,7 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 	char devNameBuf[40];
 	const char *fullDevName;
 	int fd, ssz;
-	
+
 	if (devName[0] == '/') {
 		fullDevName = devName;
 	} else {

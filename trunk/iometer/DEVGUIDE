@@ -84,6 +84,7 @@ find important global defines (-D<key>[=<value>]):
  
    This are global defines to identify the Operating System family:
 
+   IOMTR_OSFAMILY_NETWARE    Any Netware based Operating System
    IOMTR_OSFAMILY_UNIX       Any UNIX, currently Linux and Solaris
    IOMTR_OSFAMILY_WINDOWS    Any Windows based Operating System
 
@@ -97,6 +98,7 @@ find important global defines (-D<key>[=<value>]):
    IOMTR_OS_FREEBSD          FreeBSD, 32 bit *
    IOMTR_OS_LINUX            Linux, 32 bit   
    IOMTR_OS_LINUX64          Linux, 64 bit *
+   IOMTR_OS_NETWARE          Novell Netware, 32 bit
    IOMTR_OS_SOLARIS          Sun Solaris (64 bit)
    IOMTR_OS_WIN32            Microsoft Windows, 32 bit
    IOMTR_OS_WIN64            Microsoft Windows, 64 bit
@@ -173,6 +175,8 @@ way. If you are interested in porting to a new Operating System/Processor
 combination, the following mail - containing a first starting point - might
 be of interest to you:
 
+<snippet>
+
 Date: Tue, 18 Nov 2003 12:03:08 +0100 
 From: "Daniel Scheibli" <daniel.scheibli@edelbyte.org>     
 To: ...
@@ -217,6 +221,23 @@ support it), then for shure we can go more into details.
 Looking forward to hear from you.
 
 Daniel Scheibli
+
+</snippet>
+
+In general it can be said, that the efforts for porting Dynamo depends on
+the possibilities of reuse.
+
+ - Operating System Family - Adding a new Operating System Family can eat
+   up a lot of effort. The good news is that Unix and Windows are already
+   in, so we do not expect to see that much new platforms.
+
+ - Operating System - If the Operating System fits into an already
+   supported Operting System Family the most effort was already done
+   for you.
+
+ - Processor Family - Supporting another processor mostly requires the
+   handling of endianess and the time measurement (using the RDTSC
+   instruction under I386 for instance).
 
   ------------------------------------------------------------------------
 

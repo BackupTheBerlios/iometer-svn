@@ -52,7 +52,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Modified the GetQueuedCompletionStatus() function   ## */
 /* ##                 according to the proposed code by Doug Haigh. This  ## */
 /* ##                 ensures, that even in the case of an error, the     ## */
@@ -66,12 +70,15 @@
 /* ######################################################################### */
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  // nop
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 
 
 #include "IOCommon.h"
 #include <assert.h>
 
+#if defined(IOMTR_OS_NETWARE)
+#include "IOTest.h"
+#endif
 
 
 
@@ -82,17 +89,35 @@ BOOL SetQueueSize(HANDLE cqid, int size)
 	// and also for the parallel array of struct aiocb pointers.
 	struct IOCQ *this_cqid;
 	this_cqid = (struct IOCQ *)cqid;
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element) * size);
+#elif defined(IOMTR_OS_NETWARE)
+	this_cqid->element_list = (struct CQ_Element *)NXMemAlloc(sizeof(CQ_Element) * size, 1);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	if (this_cqid->element_list == NULL)
 	{
 		cout << "memory allocation failed" << endl;
 		return(FALSE);
 	}
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	this_cqid->aiocb_list = (struct aiocb64 **)malloc(sizeof(struct aiocb64 *) * size);
+#elif defined(IOMTR_OS_NETWARE)
+	this_cqid->aiocb_list = (struct aiocb64 **)NXMemAlloc(sizeof(struct aiocb64 *) * size, 1);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	if (this_cqid->aiocb_list == NULL)
 	{
 		cout << "memory allocation failed" << endl;
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		free(this_cqid->element_list);
+#elif defined(IOMTR_OS_NETWARE)
+		NXMemFree(this_cqid->element_list);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		return(FALSE);
 	}
 
@@ -129,7 +154,13 @@ HANDLE CreateIoCompletionPort(HANDLE file_handle, HANDLE cq, DWORD completion_ke
 	if (cqid == NULL)
 	{
 		// cqid is NULL. We assign a new completion queue.
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		cqid = (struct IOCQ *) malloc(sizeof(struct IOCQ));
+#elif defined(IOMTR_OS_NETWARE)
+		cqid = (struct IOCQ *) NXMemAlloc(sizeof(struct IOCQ), 1);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		if (cqid == NULL)
 		{
 			cout << "memory allocation failed. Exiting...." << endl;
@@ -174,7 +205,13 @@ HANDLE CreateEvent(void *, BOOL, BOOL, LPCTSTR)
 	// We need to create an event queue.
 	IOCQ *eventqid;
 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	eventqid = (struct IOCQ *) malloc(sizeof(struct IOCQ));
+#elif defined(IOMTR_OS_NETWARE)
+	eventqid = (struct IOCQ *) NXMemAlloc(sizeof(struct IOCQ), 1);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	if (eventqid == NULL)
 	{
 		cout << "memory allocation failed. Exiting...." << endl;
@@ -212,10 +249,10 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 							   LPOVERLAPPED *lpOverlapped, DWORD tmout)
 {
 	struct timespec	*timeoutp;
-	struct timespec	 timeout;
+	struct timespec	timeout;
 	struct IOCQ	*cqid;
-	int		 i, j;
-	int		 aio_error_return;
+	int		i, j;
+	int		aio_error_return;
 
 	cqid = (struct IOCQ *)cq;
 
@@ -270,7 +307,7 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 			// Always set overlap data
 			
 			cqid->element_list[i].done = FALSE;
-			cqid->last_freed           = i;
+			cqid->last_freed 	   = i;
 			cqid->position             = i + 1;
 			*bytes_transferred         = cqid->element_list[i].bytes_transferred;
 			
@@ -290,7 +327,7 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 				// way.
 				// As this method is called by CQAIO::GetStatus() (only?), we
 				// have to considere changes there as well.
-				SetLastError( cqid->element_list[i].error );
+				SetLastError(cqid->element_list[i].error);
 				return( FALSE );
 			}
 			else {
@@ -310,12 +347,12 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 		timeoutp = NULL;
 	else
 	{
-		timeout.tv_sec = tmout/1000;
+		timeout.tv_sec  = tmout/1000;
 		timeout.tv_nsec = (tmout % 1000) * 1000000;
-		timeoutp = &timeout;
+		timeoutp        = &timeout;
 	}
 
-	if( aio_suspend64( cqid->aiocb_list, cqid->size, timeoutp ) < 0 )
+	if (aio_suspend64(cqid->aiocb_list, cqid->size, timeoutp) < 0)
 	{
 		*lpOverlapped      = NULL;
 		*bytes_transferred = 0;
@@ -324,9 +361,9 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 #if defined(IOMTR_OS_LINUX)
 			assert(errno == EAGAIN);
 #endif
-			SetLastError( WAIT_TIMEOUT );
+			SetLastError(WAIT_TIMEOUT);
 		} else {
-			SetLastError( errno );
+			SetLastError(errno);
 		}
 		
 		return(FALSE);
@@ -338,7 +375,7 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 		if( cqid->aiocb_list[j] ) {
 			if( ( aio_error_return = aio_error64( cqid->aiocb_list[j] ) ) != EINPROGRESS ) {
 				cqid->element_list[j].bytes_transferred =
-					aio_return64( cqid->aiocb_list[j] );
+					aio_return64(cqid->aiocb_list[j]);
 				//
 				// We have done an aio_return() on this element. Anull it.
 				// The slot will be picked up by the next request.
@@ -376,13 +413,13 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD bytes_transferred,
 						 BOOL wait)
 {
-	struct timespec			*timeoutp;
-	struct timespec			timeout;
-	struct File				*filep;
-	int						this_fd;
-	int						i, j;
-	int						aio_error_return;
-	IOCQ					*eventqid;
+	struct timespec	*timeoutp;
+	struct timespec	timeout;
+	struct File	*filep;
+	int		this_fd;
+	int		i, j;
+	int		aio_error_return;
+	IOCQ		*eventqid;
 
 	//
 	// This function either blocks for ever or scans the AIO list just once for completions.
@@ -492,12 +529,12 @@ BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD 
 BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD bytes_read, LPOVERLAPPED
 			  lpOverlapped)
 {
-	struct File		*filep;
-	struct IOCQ		*this_cq;
+	struct File	*filep;
+	struct IOCQ	*this_cq;
 	struct aiocb64	*aiocbp;
-	int				i, free_index = -1;
+	int		i, free_index = -1;
 #ifdef IMMEDIATE_AIO_COMPLETION
-	int				aio_error_return;
+	int		aio_error_return;
 #endif
 
 	filep = (struct File *)file_handle;
@@ -558,7 +595,13 @@ BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD byt
 
 	*bytes_read = 0;
 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if (aio_read64(&this_cq->element_list[free_index].aiocbp) < 0)
+#elif defined(IOMTR_OS_NETWARE)
+	if (aio_read64(&this_cq->element_list[free_index].aiocbp,filep->type) < 0)
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	{
 		cout << "queuing for read failed with error " << errno << endl;
 		// Note that we have not set aiocb_list[] with the correct pointers.
@@ -611,12 +654,12 @@ BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD byt
 BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD bytes_written,
 			   LPOVERLAPPED lpOverlapped)
 {
-	struct File		*filep;
-	struct IOCQ		*this_cq;
+	struct File	*filep;
+	struct IOCQ	*this_cq;
 	struct aiocb64	*aiocbp;
-	int				i, free_index = -1;
+	int		i, free_index = -1;
 #ifdef IMMEDIATE_AIO_COMPLETION
-	int				aio_error_return;
+	int		aio_error_return;
 #endif
 
 	filep = (struct File *)file_handle;
@@ -675,7 +718,13 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 
 	*bytes_written = 0;
 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if (aio_write64(&this_cq->element_list[free_index].aiocbp) < 0)
+#elif defined(IOMTR_OS_NETWARE)
+	if (aio_write64(&this_cq->element_list[free_index].aiocbp,filep->type) < 0)
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	{
 		cout << "queuing for write failed with error " << errno << endl;
 		// Note that we have not set aiocb_list[] with the correct pointers.
@@ -684,7 +733,7 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 		return(FALSE);
 	}
 #ifdef IMMEDIATE_AIO_COMPLETION
-	// Check if the aio_read completed successfully.
+	// Check if the aio_write completed successfully.
 	if ((aio_error_return = aio_error64(&this_cq->element_list[free_index].aiocbp)) != EINPROGRESS)
 	{
 		*bytes_written = aio_return64(&this_cq->element_list[free_index].aiocbp);
@@ -705,7 +754,7 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 	}
 #endif
 	else
-		// aio_read is in progress. We have to set the aiocb_list[] to point correctly.
+		// aio_write is in progress. We have to set the aiocb_list[] to point correctly.
 		this_cq->aiocb_list[free_index] = aiocbp;
 	
 	SetLastError(ERROR_IO_PENDING);
@@ -731,9 +780,9 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 // 
 BOOL CloseHandle(HANDLE object, int object_type)
 {
-	struct File		*filep;
-	struct IOCQ		*cqid;
-	int				retval, i;
+	struct File	*filep;
+	struct IOCQ	*cqid;
+	int		retval, i;
 
 #ifdef _DEBUG
 	cout << "CloseHandle() freeing : handle = " << object << " objecttype = " 
@@ -763,7 +812,16 @@ BOOL CloseHandle(HANDLE object, int object_type)
 				retval = aio_return64(cqid->aiocb_list[i]);
 			}
 		}
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		close(filep->fd);
+#elif defined(IOMTR_OS_NETWARE)
+		if ( IsType( filep->type, LogicalDiskType ) )
+			NXClose(filep->fd);
+		else if ( IsType( filep->type, PhysicalDiskType ) )
+			MM_ReleaseIOObject(filep->fd);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		break;
 	case CQ_ELEMENT:
 		cqid = (struct IOCQ *)object;
@@ -774,7 +832,7 @@ BOOL CloseHandle(HANDLE object, int object_type)
 			if (!cqid->aiocb_list[i])
 				continue;
 
-#if defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
 			/*
 			 * In Linux, you crash (!) if the aiocpb isn't in your queue. :-(
 			 * This code seems to occasionally do this...so I just cancel all
@@ -782,9 +840,10 @@ BOOL CloseHandle(HANDLE object, int object_type)
 			 * message not in the queue.
 			 */
 			retval = aio_cancel64(cqid->element_list[i].aiocbp.aio_fildes, NULL);
+#elif defined(IOMTR_OS_SOLARIS)
+			retval = aio_cancel64(cqid->element_list[i].aiocbp.aio_fildes, cqid->aiocb_list[i]);
 #else
-			retval = aio_cancel64(cqid->element_list[i].aiocbp.aio_fildes,
-														cqid->aiocb_list[i]);
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 			if (retval == AIO_NOTCANCELED)
 			{
@@ -792,7 +851,14 @@ BOOL CloseHandle(HANDLE object, int object_type)
 				retval = aio_return64(cqid->aiocb_list[i]);
 			}
 		}       
+
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		free(cqid->aiocb_list);
+#elif defined(IOMTR_OS_NETWARE)
+		NXMemFree(cqid->aiocb_list);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		// Something strange here. If I free the element_list, the next round
 		// of aio_write() and aio_read() calls fail. If I dont free this, then they
 		// succeed. But then, there is a memory leak equal to the max number of outstanding
@@ -803,8 +869,15 @@ BOOL CloseHandle(HANDLE object, int object_type)
 		// It suddenly seems to be working now.
 		// Remember to turn this "free" off when you hit the problem again.
 		// NEED TO LOOK INTO THIS.
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		free(cqid->element_list);
 		free(cqid);
+#elif defined(IOMTR_OS_NETWARE)
+		NXMemFree(cqid->element_list);
+		NXMemFree(cqid);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		break;	
 	default:
 		break;
@@ -881,8 +954,6 @@ unsigned int SetErrorMode(unsigned int umode)
 	// But it can be made more functional, if required.
 	return(0);
 }
-
-
 
 
 

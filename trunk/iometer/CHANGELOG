@@ -8,6 +8,8 @@ ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
+   - netware_cpp.patch by Thayne Harmon (adds a part of the Netware
+     support - actually it adds the code file changes).
    - netware_h.patch by Thayne Harmon (adds a part of the Netware
      support - actually it adds the header file changes).
    - netwareonly_cpp.patch by Thayne Harmon (adds a part of the

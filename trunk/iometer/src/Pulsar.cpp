@@ -50,7 +50,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-24 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-03-24 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the "manager_network_name" in the usage     ## */
 /* ##                 help to "manager_computer_name" to better reflect   ## */
 /* ##                 the questioned field (as suggested by Tony Renna).  ## */
@@ -99,6 +103,7 @@
 #include "IOCommon.h"
 #include "IOManager.h"
 
+
 #if defined(IOMTR_OSFAMILY_UNIX)
  #include <sys/resource.h>
  #include <ctype.h>
@@ -112,7 +117,9 @@
  #endif
 #endif
 
-
+#if defined(IOMTR_OS_NETWARE)
+ #include <ctype.h>
+#endif
 
 
 
@@ -123,10 +130,10 @@ static void Syntax( const char* errmsg = NULL );
 
 static void ParseParam(	int   argc,
                         char *argv[],
-			char  iometer[MAX_NETWORK_NAME],
-			char  manager_name[MAX_WORKER_NAME],
-			char  manager_computer_name[MAX_NETWORK_NAME],
-			char  manager_exclude_fs[MAX_EXCLUDE_FILESYS] );
+			char iometer[MAX_NETWORK_NAME],
+			char manager_name[MAX_WORKER_NAME],
+			char manager_computer_name[MAX_NETWORK_NAME],
+			char manager_exclude_fs[MAX_EXCLUDE_FILESYS] );
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -231,10 +238,10 @@ int CDECL main( int argc, char *argv[] )
 	ParseParam(
 		argc,
 		argv,
-		iometer,
-		manager.manager_name,
-		manager.prt->network_name,
-		manager.exclude_filesys
+	        iometer,
+       		manager.manager_name,
+        	manager.prt->network_name,
+        	manager.exclude_filesys
 	);
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
 
@@ -250,12 +257,12 @@ int CDECL main( int argc, char *argv[] )
 	}
 	if ( manager.exclude_filesys[0] )
         {
-		cout << "\nExcluding the following filesystem types:" << endl;
-		cout << "   \"" << manager.exclude_filesys << "\"" << endl;
+      		cout << "\nExcluding the following filesystem types:" << endl;
+        	cout << "   \"" << manager.exclude_filesys << "\"" << endl;
         }
         else
         {
-		strcpy(manager.exclude_filesys, DEFAULT_EXCLUDE_FILESYS);
+        	strcpy(manager.exclude_filesys, DEFAULT_EXCLUDE_FILESYS);
         }
 	cout << endl;
 
@@ -336,11 +343,19 @@ int CDECL main( int argc, char *argv[] )
 	}
 #endif // IOMTR_SETTING_OVERRIDE_FS
 #endif // IOMTR_OSFAMILY_UNIX
+#if defined(IOMTR_OSFAMILY_NETWARE)
+	// Initialize the lock on NetWare platforms.
+	if (pthread_mutex_init(&lock_mt, NULL))
+	{
+		cout <<"unable to init the lock" << endl;
+		exit(1);
+	}
+#endif
 
 	// Ensure, that the endian type of the CPU is detectable
 	if ( (IsBigEndian() != 0) && (IsBigEndian() != 1) )
 	{
-		cout << "===> ERROR: Endian type of the CPU couldn't be detected."    << endl;
+		cout << "===> ERROR: Endian type of the CPU couldn't be detected." << endl;
 		cout << "     [main() in " << __FILE__ << " line " << __LINE__ << "]" << endl;
 		exit(1);
 	}
@@ -388,10 +403,10 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "SYNTAX" << endl;
 	cout << endl;
 	
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	cout << "dynamo /?" << endl;
-#elif defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX)
 	cout << "dynamo -?" << endl;
+#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	cout << "dynamo /?" << endl;
 #elif defined(IOMTR_OS_SOLARIS)
 	// Solaris 2.7 must have the switch (? is used for its own purpose).
 	cout << "dynamo \\?" << endl;
@@ -399,11 +414,11 @@ void Syntax( const char* errmsg /*=NULL*/ )
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_computer_name]" << endl;
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name] [-n manager_name] [-m manager_computer_name]" << endl;
 	cout << "       [-x excluded_fs_type]" << endl;
+#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_computer_name]" << endl;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -426,17 +441,20 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "      NIC." << endl;
 	cout << endl;
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	// nop	
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "   excluded_fs_type - type of filesystems to exclude from device search" << endl;
-        cout << "      This string should contian the filesystem types that are not reported" << endl;
+        cout << "      This string should contain the filesystem types that are not reported" << endl;
         cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done!
-#endif
+ #elif defined(IOMTR_OSFAMILY_NETWARE)
+	cout << "   excluded_volumes - volumes to exclude from volume or device search" << endl;
+	cout << "      The default is \"" << "none" << "\"." << endl;
+ #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	// nop	
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
 
-        cout << endl;
+    cout << endl;
 	
 	exit( 0 );
 }
@@ -453,10 +471,10 @@ void Syntax( const char* errmsg /*=NULL*/ )
 void ParseParam(
 	int   argc,
 	char *argv[],
-	char  iometer[MAX_NETWORK_NAME],
-	char  manager_name[MAX_WORKER_NAME],
-	char  manager_computer_name[MAX_NETWORK_NAME],
-	char  manager_exclude_fs[MAX_EXCLUDE_FILESYS] )
+	char iometer[MAX_NETWORK_NAME],
+	char manager_name[MAX_WORKER_NAME],
+	char manager_computer_name[MAX_NETWORK_NAME],
+	char manager_exclude_fs[MAX_EXCLUDE_FILESYS] )
 {
 	// Local variables
 	
@@ -532,23 +550,24 @@ void ParseParam(
 				break;
 			case 'X':
 				if ( ( strlen( argv[I] ) + strlen( manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
-					Syntax("Excluded filesystem list too long.");
+			                Syntax("Excluded filesystem list too long.");
 					return;
 				}
 				strcat( manager_exclude_fs, argv[I] );
-				strcat( manager_exclude_fs, " " );
+        			strcat( manager_exclude_fs, " " );
 				break;
 			default:
 				{
 					char tmpary[2] = { cSwitchKey, 0 };
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-					Syntax( "Unrecognized switch: " + (CString)tmpary + "." );
-#elif defined(IOMTR_OSFAMILY_UNIX)
+					
+#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 					char temp_array[128];
-					strcpy( temp_array, "Unrecognized switch: " );
-					strcat( temp_array, tmpary );
-					strcat( temp_array, "." );
-					Syntax( temp_array );
+					strcpy(temp_array, "Unrecognized switch: ");
+					strcat(temp_array, tmpary);
+					strcat(temp_array, ".");
+					Syntax(temp_array);
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+					Syntax("Unrecognized switch: " + (CString)tmpary + ".");
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -556,7 +575,6 @@ void ParseParam(
 				break;
 		}
 	}
-	
 	return;
 }
 

@@ -4,7 +4,8 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Job .......: Implementation of the Target class for TCP/IP sockets.## */
+/* ##  Job .......: Implementation of the Target class for TCP/IP         ## */
+/* ##               sockets.                                              ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -48,7 +49,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -215,7 +220,7 @@ BOOL TargetTCP::Open( volatile TestState *test_state, int open_flag )
 		do 
 		{
 			result = tcp_socket.ConnectSocket( &tcp_socket.server_address );
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 			if ( result != ReturnSuccess )
 			{
 				// According to connect(3XN):

@@ -47,7 +47,11 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-04 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-03-04 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Suggested by Ming Zhang, I removed an old left      ## */
 /* ##                 over _DETAIL code.                                  ## */
 /* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
@@ -89,8 +93,19 @@
 #if defined(IOMTR_OS_SOLARIS)
  #include <thread.h>
 #endif
-#if defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
  #include <assert.h>
+#endif
+
+
+#if defined(IOMTR_OS_NETWARE)
+void nwtime(timeb *a)
+{
+	double time = clock();
+
+	a->time    = time / CLOCKS_PER_SEC;
+	a->millitm = (time - (a->time*CLOCKS_PER_SEC)) * 10;
+} 
 #endif
 
 
@@ -138,12 +153,15 @@ Grunt::~Grunt()
 
 	// Release grunt's I/O data buffers if they are in use.
 	if ( data_size )
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-		VirtualFree( read_data, 0, MEM_RELEASE );
-		VirtualFree( write_data, 0, MEM_RELEASE );
+#if defined(IOMTR_OSFAMILY_NETWARE)
+		NXMemFree( read_data );
+		NXMemFree( write_data );
 #elif defined(IOMTR_OSFAMILY_UNIX)
 		free( read_data );
 		free( write_data );
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+		VirtualFree( read_data, 0, MEM_RELEASE );
+		VirtualFree( write_data, 0, MEM_RELEASE );
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -185,13 +203,27 @@ BOOL Grunt::Size_Target_Array( int count, const Target_Spec *target_specs )
 	// Release the memory if everything is being freed.
 	if ( !count || !target_specs )
 	{
-		free(targets);
+#if defined(IOMTR_OSFAMILY_NETWARE)
+		NXMemFree( targets );
+#elif defined(IOMTR_OSFAMILY_UNIX)
+		free( targets );
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+		free( targets );   // TODO: Check if VirtualFree() is not needed here.
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		targets = NULL;
 		return TRUE;
 	}
 
 	// Allocate enough pointers to refer to all targets.
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+	targets = (Target**)NXMemRealloc( targets, sizeof(Target*) * count, 1 );
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
 	targets = (Target**)realloc( targets, sizeof(Target*) * count );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	if ( !targets )
 		return FALSE;
 
@@ -239,9 +271,13 @@ BOOL Grunt::Resize_Transaction_Arrays()
 		needed_queue_size += targets[i]->spec.queue_depth;
 	}
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	if (io_cq->SetQueueSize(needed_queue_size) == FALSE)
 		return FALSE;
+#elif(IOMTR_OSFAMILY_WINDOWS)
+	// nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	
 	//
@@ -252,8 +288,13 @@ BOOL Grunt::Resize_Transaction_Arrays()
 
 	// Grow the transaction array.  We perform two casts to ensure that the
 	// memory is aligned properly.
-	if ( !(new_mem = (void*)((Transaction*)realloc( trans_slots, 
-		needed_queue_size * sizeof(Transaction) )) ) )
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+	if ( !(new_mem = (void*)((Transaction*)NXMemRealloc( trans_slots, needed_queue_size * sizeof(Transaction), 1 )) ) )
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
+	if ( !(new_mem = (void*)((Transaction*)realloc( trans_slots, needed_queue_size * sizeof(Transaction) )) ) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	{
 		Free_Transaction_Arrays();
 		cout << "*** Grunt could not allocate transaction request list." << endl;
@@ -265,8 +306,15 @@ BOOL Grunt::Resize_Transaction_Arrays()
 	// queue than there are transactions.  This allows us to determine if the
 	// queue is empty by checking that head == tail.  (Without it, head == tail
 	// could also indicate that the queue is entirely full.)
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+	if ( !(new_mem = (void*)((int*)NXMemRealloc( available_trans_queue, 
+		(needed_queue_size + 1) * sizeof(int), 1 )) ) )
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( !(new_mem = (void*)((int*)realloc( available_trans_queue, 
 		(needed_queue_size + 1) * sizeof(int) )) ) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	{
 		Free_Transaction_Arrays();
 		cout << "*** Grunt could not allocate available queue." << endl;
@@ -287,9 +335,21 @@ BOOL Grunt::Resize_Transaction_Arrays()
 void Grunt::Free_Transaction_Arrays()
 {
 	if ( trans_slots )
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+		NXMemFree( trans_slots );
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
 		free( trans_slots );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	if ( available_trans_queue )
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+		NXMemFree( available_trans_queue );
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
 		free( available_trans_queue );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	total_trans_slots = 0;
 }
 
@@ -516,17 +576,23 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 			 << access_spec.max_transfer << endl;
 	#endif
 
-#if defined(IOMTR_OSFAMILY_WINDOWS)
+#if defined(IOMTR_OSFAMILY_NETWARE)
 	if ( read_data ) {
-		VirtualFree( read_data, 0, MEM_RELEASE );
+		NXMemFree( read_data );
 	}
-	if ( !(read_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
+	errno = 0;
+	if ( !(read_data = NXMemAlloc(access_spec.max_transfer, 1) ))
 #elif defined(IOMTR_OSFAMILY_UNIX)
 	if ( read_data ) {
 		free( read_data );
 	}
 	errno = 0;
-	if ( !(read_data = valloc(access_spec.max_transfer) ))
+	if ( !(read_data = valloc(access_spec.max_transfer) ))		
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+	if ( read_data ) {
+		VirtualFree( read_data, 0, MEM_RELEASE );
+	}
+	if ( !(read_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
 #else
   #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -537,17 +603,23 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 		return FALSE;
 	}
 
-#if defined(IOMTR_OSFAMILY_WINDOWS)
+#if defined(IOMTR_OSFAMILY_NETWARE)
 	if ( write_data ) {
-		VirtualFree( write_data, 0, MEM_RELEASE );
+		NXMemFree( write_data );
 	}
-	if ( !(write_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
+	errno = 0;
+	if ( !(write_data = NXMemAlloc(access_spec.max_transfer, 1) ))
 #elif defined(IOMTR_OSFAMILY_UNIX)
 	if ( write_data ) {
 		free( write_data );
 	}
 	errno = 0;
 	if ( !(write_data = valloc(access_spec.max_transfer) ))
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+	if ( write_data ) {
+		VirtualFree( write_data, 0, MEM_RELEASE );
+	}
+	if ( !(write_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
 #else
   #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -557,7 +629,6 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 		data_size = 0;
 		return FALSE;
 	}
-
 
 	data_size = access_spec.max_transfer;
 	return TRUE;
@@ -572,8 +643,12 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 //
 BOOL Grunt::Prepare_Disks()
 {
-#if defined(IOMTR_OSFAMILY_UNIX)
-        pthread_t newThread;
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+	pthread_t newThread;
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+	// nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	grunt_state = TestPreparing;
@@ -582,7 +657,13 @@ BOOL Grunt::Prepare_Disks()
 	// Creating a thread to prepare each disk.
 	cout << "Preparing disks..." << endl;
 
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+	prepare_thread = (Thread_Info*)NXMemAlloc(sizeof(Thread_Info) * target_count, 1 );
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
 	prepare_thread = (Thread_Info*)malloc(sizeof(Thread_Info) * target_count );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	if ( !prepare_thread )
 	{
 		cout << "*** Unable to allocate memory for preparation threads." << endl;
@@ -596,14 +677,14 @@ BOOL Grunt::Prepare_Disks()
 			prepare_thread[i].parent = this;
 			prepare_thread[i].id = i;
 			cout << "   " << targets[i]->spec.name << " preparing." << endl;
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-			_beginthread( Prepare_Disk_Wrapper, 0, (void *) &(prepare_thread[i]) );
-#elif defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 			// Assuming that thr_create call will not fail !!!
 
 			pthread_create(&newThread, NULL, (void *(*)(void *))Prepare_Disk_Wrapper, 
 										 (void *) &(prepare_thread[i]));
 			pthread_detach(newThread);
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+			_beginthread( Prepare_Disk_Wrapper, 0, (void *) &(prepare_thread[i]) );
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -642,15 +723,19 @@ void Grunt::Prepare_Disk( int disk_id )
 
 	// Allocate a large (64k for 512 byte sector size) buffer for the preparation.
 	buffer_size = disk->spec.disk_info.sector_size * 128;
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-	VirtualFree( buffer, 0, MEM_RELEASE );
-	if ( !(buffer = VirtualAlloc( NULL, buffer_size, MEM_COMMIT, PAGE_READWRITE )) )
+#if defined(IOMTR_OSFAMILY_NETWARE)
+	NXMemFree( buffer );
+	errno = 0;
+	if ( !(buffer = NXMemAlloc(buffer_size, 1) ))
 #elif defined(IOMTR_OSFAMILY_UNIX)
 	free( buffer );
 	errno = 0;
 	if ( !(buffer = valloc(buffer_size) ))
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+	VirtualFree( buffer, 0, MEM_RELEASE );
+	if ( !(buffer = VirtualAlloc( NULL, buffer_size, MEM_COMMIT, PAGE_READWRITE )) )
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		cout << "*** Could not allocate buffer to prepare disk." << endl;
@@ -660,7 +745,7 @@ void Grunt::Prepare_Disk( int disk_id )
 	}
 
 	// Open the disk for preparation.
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	// The disk::prepare() operation writes to a file iobw.tst till it uses up
 	// all the available disk space. Now, Solaris allows a file to be created
 	// with a (logical) size that is larger than the actual size of the file.
@@ -696,10 +781,12 @@ void Grunt::Prepare_Disk( int disk_id )
 		disk->Close( NULL );
 	}
 
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-	VirtualFree( buffer, 0, MEM_RELEASE );
+#if defined(IOMTR_OSFAMILY_NETWARE)
+	NXMemFree( buffer );
 #elif defined(IOMTR_OSFAMILY_UNIX)
 	free( buffer );
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+	VirtualFree( buffer, 0, MEM_RELEASE );
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -1004,6 +1091,13 @@ void Grunt::Do_IOs()
 	
 	while ( grunt_state != TestIdle )
 	{
+#if defined(IOMTR_OSFAMILY_NETWARE)
+		pthread_yield();	// NetWare is non-preemptive
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
+		// nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		// If we can't queue another request, wait for a completion.
 		// If we CAN queue another request, get only one completion and do 
 		// so immediately (with a time out of 0).
@@ -1160,6 +1254,13 @@ void Grunt::Do_IOs()
 		//
 		do
 		{
+#if defined(IOMTR_OSFAMILY_NETWARE)
+			pthread_yield();	// NetWare is Non-preemptive
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
+			// nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 			if ( transaction->is_read )
 			{
 				transfer_result = target->Read( read_data, transaction );
@@ -1317,9 +1418,14 @@ void Grunt::Do_Partial_IO( Transaction *transaction, int bytes_done )
 //
 void Grunt::Start_Test()
 {
-#if defined(IOMTR_OSFAMILY_UNIX)
-  pthread_t newThread;
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+	pthread_t newThread;
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+	// nop
 #endif
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
 	// Clear the results.
 	Initialize_Results();
 	critical_error = FALSE;
@@ -1337,7 +1443,7 @@ void Grunt::Start_Test()
 	InterlockedExchange( (long *) &not_ready, 1 );
 	// Tell the grunt to begin opening its devices, but not to perform I/O yet.
 	InterlockedExchange( (long *) &grunt_state, TestOpening );
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	pthread_create(&newThread, NULL,
 		       (void *(*)(void *))Grunt_Thread_Wrapper, (void *)this);
 	pthread_detach(newThread);
@@ -1361,7 +1467,9 @@ void Grunt::Begin_IO()
 	// Wait for all threads to finish opening their devices.
 	while ( not_ready )
 	{
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE)
+		pthread_yield();
+#elif defined(IOMTR_OSFAMILY_UNIX)
  #if defined(IOMTR_OS_SOLARIS)
 		thr_yield();
  #elif defined(IOMTR_OS_LINUX)
@@ -1394,7 +1502,7 @@ void Grunt::Begin_IO()
 //
 // When we use gcc, we add "LL" to take out a warning about integer overflow.
 //
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
  #define A 136204069LL		// 3x7x11x13x17x23x   29x4 + 1
  #define B 28500701229LL	// 3x7x11x13x17x23x27x29x31
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)

@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -122,23 +126,40 @@ ReturnVal CQAIO::GetStatus( int *bytes, int *data, int delay )
 
 
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 BOOL CQAIO::SetQueueSize(int size)
 {
     struct IOCQ *this_cqid = (struct IOCQ *)completion_queue;
 
-    this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element)
-                                * size);
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+    this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element) * size);
+#elif defined(IOMTR_OS_NETWARE)
+    this_cqid->element_list = (struct CQ_Element *)NXMemAlloc(sizeof(CQ_Element) * size, 1);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
     if (this_cqid->element_list == NULL)
     {
         cout << "memory allocation failed." << endl;
         return(FALSE);
     }
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
     this_cqid->aiocb_list = (struct aiocb64 **)malloc(sizeof(struct aiocb64 *) * size);
+#elif defined(IOMTR_OS_NETWARE)
+    this_cqid->aiocb_list = (struct aiocb64 **)NXMemAlloc(sizeof(struct aiocb64 *) * size, 1);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
     if (this_cqid->aiocb_list == NULL)
     {
         cout << "memory allocation failed." << endl;
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
         free(this_cqid->element_list);
+#elif defined(IOMTR_OS_NETWARE)
+        NXMemFree(this_cqid->element_list);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 		return(FALSE);
     }
 

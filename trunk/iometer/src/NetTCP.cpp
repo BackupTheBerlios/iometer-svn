@@ -50,7 +50,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Assimilated the patch from Robert Jones which is    ## */
 /* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
 /* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
@@ -69,20 +73,29 @@
 #include "NetTCP.h"
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include "mswsock.h"
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_NETWARE)
  #include <sys/socket.h>
+
+ #if defined(IOMTR_OS_NETWARE)
+  #include <sys/select.h>
+ #endif
+
  #include <netinet/in.h>
  #include <arpa/inet.h>
- #include <netinet/tcp.h>
 
- #define SD_SEND	 0x01
+ #if !defined(IOMTR_OS_NETWARE)
+  #include <netinet/tcp.h>
+ #endif
+
+ #define SD_SEND		0x01
  #define WSAENOTCONN		ENOTCONN
- #define WSA_IO_PENDING	ERROR_IO_PENDING
+ #define WSA_IO_PENDING		ERROR_IO_PENDING
 
- #define wsprintf sprintf
+ #define wsprintf 		sprintf
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -238,7 +251,7 @@ ReturnVal NetAsyncTCP::CreateSocket( SOCKET *s )
 	#endif
 
 	// Create socket.
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp;
 	fp = (struct File *)*s;
 	fp->fd = socket(AF_INET, SOCK_STREAM, PF_UNSPEC);
@@ -281,7 +294,7 @@ ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 {
 	socklen_t buflen;
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *)*s;
 #endif
 
@@ -290,7 +303,7 @@ ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 	#endif
 
 	// Bind socket.
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	if ( bind ( fp->fd, (struct sockaddr *) address, sizeof(*address) ) != 0 )
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( bind ( *s, (struct sockaddr *) address, sizeof(*address) ) != 0 )
@@ -306,7 +319,7 @@ ReturnVal NetAsyncTCP::BindSocket( SOCKET *s, SOCKADDR_IN *address )
 
 	// get actual port number in use
 	buflen = sizeof(*address);
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX) 
 	if ( getsockname ( fp->fd, (struct sockaddr *) address, &buflen ) != 0 )
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( getsockname ( *s, (struct sockaddr *) address, &buflen ) != 0 )
@@ -341,7 +354,7 @@ ReturnVal NetAsyncTCP::ConnectSocket( SOCKADDR_IN *address )
 			 << ntohs( address->sin_port ) << "." << endl;
 	#endif
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	if ( connect(((struct File *)client_socket)->fd, (struct sockaddr *) address, sizeof(*address)) == SOCKET_ERROR )
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( connect(client_socket, (struct sockaddr *) address, sizeof(*address)) == SOCKET_ERROR )
@@ -352,7 +365,7 @@ ReturnVal NetAsyncTCP::ConnectSocket( SOCKADDR_IN *address )
 		#if NETWORK_DETAILS || _DEBUG
 			// WSAECONNREFUSED means the server isn't up yet or is busy, 
 			// don't print an error message
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 			if ( errno != ECONNREFUSED ) 
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 			if ( WSAGetLastError() != WSAECONNREFUSED ) 
@@ -393,7 +406,7 @@ ReturnVal NetAsyncTCP::Connect( const char *ip_address,
 	address.sin_port = htons(port_number); // connect to this port
 
 	result = ConnectSocket( &address );
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	if ( result != ReturnSuccess )
 	{
 		// According to connect(3XN):
@@ -439,7 +452,7 @@ ReturnVal NetAsyncTCP::Accept()
 	fd_set	  sock_set;		// used by select function.
 	socklen_t addr_len;
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *)server_socket;
 #endif
 
@@ -452,7 +465,7 @@ ReturnVal NetAsyncTCP::Accept()
 
 	// It's ok to listen more than once on a socket.
 	// allow only a single connection.
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	#ifdef WORKAROUND_LISTEN_BUG
 	if ( ! listening )
 	{
@@ -483,7 +496,7 @@ ReturnVal NetAsyncTCP::Accept()
 
 	// Check the server socket for a connection request.  
 	FD_ZERO( &sock_set );				// clear the fd_set structure.
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	FD_SET( fp->fd, &sock_set);
 
 	// if timeout is NULL, operation blocks until successful.
@@ -505,7 +518,7 @@ ReturnVal NetAsyncTCP::Accept()
 			cout << "Creating client socket." << endl;
 		#endif
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 		((struct File *)client_socket)->fd = accept (fp->fd,
 						(struct sockaddr *) &client_address, &addr_len);
 
@@ -559,7 +572,7 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	socklen_t addr_len = sizeof( address );
 
 	fd_set		readfds;
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File    *fp = (struct File *)client_socket;
 #endif
 
@@ -570,7 +583,7 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( client_socket == INVALID_SOCKET )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	if ( fp->fd == (int)INVALID_SOCKET )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
@@ -583,7 +596,7 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	}
 
 	// If we're not connected to anything, return.
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	if ( getpeername( fp->fd, &address, &addr_len ) == SOCKET_ERROR ) 
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( getpeername( client_socket, &address, &addr_len ) == SOCKET_ERROR ) 
@@ -601,7 +614,7 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	SetTimeout( 1, 0 );
 	FD_ZERO( &readfds );
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	FD_SET( fp->fd, &readfds);
 	if ( select( maxfd, &readfds, NULL, NULL, &timeout ) )
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
@@ -667,6 +680,8 @@ ReturnVal NetAsyncTCP::Receive( LPVOID buffer, DWORD bytes, LPDWORD return_value
 		asynchronous_io, NULL ) == 0 )
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( ReadFile( client_socket, buffer, bytes, return_value, asynchronous_io ) )
+#elif defined(IOMTR_OS_NETWARE)
+	if ( *return_value = read( (int)client_socket, buffer, (unsigned int)bytes) )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -724,6 +739,8 @@ ReturnVal NetAsyncTCP::Send( LPVOID buffer, DWORD bytes, LPDWORD return_value,
 			asynchronous_io, NULL ) == 0 )
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( WriteFile( client_socket, buffer, bytes, return_value, asynchronous_io ) )
+#elif defined(IOMTR_OS_NETWARE)
+	if ( *return_value = write( (int)client_socket, (void *)buffer, (unsigned int)bytes) )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -771,13 +788,13 @@ DWORD NetAsyncTCP::Peek()
 	// we have to provide a buffer, so we provide just one character of buffer
 	char buf[1];
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+	if ( recv ( ((struct File *)client_socket)->fd, buf, sizeof(buf), MSG_PEEK ) == ReturnSuccess )
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	wsa_buf.buf = buf;
 	wsa_buf.len = sizeof(buf);
 
 	if ( Receive( buf, 1, &bytes_available, NULL, MSG_PEEK ) == ReturnSuccess )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-	if ( recv ( ((struct File *)client_socket)->fd, buf, sizeof(buf), MSG_PEEK ) == ReturnSuccess )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -810,10 +827,10 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 		cout << "Closing socket." << endl;
 	#endif
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	if ( *s == INVALID_SOCKET )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)*s)->fd == (int)INVALID_SOCKET )
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	if ( *s == INVALID_SOCKET )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -828,11 +845,11 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 		cout << "Closing socket." << endl;
 	#endif
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	if ( closesocket ( *s ) != 0 )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	WSASetLastError(0);
 	if ( close ( ((struct File *)*s)->fd ) != 0 )
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	if ( closesocket ( *s ) != 0 )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -843,10 +860,10 @@ ReturnVal NetAsyncTCP::CloseSocket( SOCKET *s )
 		return ReturnError;
 	}
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	*s = INVALID_SOCKET;
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	((struct File *)*s)->fd = (int)INVALID_SOCKET;
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	*s = INVALID_SOCKET;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -896,7 +913,7 @@ void NetAsyncTCP::SetOptions( SOCKET *s )
 
 	// SET the socket option settings
 	///////////////////////////////////
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File *fp = (struct File *) *s;
 	// When closing the connection, do a hard close.
 	if ( setsockopt( fp->fd, SOL_SOCKET, SO_LINGER, (char *) &lstruct, sizeof(lstruct) ) == SOCKET_ERROR )

@@ -53,7 +53,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Assimilated the patch from Robert Jones which is    ## */
 /* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
 /* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
@@ -81,14 +85,18 @@
 
 #include "IOPortTCP.h"
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include "mswsock.h"
-#endif
-
 #if defined(IOMTR_OS_LINUX)
  #include <sys/time.h>
  #include <sys/types.h>
  #include <unistd.h>
+#endif
+
+#if defined(IOMTR_OS_NETWARE)
+ #include <sys/select.h>
+#endif
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include "mswsock.h"
 #endif
 
 
@@ -263,7 +271,7 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 #endif
 
 	if ( server_socket == (int)INVALID_SOCKET )
-	{
+  	{
 		*errmsg << "===> ERROR: Creating socket failed." << endl
 			<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
 			<< "     errno = " << WSAGetLastError() << ends;
@@ -397,7 +405,7 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 	}
 
 	// specify protocol, port, and address to connect to.
-
+	
 	sin.sin_family = AF_INET; // use Internet Protocol
 	sin.sin_port = htons(port_number); // connect to this port
 	sin.sin_addr.s_addr = server_address; // connect to this server
@@ -415,14 +423,14 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 			WSASetLastError( 0 );
 		#endif
 
-		retval = connect ( client_socket, (struct sockaddr *) &sin, sizeof(sin) );
+		retval = connect ( client_socket, (struct sockaddr *)&sin, sizeof(sin) );
 
 		if ( retval != 0 )
 		{
 			#if PORT_DETAILS || _DETAILS
 				// WSAECONNREFUSED means the server isn't up yet or is busy,
 				// don't print an error message
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 				if ( errno != ECONNREFUSED ) 
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 				if ( WSAGetLastError() != WSAECONNREFUSED ) 
@@ -436,7 +444,7 @@ BOOL PortTCP::Connect( char* port_name, unsigned short port_number )
 					OutputErrMsg();
 				}
 			#endif
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 			// According to connect(3XN):
 			//      If connect() fails, the state of the socket
 			//      is  unspecified.  Portable  applications
@@ -594,7 +602,7 @@ BOOL PortTCP::Accept()
 			}
 		}
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Attempting asynchronous connection in Unix." << endl
 			<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -636,7 +644,7 @@ BOOL PortTCP::GetAcceptResult()
 	result = GetOverlappedResult( (HANDLE)client_socket, &accept_overlapped, &bytes_read, FALSE );
 
 	return result;
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	*errmsg << "===> ERROR: Asynchronous socket accept attempted under Unix." << endl
 		<< "     [PortTCP::GetAcceptResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 	OutputErrMsg();
@@ -678,7 +686,7 @@ DWORDLONG PortTCP::Receive( LPVOID msg, DWORD size )
 	{
 		return AsynchReceive( msg, size );
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::Receive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -770,7 +778,7 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 		}
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::AsynchReceive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -811,7 +819,7 @@ DWORDLONG PortTCP::GetReceiveResult()
 	{
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::GetReceiveResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -856,7 +864,7 @@ DWORDLONG PortTCP::SynchSend( LPVOID msg, DWORD size )
 	int bytes_written;
 	DWORD total_bytes_written = 0;
 	DWORD total_size = size;
-
+	
 #ifdef _DEBUG
 	cout << "in SynchSend " << endl;
 #endif
@@ -924,7 +932,7 @@ DWORDLONG PortTCP::AsynchSend( LPVOID msg, DWORD size )
 		}
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::AsynchSend() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -959,7 +967,7 @@ DWORDLONG PortTCP::GetSendResult()
 	{
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::GetSendResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -978,7 +986,7 @@ DWORDLONG PortTCP::GetSendResult()
 //
 DWORD PortTCP::Peek()
 {
-#if defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
 	int		bytes_available = 0;
 #elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORD           bytes_available = 0;
@@ -1080,7 +1088,7 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( closesocket ( *s ) != 0 )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	if ( close ( *s ) != 0 )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
