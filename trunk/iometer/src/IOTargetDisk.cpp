@@ -12,8 +12,7 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...:                                                       ## */
-/* ##               2003-03-28 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-28 (joe@eiler.net)                            ## */
 /* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
 /* ##               2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed LINUX_DEBUG, because it is redundant.       ## */

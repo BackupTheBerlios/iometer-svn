@@ -20,10 +20,10 @@ Iometer User's Guide
    * 19.3c Specifying excluded filesystem types (new)      
    * 19.4  Omitting Switches (changed)
 
-Iometer Developers Guide
+Iometer Developer's Guide
 
    * 1     Building Iometer (coming later)
-   * 1.1   Makefile switches (coming later)
+   * 1.1   Makefile issues
 
    * 2     Testing Iometer (coming later)
 
@@ -118,7 +118,7 @@ with the Dynamo instance.
 
   ------------------------------------------------------------------------
 
-Iometer Developers Guide
+Iometer Developer's Guide
 
   ------------------------------------------------------------------------
 
@@ -130,6 +130,31 @@ for each file within the source tarball (grouped by there primary job).
 One of the few common rules within the Iometer / Dynamo source seems to
 be, that once a class is defined and implemented, you will find the class
 defintion in foo.h and its implementation in foo.cpp.
+
+
+  ------------------------------------------------------------------------
+
+1.1 Makefile issues
+
+For each of the different supported Unix operating system we have a
+independent makefile. You can identify the appropriate one by its name
+(the makefile for Linux is named Makefile-Linux and so on).
+
+The most important part is the CFLAGS variable which defines the flags
+used while compilation of the sources. Beside the compiler flags you will
+find important global defines (-D<key>[=<value>]):
+
+ o _DEBUG
+
+   This is the global "switch" to activate the debugging code.  
+   
+   Note: We can not change its name to DEBUG for instance, because
+         the MFC Library (Windows only) gets into debugging mode when
+	 _DEBUG is defined, so we have to stick with it. Another option
+	 is to use our own DEBUG define and then activate _DEBUG using
+	 a #ifdef statement (something for the IOCommon.h file).
+
+...
 
   ------------------------------------------------------------------------
 

@@ -9,23 +9,24 @@ ChangeLog (2003.nn.nn):
 
 
 - Applied patches:
-  - iometer-2003.02.15-HandleDummy0.patch by Daniel Scheibli (modifies
-    the Get_NI_Counter function to handle interfaces without leading
-    blanks (like dummy0) as well).
-  - iometer-2003.02.15-NoPipe.patch by Daniel Scheibli (removes the 
-    Windows Pipes support for communication which simplifies the code).
+  - iometer-2003.02.15-HandleDummy0.patch by Daniel Scheibli (modifies the
+    Get_NI_Counter function to handle interfaces without leading blanks
+    (like dummy0) as well).
+  - iometer-2003.02.15-NoPipe.patch by Daniel Scheibli (removes the Windows
+    Pipes support for communication which simplifies the code).
   - iometer-2003.02.15_Get_NI_Counter.patch by Joe Eiler (brings the
-    handling for network interfaces that does not contain statistics
-    in /proc/net/dev - as for example with Intel Link Aggreation).    
+    handling for network interfaces that does not contain statistics in
+    /proc/net/dev - as for example with Intel Link Aggreation).    
   - iometer-2003.02.15_Exclude_Filesys.patch by Joe Eiler (additional
     command line parameter for Dynamo to pass into file systems which
     should be hidden).
-  - iometer-2003.02.15_Extra_Processor_Info.patch by Joe Eiler (brings
-    new processor speed values as well as improvements for the GHz CPU
-    detection).
+  - iometer-2003.02.15_Extra_Processor_Info.patch by Joe Eiler (brings new
+    processor speed values as well as improvements for the GHz CPU detection).
 - Cleanup:
-   - Changed LINUX_DEBUG and NDEBUG to _DEBUG which is the generic
-     define used for this effort.
+   - Updated the handling of the global debug flag (_DEBUG) in the source
+     files (check for platform etc.).
+   - Changed LINUX_DEBUG and NDEBUG to _DEBUG which is the generic define
+     used for this effort.
    - Dropped different unneeded defines in IOVersion.h
    - Dropped clean_ctlm.c, because we can use the recode tool instead.
    - Merged rdtsc.c into IOTime.cpp
@@ -34,12 +35,12 @@ ChangeLog (2003.nn.nn):
    - Dropped the IOCq.cpp file, because it was empty.
 - Others:
    - Made some minor changes to get Iometer to compile with VC++ 7 (.NET)
-     Note: No MSVC++ project files have been checked in, you will have to
-     let VC++ convert the project for you.  This worked for fine for me.
+     Note: No MSVC++ project files have been checked in, you will have to let
+           VC++ convert the project for you.  This worked for fine for me.
    - Added the Wizard.mdb file from the old days (version 1999.10.20).
    - rewrote the Solaris Makefile to match the Linux stuff
-   - Added the output of the major and minor number during the detection
-     of the sector size (of physical disks).
+   - Added the output of the major and minor number during the detection of
+     the sector size (of physical disks).
    - Rewrite of the .../README file (containing additions for the Iometer
      User's Guide as well as text for a future Developers Guide).
 

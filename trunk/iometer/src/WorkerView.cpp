@@ -1,3 +1,23 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Iometer) / WorkerView.cpp                                         ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: ...                                                   ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Updated the global debug flag (_DEBUG) handling     ## */
+/* ##                 of the source file (check for platform etc.).       ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -42,6 +62,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // responsible for the "Topology" pane in Iometer's main window.
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
+
 
 #include "stdafx.h"
 #include "ManagerList.h"
@@ -49,10 +71,22 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "GalileoView.h"
 #include "resource.h"
 
+
+// Needed for MFC Library support for assisting in finding memory leaks
+//
+// NOTE: Based on the documentation[1] I found, it should be enough to have
+//       a "#define new DEBUG_NEW" statement for the case, that we are
+//       running Windows. There should be no need for checking the _DEBUG
+//       flag and no need for redefiniting the THIS_FILE string. Maybe there
+//       will be a MFC hacker who could advice here.
+//       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
+//
+#if defined (_WIN32) || defined (_WIN64)
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 
