@@ -12,7 +12,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - cleanup some warnings for Solaris                   ## */
+/* ##               2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - replaces EXCLUDE_FILESYS define with a string       ## */
 /* ##                 so filesystem types are no longer hard coded.       ## */
 /* ##                                                                     ## */
@@ -86,14 +88,14 @@ static char *mnttab;
 //
 int Manager::Report_Disks( Target_Spec* disk_spec )
 {
-	DWORD	dummy_word;
+//	DWORD	dummy_word;
 	TargetDisk	d;
-	char	drive_letter;
-	int		drive_number = 0;
+//	char	drive_letter;
+//	int		drive_number = 0;
 	int		count = 0;
 	DIR		*dirp;
 	struct dirent *dp;
-	int		i;
+//	int		i;
 
 	cout << "Reporting drive information..." << endl;
 
@@ -549,7 +551,8 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 									 int *count, int logical_count)
 {
 	TargetDisk d;
-	int i, j, fd, bytes_read, length;
+	int i, j, fd, length;
+//  int bytes_read;
 	struct vtoc this_vtoc;
 	char fstype[32];				// to hold the file system type.
 	char base_name[MAX_NAME];
@@ -880,7 +883,8 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 
 BOOL Manager::Has_File_System(char *file_name, char *fstype)
 {
-	int pid, status, retval;
+// int pid, status;
+  int retval;
 	FILE *pptr;
 	char path[MAX_NAME];
 	char cmd[MAX_NAME];

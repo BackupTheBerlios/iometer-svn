@@ -13,7 +13,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Added a #ifdef for SOLARIS support                  ## */
+/* ##               2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Cut out the Windows Pipes support for               ## */
 /* ##                 communication efforts.                              ## */
 /* ##                                                                     ## */
@@ -87,7 +89,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #ifdef _DEBUG
-#ifndef LINUX
+#if defined(LINUX) || defined(SOLARIS)
+#else
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW

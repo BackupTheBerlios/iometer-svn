@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOTime.cpp                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Implements timing                                     ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Moved contents of rdtsc.c into here                 ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -112,3 +131,27 @@ __declspec ( naked ) extern DWORDLONG rdtsc()
 }
 #endif
 #endif
+
+#ifdef UNIX
+#if defined(SOLARIS) && defined(__i386)
+
+unsigned long long rdtsc()
+{
+	asm(".byte 0x0f, 0x31");
+}
+
+#elif defined(SOLARIS) && defined(__sparc)  /* ! SOLARIS && __i386 */
+#include <sys/types.h>
+#include <sys/time.h>
+double processor_speed_to_nsecs;
+unsigned long long rdtsc()
+{
+	return (DWORDLONG)((double)gethrtime() * (double)processor_speed_to_nsecs);
+}
+
+#elif defined(LINUX)
+// rdtsc code present in IOTime.h
+#else
+#error "rdtsc NOT SUPPORTED."
+#endif // SOLARIS && __i386
+#endif // UNIX

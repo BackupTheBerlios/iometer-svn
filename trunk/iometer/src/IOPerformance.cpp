@@ -18,7 +18,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               -Cleaned up some compiler warnings on Solaris         ## */
+/* ##               2003-02-26 (joe@eiler.net)                            ## */
 /* ##               -Added some more processor info stuff                 ## */
 /* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
@@ -358,9 +360,11 @@ double Performance::Get_Processor_Speed()
 		 100,   80,   75,   66,   50,   40,   33,   25,   20 };
 
 	DWORD speed;
+#ifndef SOLARIS
 	int speed_magnitude; /* 0=MHz,1=GHz */
 	DWORD type;
 	DWORD size_of_speed = sizeof( DWORD );
+#endif
 #ifdef UNIX
 #ifdef SOLARIS
 	processor_info_t infop;
@@ -559,10 +563,12 @@ PERF_DATA_BLOCK: A simple header for all of the performance data returned.
 //
 void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 {
+#ifndef SOLARIS
 	long	query_result;				// Value returned trying to query performance data.
 	DWORD	perf_object_size;			// Size of buffer allocated to storing performance data.
 	char	perf_data_type_name[10];	// ASCII representation of performance data index.
 	_int64	perf_update_freq;			// Frequency that performance counters are updated.
+#endif
 
 	// Get the performance data stored by the system.
 	#if _DEBUG
@@ -780,8 +786,10 @@ void Performance::Get_TCP_Counters(int snapshot)
 {
 	struct opthdr			*opthdr;
 	struct T_optmgmt_req	*optreq;
+#ifndef SOLARIS
 	struct T_optmgmt_ack	*optack;
 	struct T_error_ack		*errack;
+#endif
 	int						flags = 0, retval;
 
 

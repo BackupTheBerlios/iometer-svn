@@ -13,7 +13,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Added a #ifdef for SOLARIS support                  ## */
+/* ##               2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Cut out the Windows Pipes support for               ## */
 /* ##                 communication efforts.                              ## */
 /* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
@@ -80,7 +82,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IOPort.h"
 
 #ifdef _DEBUG
-#ifndef LINUX
+#if defined(LINUX) || defined(SOLARIS)
+#else
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;

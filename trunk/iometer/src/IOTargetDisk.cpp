@@ -12,7 +12,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Cleaned up some compiler warnings for Solaris       ## */
+/* ##               2003-02-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added output of major & minor number within         ## */
 /* ##                 the getSectorSizeOfPhysDisk() method.               ## */
 /* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
@@ -467,13 +469,14 @@ BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 #elif defined(SOLARIS)
 int TargetDisk::Set_Sizes( BOOL open_disk )
 {
-	DWORD				i, fd;
-	DWORD				low_size, high_size;
-	DWORD				sectors_per_cluster, free_clusters, total_clusters;
+	DWORD				fd;
+//  DWORD       i;
+//	DWORD				low_size, high_size;
+//	DWORD				sectors_per_cluster, free_clusters, total_clusters;
+//	BOOL				foundPartitions = FALSE;
+//	DWORD				disk_info_size;
 	struct statvfs		st;
-	BOOL				foundPartitions = FALSE;
 	struct dk_geom		disk_geo_info;
-	DWORD				disk_info_size;
 	struct vtoc			disk_vtoc;
 
 	// Logical and physical drives are treated differently.
@@ -715,7 +718,8 @@ DWORDLONG TargetDisk::Get_Partition_Size(char *part_name, int part)
 DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
 {
 	char disk_name[MAX_NAME];
-	int bytes_read, fd;
+//	int bytes_read;
+  int fd;
 	struct vtoc this_vtoc;
 	int length;
 

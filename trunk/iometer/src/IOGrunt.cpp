@@ -11,7 +11,9 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Changed NO_LINUX_VI to NO_DYNAMO_VI                 ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Applied Matt D. Robinson's iometer.patch file       ## */
 /* ##                 (modifies the Set_Access() method to ensure that    ## */
@@ -73,7 +75,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IOGrunt.h"
 #include "IOTargetDisk.h"
 #include "IOTargetTCP.h"
-#ifndef NO_LINUX_VI
+#ifdef NO_DYNAMO_VI
+#else
 #include "IOTargetVI.h"
 #endif
 #ifdef SOLARIS
@@ -187,10 +190,11 @@ BOOL Grunt::Size_Target_Array( int count, const Target_Spec *target_specs )
 			targets[i] = new TargetDisk;
 		else if ( IsType( target_specs[i].type, GenericTCPType ) )
 			targets[i] = new TargetTCP;
-#ifndef NO_LINUX_VI
+#ifdef NO_DYNAMO_VI
+#else
 		else if ( IsType( target_specs[i].type, GenericVIType ) )
 			targets[i] = new TargetVI;
-#endif /* NO_LINUX_VI */
+#endif // NO_DYNAMO_VI
 
 		if ( !targets[i] )
 			return FALSE;
@@ -359,7 +363,8 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 	// Create appropriate completion queue object based on targets.
 	// If the Grunt will manage VI targets, the targets will provide a
 	// pointer to the completion queue to use.
-#ifndef NO_LINUX_VI
+#ifdef NO_DYNAMO_VI
+#else
 	if ( IsType( type, GenericVIType ) )
 	{
 		// VI targets must know where the data buffer is and its size before
@@ -369,7 +374,7 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 		io_cq = &((TargetVI*)targets[0])->vi.vi_cq;
 	}
 	else
-#endif /* NO_LINUX_VI */
+#endif // NO_DYNAMO_VI */
 	{
 		// Create completion queue and verify its creation.
 		if ( !(io_cq = new CQAIO) )
@@ -1339,7 +1344,7 @@ void Grunt::Begin_IO()
 // a = 4c + 1 (c user defined)
 // b is odd
 //
-#ifdef LINUX
+#if defined(LINUX) || defined(SOLARIS)
 //
 // When we use gcc, we add "LL" to take out a warning about integer overflow.
 //

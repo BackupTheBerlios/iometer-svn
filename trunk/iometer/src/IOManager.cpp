@@ -13,7 +13,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Changed NO_LINUX_VI to NO_DYNAMO_VI                 ## */
+/* ##               2003-03-01 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Cut out the Windows Pipes support for               ## */
 /* ##                 communication efforts.                              ## */
 /* ##               2003-02-04 (daniel.scheibli@edelbyte.org)             ## */
@@ -463,7 +465,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 //
 int Manager::Report_VIs( Target_Spec *vi_spec )
 {
-#ifdef NO_LINUX_VI
+#ifdef NO_DYNAMO_VI
 	return(0);
 #else
 	int		count = 0, nic_base;
@@ -591,7 +593,7 @@ int Manager::Report_VIs( Target_Spec *vi_spec )
 	// All done.
 	cout << "   done." << endl;
 	return count;
-#endif /* NO_LINUX_VI */
+#endif // NO_DYNAMO_VI
 }
 
 

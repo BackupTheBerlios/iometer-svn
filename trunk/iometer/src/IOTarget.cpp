@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOTarget.cpp                                              ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Vitual Target class with some generic functions       ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##               - Added an #ifdef SOLARIS since we are now using gcc  ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -81,7 +100,7 @@ Target::~Target()
 // a = 4c + 1 (c user defined)
 // b is odd
 //
-#ifdef LINUX
+#if defined(LINUX) || defined(SOLARIS)
 #define A 136204069LL			// 3x7x11x13x17x23x29x4 + 1
 #define B 28500701229LL		// 3x7x11x13x17x23x27x29x31
 #else

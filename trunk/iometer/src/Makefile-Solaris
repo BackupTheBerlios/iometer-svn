@@ -12,7 +12,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-03-01 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2003-03-04 (joe@eiler.net)                                  ##
+##               - Rewrote Solaris Makefile to match Linux one               ##
+##               - Changed NO_LINUX_VI to be NO_DYNAMO_VI                    ##
+##               2003-03-01 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Cut out the Windows Pipes support for                     ##
 ##                 communication efforts.                                    ##
 ##                                                                           ##
@@ -45,57 +48,58 @@
 #.IGNORE:
 .SUFFIXES: .cpp .c .o
 
-AS=/opt/SUNWspro/bin/as
-CC=/opt/SUNWspro/bin/cc
-CXX=/opt/SUNWspro/bin/CC
+# CC=/opt/SUNWspro/bin/cc
+# CXX=/opt/SUNWspro/bin/CC
+# We use GNU now
+CC=gcc
+CXX=g++
 RM=/bin/rm -f
 MV=/bin/mv
 TOUCH=/usr/bin/touch
-MAKEDEPEND=/usr/openwin/bin/makedepend
 STRIP=/usr/ccs/bin/strip
 
-#
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
 # Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
 #
-#COMMON_DEFINES=-DUNIX -DSOLARIS -D_LARGEFILE64_SOURCE
-COMMON_DEFINES=-DUNIX -DSOLARIS -D_LARGEFILE64_SOURCE -DDYNAMO_DESTRUCTIVE
-WORKAROUND_DEFINES=-DWORKAROUND_MOD_BUG -DWORKAROUND_LISTEN_BUG
-THREADS_DEFINES=-D_REENTRANT
-DEBUG_DEFINES=
-ALL_DEFINES=$(COMMON_DEFINES) $(WORKAROUND_DEFINES) $(THREADS_DEFINES) $(DEBUG_DEFINES)
-
-# Default DEBUG_FLAGS to optimization (-O) rather than debug (-g).
-DEBUG_FLAGS=-O
-INCFLAGS=-I/opt/SUNWspro/include/CC
-LIBFLAGS=
-CFLAGS=$(INCFLAGS) $(LIBFLAGS)
 #
 # Always enable CCFLAGS=-compat=4 on Sparc till the transition from compile
 # version SC4 to SC5 is complete.
 # This flag instructs the compiler to build SC4 binaries.
 #
-CCFLAGS=
-#CCFLAGS=-compat=4
+# CFLAGS GO HERE
+CFLAGS = -O -Wall \
+        -DUNIX -DSOLARIS \
+        -DNO_DYNAMO_VI \
+        -D_LARGEFILE64_SOURCE \
+        -DDYNAMO_DESTRUCTIVE \
+        -D_REENTRANT
+#-I/opt/SUNWspro/include/CC \
+#-D_DEBUG
+# CFLAGS=-compat=4
+
+# LIBS GO HERE
 LIBS= -lthread -lposix4 -lnsl -lsocket -lkstat -ldl
 
-OBJECTS=IOAccess.o IOCompletionQ.o IOGrunt.o IOManager.o \
-		IOManagerUNIX.o IOPerformance.o	IOPort.o IOPortTCP.o \
-		IOTarget.o IOTargetDisk.o IOTargetTCP.o IOTargetVI.o \
-		Network.o NetTCP.o NetVI.o IOTime.o rdtsc.o Pulsar.o \
-		IOVIPL.o VINic.o IOCQVI.o IOCQAIO.o ByteOrder.o IOGlobals.o
+# OBJECTS GO HERE
+OBJECTS= IOGlobals.o \
+         Pulsar.o \
+         IOManager.o IOManagerLinux.o IOManagerSolaris.o \
+         IOGrunt.o \
+         IOTarget.o IOTargetDisk.o IOTargetTCP.o \
+         IOPort.o IOPortTCP.o \
+         Network.o NetTCP.o \
+         ByteOrder.o \
+         IOPerformance.o IOPerformanceLinux.o \
+         IOTime.o \
+         IOCQAIO.o IOCompletionQ.o \
+         IOAccess.o
 
 # Make Rules
-all: depend dynamo
-	$(STRIP) dynamo
-
-debug:=DEBUG_DEFINES=-D_DISK_MSGS -D_DETAILS -D_DEBUG -DDEBUG_NEW=new
-debug:=DEBUG_FLAGS=-g
-debug: depend dynamo
+all: dynamo
 
 dynamo: $(OBJECTS)
-	$(CXX) $(DEBUG_FLAGS) $(CFLAGS) $(CCFLAGS) -o dynamo $(OBJECTS) $(LIBS)
+	$(CXX) $(CFLAGS) -o dynamo $(OBJECTS) $(LIBS)
 
 clean:
 	$(RM) $(OBJECTS) dynamo
@@ -104,57 +108,7 @@ install:
 	echo "Not Supported."
 
 .cpp.o:
-	$(CXX) $(DEBUG_FLAGS) $(ALL_DEFINES) $(CFLAGS) $(CCFLAGS) -c $<
+	$(CXX) $(CFLAGS) -c $<
 
 .c.o:
-	$(CC) $(DEBUG_FLAGS) $(ALL_DEFINES) $(CFLAGS) -c $<
-
-#
-# Remove the error redirection if there are any problems with the Makefile.
-# Also note that we currently have a problem with the two IOCQAIO.[cpp, h] files.
-# They have uppercase extensions which won't work in UNIX.
-#
-depend:
-	@$(MAKEDEPEND) -- $(ALL_DEFINES) -- -Y *.cpp 2> /dev/null
-	@$(MAKEDEPEND) -a -- $(ALL_DEFINES) -- -Y *.c 2> /dev/null
-
-
-# Do not add anything to this Makefile beyond this point.
-# The generated dependency rules will be inserted here.
-# DO NOT DELETE
-
-IOAccess.o: IOAccess.h IOCommon.h
-IOCQAIO.o: IOCQAIO.h IOCQ.h IOTransfers.h IOCommon.h vipl.h
-IOCQVI.o: IOCQVI.h IOCQ.h IOTransfers.h IOCommon.h vipl.h VINic.h IOVIPL.h
-IOCQVI.o: NetVI.h Network.h IOTargetVI.h IOTarget.h IOTest.h IOAccess.h
-IOCompletionQ.o: IOCommon.h
-IOGrunt.o: IOGrunt.h IOCommon.h IOTarget.h IOTest.h IOAccess.h vipl.h IOCQ.h
-IOGrunt.o: IOTransfers.h VINic.h IOVIPL.h IOTargetDisk.h IOTime.h IOCQAIO.h
-IOGrunt.o: IOTargetTCP.h NetTCP.h Network.h IOTargetVI.h NetVI.h IOCQVI.h
-IOManager.o: IOManager.h IOGrunt.h IOCommon.h IOTarget.h IOTest.h IOAccess.h
-IOManager.o: vipl.h IOCQ.h IOTransfers.h VINic.h IOVIPL.h IOPort.h
-IOManager.o: IOMessage.h IOPerformance.h IOTime.h IOPortTCP.h IOTargetDisk.h
-IOManager.o: IOCQAIO.h IOTargetVI.h NetVI.h IOCQVI.h Network.h
-IOPerformance.o: IOPerformance.h IOCommon.h IOTime.h
-IOPort.o: IOPort.h IOCommon.h IOMessage.h IOTest.h IOAccess.h vipl.h
-IOPortTCP.o: IOPortTCP.h IOPort.h IOCommon.h IOMessage.h IOTest.h IOAccess.h
-IOPortTCP.o: vipl.h
-IOTarget.o: IOTarget.h IOCommon.h IOTest.h IOAccess.h vipl.h IOCQ.h
-IOTarget.o: IOTransfers.h
-IOTargetDisk.o: IOTargetDisk.h IOCommon.h IOTime.h IOTarget.h IOTest.h
-IOTargetDisk.o: IOAccess.h vipl.h IOCQ.h IOTransfers.h IOCQAIO.h
-IOTargetTCP.o: IOTargetTCP.h IOCommon.h IOTarget.h IOTest.h IOAccess.h vipl.h
-IOTargetTCP.o: IOCQ.h IOTransfers.h NetTCP.h Network.h IOCQAIO.h
-IOTargetVI.o: IOTargetVI.h IOTarget.h IOCommon.h IOTest.h IOAccess.h vipl.h
-IOTargetVI.o: IOCQ.h IOTransfers.h NetVI.h IOCQVI.h VINic.h IOVIPL.h
-IOTargetVI.o: Network.h
-IOTime.o: IOTime.h IOCommon.h
-IOVIPL.o: IOVIPL.h IOCommon.h vipl.h
-NetTCP.o: NetTCP.h Network.h IOCommon.h
-NetVI.o: NetVI.h IOCQVI.h IOCQ.h IOTransfers.h IOCommon.h vipl.h VINic.h
-NetVI.o: IOVIPL.h Network.h
-Network.o: Network.h IOCommon.h
-Pulsar.o: IOManager.h IOGrunt.h IOCommon.h IOTarget.h IOTest.h IOAccess.h
-Pulsar.o: vipl.h IOCQ.h IOTransfers.h VINic.h IOVIPL.h IOPort.h IOMessage.h
-Pulsar.o: IOPerformance.h IOTime.h
-VINic.o: VINic.h IOVIPL.h IOCommon.h vipl.h
+	$(CC) $(CFLAGS) -c $<

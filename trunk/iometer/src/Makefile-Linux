@@ -12,7 +12,11 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-02-09 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2003-03-04 (joe@eiler.net)                                  ##
+##               - Changed NO_LINUX_VI to be NO_DYNAMO_VI                    ##
+##               - Merged rdtsc.c into IOTime.cpp                            ##
+##               - Some minor cleanup                                        ##
+##               2003-02-09 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Added the default variable CXX again.                     ##
 ##               2003-02-02 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Added new header holding the changelog.                   ##
@@ -37,9 +41,6 @@
 # ==========================================================================
 #
 # NOTE:
-#   To build a Debug version, run debug rule
-#  $ make debug
-#
 #   To build a Release version, run all rule or simply make.
 #  $ make
 #  $ make all
@@ -65,16 +66,18 @@ STRIP=/usr/bin/strip
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
 # Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
 #
-#	-DUNIX -DLINUX -DNO_LINUX_VI -DLINUX_DEBUG=1 -D_DETAILS=1 -D_DEBUG=1 \
+#	-DUNIX -DLINUX -DNO_DYNAMO_VI -DLINUX_DEBUG=1 -D_DETAILS=1 -D_DEBUG=1 \
 
-#	-ggdb
-#	-D_DETAILS
+# CFLAGS GO HERE
 CFLAGS=	-O3 \
 	-Wall \
-	-DUNIX -DLINUX -DNO_LINUX_VI -D_GNU_SOURCE \
+	-DUNIX -DLINUX \
+	-DNO_DYNAMO_VI -D_GNU_SOURCE \
 	-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
 	-DDYNAMO_DESTRUCTIVE \
 	-D_REENTRANT
+#	-ggdb
+#	-D_DETAILS
 ##### OS_PLATFORM_UNIX | OS_PLATFORM_WINTEL
 ##### OS_LINUX | OS_SOLARIS | OS_WINDOWS
 ##### CPU_ENDIAN_TYPE_BIG | CPU_ENDIAN_TYPE_LITTLE
@@ -98,7 +101,7 @@ OBJECTS= IOGlobals.o \
 	 Network.o NetTCP.o \
 	 ByteOrder.o \
 	 IOPerformance.o IOPerformanceLinux.o \
-	 IOTime.o rdtsc.o \
+	 IOTime.o \
 	 IOCQAIO.o IOCompletionQ.o \
 	 IOAccess.o
 		
@@ -111,7 +114,6 @@ help:
 	@echo "Please pick one of the listed targets."
 	@echo "Targets ...: all       Build the binaries"
 	@echo "             dynamo    Build the dynamo binary"
-	@echo "             install   Install the binaries"
 	@echo "             clean     Remove old binaries and object files"
 	@echo
 

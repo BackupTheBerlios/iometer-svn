@@ -16,7 +16,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-02 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##               - Made a change for Solaris to work, I had to extern  ## */
+/* ##                 processor_speed_to_nsecs, I don't know how this     ## */
+/* ##                 would have ever compiled, let alone worked!!        ## */
+/* ##               2003-03-02 (joe@eiler.net)                            ## */
 /* ##               - Changed LONG_PTR to ULONG_PTR, which is what it is  ## */
 /* ##               2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added the implementation of the Strip() function    ## */
@@ -581,7 +585,7 @@ struct Results
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef UNIX
 #ifdef __sparc
-double processor_speed_to_nsecs;
+extern double processor_speed_to_nsecs;
 #endif
 
 #ifdef BIG_ENDIAN_ARCH
