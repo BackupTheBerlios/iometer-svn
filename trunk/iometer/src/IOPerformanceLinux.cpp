@@ -238,7 +238,7 @@ int Performance::Get_Processor_Count()
 // Note: We just take the first CPU we find and return its CPU speed.
 double Performance::Get_Processor_Speed()
 {
-#if defined(IOMTR_CPU_I386)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_XSCALE) 
 	int c;
 	char label[40];
 	int scanDecodes;
