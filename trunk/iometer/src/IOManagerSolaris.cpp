@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the error correction provided by         ## */
+/* ##                 Rob Creecy to prevent the segmentation fault        ## */
+/* ##                 when having multiple swap devices configured.       ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Assimilated the patch from Robert Jones which is    ## */
 /* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
 /* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
@@ -1203,7 +1207,7 @@ void Manager::Get_All_Swap_Devices()
 		if (s == NULL)
 			return;
 
-		strs = (char *)malloc(num+1 * MAX_NAME);
+		strs = (char *)malloc((num+1) * MAX_NAME);
 		if (strs == NULL)
 		{
 			free(s);
