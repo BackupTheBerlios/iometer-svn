@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-13 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Merged IOTime.h stuff into (parts of)               ## */
+/* ##               2003-07-13 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Massive cleanup of this file (grouping the          ## */
 /* ##                 different blocks together).                         ## */
 /* ##               - Implemented the IOMTR_[OSFAMILY|OS|CPU]_* global    ## */
@@ -519,7 +521,7 @@ const char NEW_WORKER_EXECUTABLE[] = "dynamo";
 // (both, OS family based and common)
 // ----------------------------------------------------------------------------
 extern void GetAppFileVersionString( char **ppStrStandard, char **ppStrWithDebug );
-extern inline char *Strip( char *pcString )
+inline char *Strip( char *pcString )
 {
  unsigned int uiLength = strlen(pcString);
  int          I;
@@ -603,6 +605,19 @@ extern inline char *Strip( char *pcString )
 	 ++*(a);		   \
 	 UNLOCK;
 #endif 
+// ----------------------------------------------------------------------------
+#if defined(IOMTR_OS_LINUX)
+ extern DWORDLONG jiffies(void);
+ extern DWORDLONG rdtsc(void);
+#endif 
+// ----------------------------------------------------------------------------
+#if defined(IOMTR_OS_SOLARIS)
+ extern "C" DWORDLONG rdtsc();
+#endif
+// ----------------------------------------------------------------------------
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ extern DWORDLONG rdtsc();
+#endif
 // ----------------------------------------------------------------------------
 #if defined(BIG_ENDIAN_ARCH)
  inline void rotate(char *ptr, int size);

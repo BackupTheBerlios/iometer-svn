@@ -15,7 +15,6 @@ ToDo:
  - IOPerformance.cpp / IOPerformanceLinux.cpp: Consolidate the Get_*_Counters()
    and Extract_*_Counters() methods for all operating systems (only one name
    schema).
- - IOTime.h / IOTime.cpp: Merge the files into a common one.
  - <All>: Check if it is possible to move the reorder() function calls into the
    Send() / Receive() methods (eases code and makes it more solid).
  - <All>: Move all Includes out of the codefiles into the central headerfile

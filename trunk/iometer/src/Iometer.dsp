@@ -295,10 +295,6 @@ SOURCE=.\IOTest.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\IOTime.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\IOTransfers.h
 # End Source File
 # Begin Source File
