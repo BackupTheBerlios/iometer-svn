@@ -49,6 +49,8 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied Dan Bar Dov's patch for adding              ## */
+/* ##                 Linux on PPC support.                               ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -246,7 +248,7 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
  #else    			
   #error ===> ERROR: Broken port, advice needed!
  #endif
-#elif defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
+#elif defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64) || defined(IOMTR_CPU_PPC)
 		Set_Starting_Sector( spec.disk_info.starting_sector );
 #elif defined(IOMTR_CPU_XSCALE)
 		// TODO: Need to double check if this is correct for xscale
@@ -392,7 +394,7 @@ BOOL TargetDisk::Init_Physical( char *drive )
 	}
 
 	sprintf( file_name, "%s/%s", RAW_DEVICE_DIR, spec.name );
-
+	
 	spec.type = PhysicalDiskType;
 	size = 0;
 	starting_position = 0;
@@ -819,7 +821,7 @@ int TargetDisk::Set_Sizes( BOOL open_disk )
 					return(FALSE);
 				}
 			}
-#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64) || defined(IOMTR_CPU_PPC)
 			else
 			{
 				// We are dealing with an fdisk partition.
@@ -834,7 +836,7 @@ int TargetDisk::Set_Sizes( BOOL open_disk )
 					return(FALSE);
 				}
 			}
-#endif // __i386 || _IA64
+#endif // __i386 || _IA64 || _PPC
 #ifdef _DEBUG
 			cout << "spec name : " << spec.name
 				<< " part_name : " << part_name << " part : " << part <<  endl;
@@ -892,7 +894,7 @@ int TargetDisk::Set_Sizes( BOOL open_disk )
 		return ( FALSE );
 	}		
 }
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 {
 	DWORD		i;

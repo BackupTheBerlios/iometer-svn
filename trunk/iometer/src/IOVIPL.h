@@ -74,7 +74,7 @@
  #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
   #include <dlfcn.h>
  #endif
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include <afxwin.h>
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 

@@ -1422,7 +1422,7 @@ void Grunt::Start_Test()
 	pthread_t newThread;
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	// nop
-#endif
+#else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 

@@ -54,7 +54,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-15 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied Dan Bar Dov's patch for adding              ## */
+/* ##                 Linux on PPC support.                               ## */
+/* ##               2004-02-15 (mingz@ele.uri.edu)                        ## */
 /* ##               - Bugfix for Get_NI_Counters to parse /proc/net/dev   ## */
 /* ##                 with correct format.                                ## */
 /* ##               2004-02-07 (mingz@ele.uri.edu)                        ## */
@@ -101,7 +104,7 @@
 #if defined(IOMTR_OS_LINUX)
 
 
-
+#include <sys/time.h>
 #include <assert.h>
 
 #include "IOPerformance.h"
@@ -235,6 +238,7 @@ int Performance::Get_Processor_Count()
 // Note: We just take the first CPU we find and return its CPU speed.
 double Performance::Get_Processor_Speed()
 {
+#if defined(IOMTR_CPU_I386)
 	int c;
 	char label[40];
 	int scanDecodes;
@@ -280,6 +284,26 @@ double Performance::Get_Processor_Speed()
 	fclose(cpuInfo);
 	cerr << "Error determining CPU speed.\n";
 	return(0.0);
+#elif defined(IOMTR_CPU_PPC)
+	#define USEC(tv)	(tv.tv_sec*1000000+tv.tv_usec)
+	
+	struct timeval tv1, tv2;
+	DWORD t1, t2;
+
+	double result;
+
+	gettimeofday( &tv1, NULL );
+	t1 = get_tbl();
+	sleep(1);
+	t2 = get_tbl();
+	gettimeofday( &tv2, NULL );
+	
+	result = ((double)(t2 - t1)) * (1000000.0 / (double)(USEC(tv2) - USEC(tv1)));
+
+	return( result );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 }	
 
 

@@ -49,7 +49,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-19 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added MAX_NAME change detection to ensure that      ## */
+/* ##                 the fscanf()'s stays in sync with it.               ## */
+/* ##               - Applied Dan Bar Dov's patch for adding              ## */
+/* ##                 Linux on PPC support.                               ## */
+/* ##               2004-02-19 (mingz@ele.uri.edu)                        ## */
 /* ##               - Rewrote the Report_TCP for linux code,              ## */
 /* ##                 The old one is buggy and if you do not set          ## */
 /* ##                 hostname correctly, it always return a 127.0.0.1    ## */
@@ -240,9 +245,13 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		c = getc(file);
 	} while ((c != '\n') && (c != EOF));
 
-	char devName[21], paddedDevName[23];
+	char devName[MAX_NAME], paddedDevName[MAX_NAME+2];
+#if MAX_NAME != 80
+ #warning ===> WARNING: You have to keep the fscanf() and MAX_NAME in sync!
+ // "fscanf(... %<nn>s)" has to be "MAX_NAME - 1"
+#endif
 	while ((count < MAX_TARGETS) &&
-				 (fscanf(file, "%*d %*d %*d %20s", devName) == 1)) {
+				 (fscanf(file, "%*d %*d %*d %79s", devName) == 1)) {
 		sprintf(paddedDevName, " %s ", devName);
 #ifdef _DEBUG
 		cout << __FUNCTION__ << ": Found device " << devName << "\n";

@@ -45,7 +45,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2004-03-28 (daniel.scheibli@edelbyte.org)                   ##
+##               - Removed the IOManagerSolaris.o module from the list of    ##
+##                 Objects (OBJECTS) - as suggested by Ming Zhang.           ##
+##               2003-12-21 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Changed DYNAMO_DESTRUCTIVE to IOMTR_SETTING_OVERRIDE_FS   ##
 ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT          ##
 ##               2003-07-27 (daniel.scheibli@edelbyte.org)                   ##
@@ -115,7 +118,7 @@ LDFLAGS= -lrt -lpthread
 
 OBJECTS= IOGlobals.o \
          Pulsar.o \
-         IOManager.o IOManagerLinux.o IOManagerSolaris.o \
+         IOManager.o IOManagerLinux.o \
 	 IOGrunt.o \
 	 IOTarget.o IOTargetDisk.o IOTargetTCP.o \
 	 IOPort.o IOPortTCP.o \

@@ -52,7 +52,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied Dan Bar Dov's patch for adding              ## */
+/* ##                 Linux on PPC support.                               ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -155,13 +158,14 @@
 #endif
 // ----------------------------------------------------------------------------
 // Check the Processor mapping
-#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_XSCALE))
+#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_PPC) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_XSCALE))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
@@ -240,6 +244,7 @@ using namespace std;
 // ----------------------------------------------------------------------------
 #include "IOVersion.h"   // version info definitions
 // ----------------------------------------------------------------------------
+
 
 
 
@@ -609,7 +614,7 @@ struct Results
  		int sigev_notify;
  		}	aio_sigevent;
 	};
-  struct timeb {
+ struct timeb {
 	long time;
 	unsigned short millitm;
 	short timezone;
@@ -756,7 +761,7 @@ inline int IsBigEndian( void )
   #define _timeb		timeb
   #define _ftime		nwtime
   #define Sleep(x)		sleep((x))
- #if defined(IOMTR_OSFAMILY_UNIX)
+ #elif defined(IOMTR_OSFAMILY_UNIX)
   #define _timeb		timeb
   #define _ftime		ftime
   #define Sleep(x) 		usleep((x) * 1000)
@@ -794,6 +799,11 @@ inline int IsBigEndian( void )
 #if defined(IOMTR_OS_LINUX)
  extern DWORDLONG jiffies(void);
  extern DWORDLONG rdtsc(void);
+
+ #if defined(IOMTR_CPU_PPC)
+  extern DWORD get_tbl();
+  extern DWORD get_tbu();
+ #endif
 
  #if defined(IOMTR_CPU_XSCALE)
   extern void double_wordswap(double *d);

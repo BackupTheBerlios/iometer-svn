@@ -49,6 +49,8 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Applied Dan Bar Dov's patch for adding              ## */
+/* ##                 Linux on PPC support.                               ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -93,6 +95,10 @@
 #endif
 
 
+
+
+#if defined(IOMTR_CPU_PPC)
+#endif
 
 
 
@@ -141,20 +147,63 @@
         //	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
         //	return(x);
   }
+ #elif defined(IOMTR_CPU_PPC)
+	#define CPU_FTR_601                     0x00000100
+
+	DWORD get_tbl() {
+	        DWORD ccc;
+	        __asm__ __volatile__(
+	                "98:    mftb %0\n"
+	                "99:\n"
+	                ".section __ftr_fixup,\"a\"\n"
+	                "       .long %1\n"
+	                "       .long 0\n"
+	                "       .long 98b\n"
+	                "       .long 99b\n"
+	                ".previous"
+	                : "=r" (ccc) : "i" (CPU_FTR_601));
+		return ccc;
+	}
+	DWORD get_tbu()	{
+	      DWORD ccc;
+	        __asm__ __volatile__(
+	                "98:    mftbu %0\n"
+	                "99:\n"
+	                ".section __ftr_fixup,\"a\"\n"
+	                "       .long %1\n"
+	                "       .long 0\n"
+	                "       .long 98b\n"
+	                "       .long 99b\n"
+	                ".previous"
+	                : "=r" (ccc) : "i" (CPU_FTR_601));
+	        return ccc;
+	}
+	DWORDLONG rdtsc(void) {
+	        // Original code (returning the cpu cycle counter)
+
+		// read 64 bit tbl (time base) using motorola example 
+		DWORD lo,hi1,hi2; 
+		do {
+			hi1=get_tbu();
+			lo=get_tbl();
+			hi2=get_tbu();
+		} while (hi1 != hi2);
+		
+		return ((DWORDLONG) hi1)<<32 | (DWORDLONG) lo;
+	}
  #elif defined(IOMTR_CPU_XSCALE)
 
-#define CCNT_IOC_MAGIC		0xAC
-#define CCNT_IOC_GETCCNT	_IOR(CCNT_IOC_MAGIC, 1, unsigned long long)
-extern int ccntfd;
+	#define CCNT_IOC_MAGIC		0xAC
+	#define CCNT_IOC_GETCCNT	_IOR(CCNT_IOC_MAGIC, 1, unsigned long long)
+	extern int ccntfd;
 
-  DWORDLONG rdtsc(void) {
-	unsigned long long ccnt;
-	if (ioctl(ccntfd, CCNT_IOC_GETCCNT, &ccnt) < 0 ) {
-		ccnt = 0;
+	DWORDLONG rdtsc(void) {
+		unsigned long long ccnt;
+		if (ioctl(ccntfd, CCNT_IOC_GETCCNT, &ccnt) < 0 ) {
+			ccnt = 0;
+		}
+		return(ccnt);
 	}
-	return(ccnt);
-  }
-  
  #else
   // Was the following 2 lines in before, but for which CPU (nevertheless it is useless!)?
   //	/* Totally cheesy rewrite of rdtsc! */
