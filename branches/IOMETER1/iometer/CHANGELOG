@@ -8,6 +8,9 @@ ChangeLog (IOMETER 1 - 2004.nn.nn):
 ===================================
 
 - Applied patches:
+   - IOTargetDisk_cpp.patch by Lamont Cranston (Closes the files in
+     getSizeOfPhysDisk() and getSectorSizeOfPhysDisk() under Linux
+     and explain the use of the BLKBSZGET define.
    - disk_full.patch by Lamont Cranston (fixes handling of the disk full
      condition when preparing logical drives).
    - iometer-2003.12.16-post.DS2.DanielGlobalAccessSpecs.patch by
