@@ -11,7 +11,11 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-04 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-05-07 (yakker@aparity.com)                       ## */
+/* ##               - Applied the iometerCIOB5.2003.05.02.patch file      ## */
+/* ##                 (avoiding cache line collisions and performance     ## */
+/* ##                 lock-ups for some chipsets).                        ## */
+/* ##               2003-03-04 (joe@eiler.net)                            ## */
 /* ##               - Changed NO_LINUX_VI to NO_DYNAMO_VI                 ## */
 /* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */

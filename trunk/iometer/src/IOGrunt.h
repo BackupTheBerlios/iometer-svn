@@ -1,3 +1,24 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOGrunt.h                                                 ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Contains the definition of Dynamo's worker class.     ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-05-07 (yakker@aparity.com)                       ## */
+/* ##               - Applied the iometerCIOB5.2003.05.02.patch file      ## */
+/* ##                 (avoiding cache line collisions and performance     ## */
+/* ##                 lock-ups for some chipsets).                        ## */
+/* ##               2003-05-07 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -43,6 +64,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // the targets and records its own results.  
 //
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifndef	GRUNT_DEFINED
 #define	GRUNT_DEFINED
