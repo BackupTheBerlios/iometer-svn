@@ -72,7 +72,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added ExtractFirstIntVersion() method prototype.    ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -102,6 +104,7 @@ public:
 	BOOL	GetPair(CString& key, CString& value);
 
 	static BOOL		ExtractFirstInt(CString& string, int& number);
+	static BOOL		ExtractFirstIntVersion(CString& string, int& number);
 	static CString	ExtractFirstToken(CString& string, BOOL spaces=FALSE);
 };
 

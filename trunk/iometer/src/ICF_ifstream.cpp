@@ -51,7 +51,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added the ExtractFirstIntVersion() method as a      ## */
+/* ##                 copy of ExtractFirstInt() to enable parsing ICF     ## */
+/* ##                 files that contains version strings with a          ## */
+/* ##                 trailing dash (so "2003.12.16-post" for instance).  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -109,9 +114,9 @@ long ICF_ifstream::GetVersion()
 		return -1;
 	}
 
-	if (!ExtractFirstInt(version_string, major)
-		|| !ExtractFirstInt(version_string, middle)
-		|| !ExtractFirstInt(version_string, minor))
+	if (!ExtractFirstIntVersion(version_string, major)
+		|| !ExtractFirstIntVersion(version_string, middle)
+		|| !ExtractFirstIntVersion(version_string, minor))
 	{
 		ErrorMessage("File is improperly formatted.  "
 			"Error retrieving file version information.");
@@ -336,6 +341,42 @@ BOOL ICF_ifstream::ExtractFirstInt(CString& string, int& number)
 		string = backup_string;	// restore string's old value
 		return FALSE;
 	}
+
+	number = atoi( (LPCTSTR)substring );
+
+	// Prepare string for further processing.  Eat whitespace.
+	string.TrimLeft();
+
+	// If there's a trailing comma, eat it.
+	if (!string.IsEmpty() && string.GetAt(0) == ',')
+		string = string.Right(string.GetLength() - 1);
+
+	// Eat any space following the comma.
+	string.TrimLeft();
+
+	return TRUE;
+}
+
+BOOL ICF_ifstream::ExtractFirstIntVersion(CString& string, int& number)
+{
+	const CString backup_string = string;
+	CString substring;
+	int pos;
+
+	number = 0;
+
+	if ((pos = string.FindOneOf("1234567890")) == -1)
+	{
+		ErrorMessage("File is improperly formatted.  Expected an "
+			"integer value.");
+		return FALSE;
+	}
+
+	// Cleave off everything before the first number.
+	string = string.Right(string.GetLength() - pos);
+
+	substring = string.SpanIncluding("1234567890"); // get the int as a string
+	string = string.Right(string.GetLength() - substring.GetLength());
 
 	number = atoi( (LPCTSTR)substring );
 

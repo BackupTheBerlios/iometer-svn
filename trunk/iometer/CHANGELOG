@@ -8,6 +8,9 @@ ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-2003.12.16-post.DS2.DanielIcfVersionStringWithDash.patch
+     by Daniel Scheibli (Enables support for trailing dashes in the
+     version string of loaded ICF file).
    - iometer-2003.12.16-post.DS2.DanielEnforceParameters.patch by
      Daniel Scheibli (enforces usage of parameter -m when -i was
      specified).
