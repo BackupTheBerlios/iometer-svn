@@ -44,6 +44,8 @@ ChangeLog (2003.nn.nn):
    - Removed an old left over _DETAIL define depended code (for debugging)
      in IOGrunt.cpp.
 - Documentation:
+   - Added first comments about porting the Dynamo part to the Developers
+     Guide.
    - Added first comments about the coding style to the Developers Guide.
 - Others:
    - Changed the license of the iomtr_kstat module to the GPL.

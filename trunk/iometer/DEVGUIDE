@@ -20,7 +20,7 @@ Iometer Developer's Guide
 
    * 3     Testing Iometer (coming later)
 
-   * 4     Porting Iometer (coming later)
+   * 4     Porting Iometer
    * 4.1   To another OS (coming later)
    * 4.2   To another CPU (coming later)
 
@@ -163,6 +163,60 @@ find important global defines (-D<key>[=<value>]):
    directly printed to the console.
    
  ...
+
+  ------------------------------------------------------------------------
+
+4 Porting Iometer
+
+Since Iometer is an Open Source project, there was/are different ports under
+way. If you are interested in porting to a new Operating System/Processor
+combination, the following mail - containing a first starting point - might
+be of interest to you:
+
+Date: Tue, 18 Nov 2003 12:03:08 +0100 
+From: "Daniel Scheibli" <daniel.scheibli@edelbyte.org>     
+To: ...
+Subject: Re: Iometer
+ 
+Hi,
+
+well I think the first steps could be to download the latest
+CVS tree stuff.
+
+There I applied some big patches which brings the so called
+IOMTR_* defines (described in the second part of the README
+file). So that way you could create a new IOMTR_OS_* define
+for <OS/> (in the README and the IOCommon.h file), choose
+the proper IOMTR_OSFAMILY_* define [1] and create a Makefile
+for <OS/>.
+
+Then I would do a first compile - for shure it will not work,
+but that way you can easily identify most of the locations in
+the code where you might have to do something. This comes due
+to the "#warning" stuff which is everywhere in the code where
+we have a code inclusion based on IOMTR_OS_*, IOMTR_OSFAMILY_*
+or IOMTR_CPU_*.
+
+>From there you could start extending this "#if / #elif" clauses
+(most of the times it will be just adding IOMTR_OS_<OS/> to the
+Unix fraction). The most prominent needs for coding I see
+
+- <OS/> specific include files
+- Asynchronous I/O (there are Windows API
+  calls or a emulation for Linux / Solaris)
+- The time-measurement (for i386 we do
+  RDTSC calls which might differ in the
+  way of how to do this call for <OS/>.
+  You also have to ensure that the CPU
+  speed in MHz is detected properly)
+
+I think thats basically it - at least what comes to my mind
+first. If you are realy going for it (I would love to see and
+support it), then for shure we can go more into details.
+
+Looking forward to hear from you.
+
+Daniel Scheibli
 
   ------------------------------------------------------------------------
 
