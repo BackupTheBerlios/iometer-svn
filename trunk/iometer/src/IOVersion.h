@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-12-16 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-08-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the version to <latest release>-post.       ## */
+/* ##               2003-12-16 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */
 /* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
@@ -106,7 +108,9 @@ extern "C"
 //#define IOVER_FILEVERSION				"2003.05.10\0"
 //#define IOVER_FILEVERSION				"2003.05.10-post\0"
 //#define IOVER_FILEVERSION				"2003.12.16\0"
-#define IOVER_FILEVERSION				"2003.12.16-post\0"
+//#define IOVER_FILEVERSION				"2003.12.16-post\0"
+//#define IOVER_FILEVERSION				"2004.07.30\0"   // => Has never been active; see IOMETER1 branch!
+#define IOVER_FILEVERSION				"2004.07.30-post\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
 
 

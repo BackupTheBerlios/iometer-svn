@@ -4,7 +4,7 @@
 
 
 
-ChangeLog (IOMETER2 - 2004.mm.mm):
+ChangeLog (IOMETER2 - 2004.mm.dd):
 ==================================
 
 - Applied patches:
@@ -62,8 +62,8 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
 
 
 
-ChangeLog (IOMETER1 - 2004.nn.nn):
-==================================
+ChangeLog (IOMETER1 - basis for 2004.07.30):
+============================================
 
 - Applied patches:
    - iometer-2003.12.16-post.DS2.DanielGlobalAccessSpecs.patch by
