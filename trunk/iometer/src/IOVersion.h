@@ -107,7 +107,8 @@ extern "C"
 // (http://sourceforge.net/projects/iometer).
 //#define IOVER_FILEVERSION				"2003.02.15\0"
 //#define IOVER_FILEVERSION				"2003.02.15-post\0"
-#define IOVER_FILEVERSION				"2003.05.10\0"
+//#define IOVER_FILEVERSION				"2003.05.10\0"
+#define IOVER_FILEVERSION				"2003.05.10-post\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
 
 
