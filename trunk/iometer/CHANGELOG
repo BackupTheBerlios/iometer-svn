@@ -8,6 +8,8 @@ ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-netware.patch by Thayne Harmon (adds two minor changes
+     to the code and Makefile for the Netware/IA32 port).
    - iometer-2003.12.16-post.DS2.patch by Thayne Harmon (adds some more
      changes and functionality for the Netware/IA32 port).
    - iometer.ppc.patch by Dan Bar Dov (adds support for Dynamo to run

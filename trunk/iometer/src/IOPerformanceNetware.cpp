@@ -167,8 +167,8 @@ void Performance::Get_CPU_Counters(int snapshot)
 
 	for(i = j = 0; i < processor_count; i++) 
 	{
-		netware_cpu_info(&info,&j);
-		raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] = info.ProcessorUtilization;
+		netware_cpu_info(&info, &j);   // j is auto-incremented by the call itself 
+		raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot]  = info.ProcessorUtilization;
 		raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] = info.ProcessorUtilization;
 		raw_cpu_data[i][CPU_IRQ][snapshot] = 1000;
 	}

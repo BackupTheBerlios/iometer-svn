@@ -110,13 +110,13 @@ LDFLAGS=-nlmversion 1,0,0 \
 
 OBJECTS= IOGlobals.o \
          Pulsar.o \
-         IOManager.o IOManagerNetWare.o \
+         IOManager.o IOManagerNetware.o \
     	 IOGrunt.o \
 	     IOTarget.o IOTargetDisk.o IOTargetTCP.o \
 	     IOPort.o IOPortTCP.o \
 	     Network.o NetTCP.o \
 	     ByteOrder.o \
-	     IOPerformance.o IOPerformanceNetWare.o \
+ 	     IOPerformance.o IOPerformanceNetware.o \
 	     IOTime.o \
 	     IOCQAIO.o IOCompletionQ.o \
 	     IOAccess.o
