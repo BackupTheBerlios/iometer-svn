@@ -18,6 +18,9 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
      the new IOManagerWin.cpp file).
 - Cleanup:
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
+- Documentation:
+   - Added the initial drop of the DocBook sources of the first part of
+     the Iometer Users Guide (converted from OpenOffice - by James Rogers).
 - Others:
    - Changed the "Help About..." button of the Iometer Wizard to reflect
      the current status (Open Source,...) of Iometer.
