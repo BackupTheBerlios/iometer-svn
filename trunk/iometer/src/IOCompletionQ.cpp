@@ -52,7 +52,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Modified the GetQueuedCompletionStatus() function   ## */
+/* ##                 according to the proposed code by Doug Haigh. This  ## */
+/* ##                 ensures, that even in the case of an error, the     ## */
+/* ##                 completion_key is set.                              ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -206,11 +211,11 @@ HANDLE CreateEvent(void *, BOOL, BOOL, LPCTSTR)
 BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD completion_key,
 							   LPOVERLAPPED *lpOverlapped, DWORD tmout)
 {
-	struct timespec			*timeoutp;
-	struct timespec			timeout;
-	struct IOCQ				*cqid;
-	int						i, j;
-	int						aio_error_return;
+	struct timespec	*timeoutp;
+	struct timespec	 timeout;
+	struct IOCQ	*cqid;
+	int		 i, j;
+	int		 aio_error_return;
 
 	cqid = (struct IOCQ *)cq;
 
@@ -241,40 +246,58 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 	// Network AIOs can be speeded up a bit by having an initial tagging loop that
 	// will tag and break when an AIO completion is detected.
 	//
-	//
 
 	// IO Return Loop - return one AIO completion.
+
 	i = cqid->position;
-	for (j = 0; j < cqid->size; j++)
-	{
-		if (i == cqid->size)
+	
+	for( j = 0; j < cqid->size; j++ ) {
+	
+		if( i == cqid->size ) {
 			i = 0;
+		}
 		
-		if (cqid->element_list[i].done == TRUE)
-		{
+		if( cqid->element_list[i].done == TRUE ) {
+		
 			// IO operation completed with either success or failure.
+
+			*completion_key            = cqid->element_list[i].completion_key;
+			
+			// Always set completion key
+			
+			*lpOverlapped          	   = (LPOVERLAPPED)cqid->element_list[i].data;
+
+			// Always set overlap data
+			
 			cqid->element_list[i].done = FALSE;
-			cqid->last_freed = i;
-			cqid->position = i+1;
-			*bytes_transferred = cqid->element_list[i].bytes_transferred;
-			// We are returning the status of this aio. Set it to NULL to
-			// free the slot.
+			cqid->last_freed           = i;
+			cqid->position             = i + 1;
+			*bytes_transferred         = cqid->element_list[i].bytes_transferred;
+			
+			// We are returning the status of this aio. Set it to NULL to free the slot.
+			
 			cqid->aiocb_list[i] = 0;
-			if ((long )*bytes_transferred < 0)
-			{
+
+			if( (long )*bytes_transferred < 0 ) {
 				*bytes_transferred = 0;
-				*completion_key = 0;
-				if (cqid->element_list[i].error)
-					SetLastError(cqid->element_list[i].error);
-				return(FALSE);
+				// TODO: Here - and in the other locations where SetLastError()
+				// is called in this method - we have the problem, that it is
+				// set to
+				// a.) defines defined by us - like WAIT_TIMEOUT
+				// b.) whatever is in the errno variable
+				// We can not realy be shure what each one is and if there is
+				// maybe an overlaps, so we have to consolidate that in some
+				// way.
+				// As this method is called by CQAIO::GetStatus() (only?), we
+				// have to considere changes there as well.
+				SetLastError( cqid->element_list[i].error );
+				return( FALSE );
 			}
-			else
-			{
-				*completion_key = cqid->element_list[i].completion_key;
-				*lpOverlapped = (LPOVERLAPPED)cqid->element_list[i].data;
-				return(TRUE);
+			else {
+				return( TRUE );
 			}
 		}
+		
 		i++;
 	} // end of IO Return loop.
 
@@ -292,33 +315,30 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 		timeoutp = &timeout;
 	}
 
-	if (aio_suspend64(cqid->aiocb_list, cqid->size, timeoutp) < 0)
+	if( aio_suspend64( cqid->aiocb_list, cqid->size, timeoutp ) < 0 )
 	{
-		*lpOverlapped = NULL;
+		*lpOverlapped      = NULL;
 		*bytes_transferred = 0;
-		*completion_key = 0;
+		*completion_key    = 0;
 		if ( (errno == EAGAIN) || (errno == EINVAL) ) {
 #if defined(IOMTR_OS_LINUX)
 			assert(errno == EAGAIN);
 #endif
-			SetLastError(WAIT_TIMEOUT);
+			SetLastError( WAIT_TIMEOUT );
 		} else {
-			SetLastError(errno);
+			SetLastError( errno );
 		}
 		
 		return(FALSE);
 	}
 
 	// Tagging loop - to tag completed AIOs.
-	for (j = 0; j < cqid->size; j++)
-	{
+	for( j = 0; j < cqid->size; j++ ) {
 		errno = 0;
-		if (cqid->aiocb_list[j])
-		{
-			if ((aio_error_return = aio_error64(cqid->aiocb_list[j])) != EINPROGRESS)
-			{
+		if( cqid->aiocb_list[j] ) {
+			if( ( aio_error_return = aio_error64( cqid->aiocb_list[j] ) ) != EINPROGRESS ) {
 				cqid->element_list[j].bytes_transferred =
-						aio_return64(cqid->aiocb_list[j]);
+					aio_return64( cqid->aiocb_list[j] );
 				//
 				// We have done an aio_return() on this element. Anull it.
 				// The slot will be picked up by the next request.

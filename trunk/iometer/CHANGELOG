@@ -8,6 +8,10 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-2003.12.16-post.DS1-AlwaysSendCompletionQueue.patch
+     by Daniel Scheibli (implements the code changes suggested by 
+     Dough Haigh to solve the performance drop in network tests on
+     Solaris - see bug report #881675).
    - iometer-1216.post.ds1.kstat-patch by Ming Zhang (major collective 
      patch which
      a.) introduces the iomtr_kstat kernel module for Linux 
