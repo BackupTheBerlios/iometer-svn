@@ -19,6 +19,8 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
 - Cleanup:
    - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
 - Others:
+   - Changed the "Help About..." button of the Iometer Wizard to reflect
+     the current status (Open Source,...) of Iometer.
    - Converted the Iometer Wizard to the file format of the 2000 version
      of MS Access and fixed the (Excel) version check of the Graph Wizard
      part (as suggested by Joseph R Gruher).
