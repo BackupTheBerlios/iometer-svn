@@ -48,7 +48,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-05-27 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Close files in getSizeOfPhysDisk and                ## */
+/* ##                 getSectorSizeOfPhysDisk for linux                   ## */
+/* ##               - Complete partial I/O properly to prevent disk       ## */
+/* ##                 preparation from hanging                            ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied Dan Bar Dov's patch for adding              ## */
 /* ##                 Linux on PPC support.                               ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -1224,6 +1229,10 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 						cout << "Wrote (eventually) " << bytes_written << " of " << bytes
 								 << " bytes to disk "  << spec.name << "." << endl;
 #endif
+						// Mark the slot as idle.
+						busy[i] = FALSE;
+						num_outstanding--;
+
 						if (bytes_written != bytes) {
 							cout << "***Error (eventually); wrote only " << bytes_written
 									 << " of " << bytes << " bytes!\n";
@@ -1231,9 +1240,6 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 							write_ok = FALSE;
 							break;
 						}
-						// Mark the slot as idle.
-						busy[i] = FALSE;
-						num_outstanding--;
 					}
 					else if ( GetLastError() == ERROR_IO_INCOMPLETE )
 					{
@@ -1864,26 +1870,33 @@ DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
 #if defined(IOMTR_OS_LINUX)
 
 static int getSectorSizeOfPhysDisk(const char *devName) {
-	char devNameBuf[40];
+	char        devNameBuf[40];
 	const char *fullDevName;
-	int fd, ssz;
+	int         fd, ssz;
 
-	if (devName[0] == '/') {
+	if( devName[0] == '/' ) {
 		fullDevName = devName;
 	} else {
-		sprintf(devNameBuf, "/dev/%s", devName);
+		sprintf( devNameBuf, "/dev/%s", devName );
 		fullDevName = devNameBuf;
 	}
-	if ((fd = open(fullDevName, O_RDWR)) < 0) {
+	if( (fd = open( fullDevName, O_RDWR )) < 0 ) {
 		cerr << "Fail to open device" << endl;
 		return 0;
 	}
-	// I think Dmitry Yusupov is right, could use BLKBSZGET here, but BLKSSZGET
-	// should be OK as well. :P
-	if (ioctl(fd, BLKBSZGET, &ssz) < 0) {
+
+        // Use BLKBSZGET here as opposed to BLKSSZGET.  BLKSSZGET returns the
+        // true sector size of the physical disk which should be what we want.
+        // However, Linux will always use the potential cluster size of the 
+        // file system even for raw devices with no file system.  So we use 
+        // BLKBSZGET which returns the (potential) file system cluster size.
+
+	if( ioctl( fd, BLKBSZGET, &ssz ) < 0 ) {
 		cerr << "Fail to get sector size for " << fullDevName << endl;
+	        close( fd );	
 		return 0; 
 	}
+	close( fd );	
 	return ssz;
 }
 
@@ -1896,26 +1909,32 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 //   The size (in bytes) of the named device.
 //
 static unsigned long long getSizeOfPhysDisk(const char *devName) {
-	char devNameBuf[40];
-	const char *fullDevName;
-	int fd;
+	char               devNameBuf[40];
+	const char         *fullDevName;
+	int                fd;
 	unsigned long long sz;
 
-	if (devName[0] == '/') {
+	if( devName[0] == '/' ) {
 		fullDevName = devName;
 	} else {
 		sprintf(devNameBuf, "/dev/%s", devName);
 		fullDevName = devNameBuf;
 	}
-	if ((fd = open(fullDevName, O_RDWR)) < 0) {
+	if( (fd = open(fullDevName, O_RDWR)) < 0 ) {
 		cerr << "Fail to open device" << endl;
 		return 0;
 	}
-	if (ioctl(fd, BLKGETSIZE64, &sz) < 0) {
+	if( ioctl(fd, BLKGETSIZE64, &sz) < 0 ) {
 		cerr << "Fail to get size for " << fullDevName << endl;
+	        close( fd );
 		return 0; 
 	}
-	cout << "Device " << fullDevName << " size:" << sz << "Bytes." << endl;
+
+	#ifdef _DEBUG
+		cout << "Device " << fullDevName << " size:" << sz << "Bytes." << endl;
+	#endif
+
+        close( fd );
 	return sz;
 }
 
