@@ -24,18 +24,20 @@ Iometer User's Guide
 
 Iometer Developer's Guide
 
-   * 1     Building Iometer (coming later)
-   * 1.1   Makefile issues
+   * 1     Introduction
 
-   * 2     Testing Iometer (coming later)
+   * 2     Building Iometer
+   * 2.1   Makefile issues
 
-   * 3     Porting Iometer (coming later)
-   * 3.1   To another OS (coming later)
-   * 3.2   To another CPU (coming later)
+   * 3     Testing Iometer (coming later)
 
-   * 4     Extending Iometer (coming later)
-   * 4.1   By other Storage targets (coming later)
-   * 4.2   By other Network targets (coming later)
+   * 4     Porting Iometer (coming later)
+   * 4.1   To another OS (coming later)
+   * 4.2   To another CPU (coming later)
+
+   * 5     Extending Iometer (coming later)
+   * 5.1   By other Storage targets (coming later)
+   * 5.2   By other Network targets (coming later)
 
    * A     File descriptions
    * A.1   Iometer
@@ -141,19 +143,18 @@ Iometer Developer's Guide
 
   ------------------------------------------------------------------------
 
-A File description
+1 Introduction
 
-In the following two subchapters you will find a lists with descriptions
-for each file within the source tarball (grouped by there primary job).
+Starting with the development of Iometer you first have to have access to
+the source code. Best is to use the CVS server provided by sourceforge.
+If you do not have a change to get this done (restrictive firewall etc.)
+you can download the nightly tarball of the CVS respository from:
 
-One of the few common rules within the Iometer / Dynamo source seems to
-be, that once a class is defined and implemented, you will find the class
-defintion in foo.h and its implementation in foo.cpp.
-
+http://cvs.sourceforge.net/cvstarballs/iometer-cvsroot.tar.bz2
 
   ------------------------------------------------------------------------
 
-1.1 Makefile issues
+2.1 Makefile issues
 
 For each of the different supported Unix operating system we have a
 independent makefile. You can identify the appropriate one by its name
@@ -208,6 +209,17 @@ find important global defines (-D<key>[=<value>]):
 	 is to use our own DEBUG define and then activate _DEBUG using
 	 a #ifdef statement (something for the IOCommon.h file).
  ...
+
+  ------------------------------------------------------------------------
+
+A File descriptions
+
+In the following two subchapters you will find a lists with descriptions
+for each file within the source tarball (grouped by there primary job).
+
+One of the few common rules within the Iometer / Dynamo source seems to
+be, that once a class is defined and implemented, you will find the class
+defintion in foo.h and its implementation in foo.cpp.
 
   ------------------------------------------------------------------------
 
