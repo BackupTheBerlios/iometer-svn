@@ -87,14 +87,15 @@
 #endif
 
 #if defined(IOMTR_OSFAMILY_UNIX)
- #if defined(IOMTR_OS_LINUX)
-  // nop
- #elif defined(IOMTR_OS_SOLARIS)
-  #define socklen_t int  
- #else
-  #warning ===> WARNING: You have to do some coding here to get the port done!
- #endif
  #define SOCKET	int
+#endif
+
+#if defined(IOMTR_OS_LINUX)
+ // nop
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #define socklen_t int  
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 
