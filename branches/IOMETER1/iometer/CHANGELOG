@@ -8,6 +8,11 @@ ChangeLog (IOMETER 1 - 2004.nn.nn):
 ===================================
 
 - Applied patches:
+   - invalid_spec.patch by Lamont Cranston (Allows the user to set any
+     request sizes, sector allignment etc. - even if it doesn't match the
+     storage devices block size. While in interactive mode, the user
+     must confirm his will - in batch mode invalid specifications gets
+     executed without requiring any kind of confirmation / force flag).
    - scross_spec_list.patch by Lamont Cranston (Ensures that the access
      specification list gets scrolled during the run - so the active
      access specification can always be seen).

@@ -53,7 +53,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -1390,9 +1393,9 @@ int Manager::GetMaxAccessSpecCount()
 //
 // Verify that all assigned access specs are valid.
 //
-BOOL Manager::InvalidSetup()
+BOOL Manager::InvalidSetup( BOOL &invalidSpecOK )
 {
-	int		i, w, wkr_count, iface_count, conn_count, queue_depth;
+	int	i, w, wkr_count, iface_count, conn_count, queue_depth;
 	DWORD	max_size;
 	Worker	*wkr;
 	CString	msg_box;
@@ -1401,7 +1404,7 @@ BOOL Manager::InvalidSetup()
 	wkr_count = WorkerCount();
 	for ( w = 0; w < wkr_count; w++ )
 	{
-		if ( GetWorker( w )->InvalidSetup() )
+		if ( GetWorker( w )->InvalidSetup( invalidSpecOK ) )
 			return TRUE;
 	}
 

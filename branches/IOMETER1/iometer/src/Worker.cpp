@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-06-11 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Add code to allow potentially invalid access specs  ## */
+/* ##                 but warn the user.                                  ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
@@ -1842,7 +1845,7 @@ DWORD Worker::MaxTransferSize()
 // the worker can allocate enough memory to fulfill the largest request
 // size for all access specs and all requests are sector sized aligned.
 //
-BOOL Worker::InvalidSetup()
+BOOL Worker::InvalidSetup( BOOL &invalidSpecOK )
 {
 	int			a, s, d;		// loop variables
 	Access_Spec	*spec;
@@ -1888,49 +1891,66 @@ BOOL Worker::InvalidSetup()
 						break;
 				}
 
-				// Verify a valid request size.
-				if ( spec[s].size % manager->GetInterface( mgr_index, 
-					GenericDiskType )->disk_info.sector_size )
-				{
-					message.Format( "\"%s\" on \"%s\" cannot set specification %s.  " 
-						"The request size must align with disk sector size for disk %s.  " 
-						"Sector size = %i.", 
-						name, manager->name, GetAccessSpec( a )->name, 
-						manager->GetInterface( mgr_index, GenericDiskType )->name, 
-						manager->GetInterface( mgr_index, 
-						GenericDiskType )->disk_info.sector_size );
-					ErrorMessage( message );
-					return TRUE;
-				}
+				if ( invalidSpecOK == FALSE ) {
 
-				// Verify I/Os are aligned on sector boundaries.
-				if ( spec[s].align % manager->GetInterface( mgr_index, 
-					GenericDiskType )->disk_info.sector_size )
-				{
-					message.Format( "\"%s\" on \"%s\" cannot set specification %s.  " 
-						"The alignment value must be a multiple of the "
-						"sector size for disk %s.  Sector size = %i.",
-						name, manager->name, GetAccessSpec( a )->name, 
-						manager->GetInterface( mgr_index, GenericDiskType )->name, 
-						manager->GetInterface( mgr_index, 
-						GenericDiskType )->disk_info.sector_size );
-					ErrorMessage( message );
-					return TRUE;
-				}
+					message.Empty();
 
-				// Verify a valid reply size.
-				if ( spec[s].reply % manager->GetInterface( mgr_index, 
-					GenericDiskType )->disk_info.sector_size )
-				{
-					message.Format( "\"%s\" on \"%s\" cannot set specification %s.  "
-						"The reply size must be a multiple of the sector size "
-						"for disk %s.  Sector size = %i.",
-						name, manager->name, GetAccessSpec( a )->name, 
-						manager->GetInterface( mgr_index, GenericDiskType )->name, 
-						manager->GetInterface( mgr_index, 
-						GenericDiskType )->disk_info.sector_size );
-					ErrorMessage( message );
-					return TRUE;
+					// Verify a valid request size.
+
+					if ( spec[s].size % manager->GetInterface( mgr_index, 
+						GenericDiskType )->disk_info.sector_size ) {
+
+						message.Format( "Access specification %s for \"%s\" on \"%s\" may be invalid.\n\n" 
+							"The request size does not align with disk sector size for disk %s.  " 
+							"Sector size = %i.\n\n"
+							"Would you like to continue anyway?\n\n"
+							"Selecting \"Yes\" will also ignore other potentially invalid "
+							"specifications for this test.", 
+							GetAccessSpec( a )->name, name, manager->name, 
+							manager->GetInterface( mgr_index, GenericDiskType )->name, 
+							manager->GetInterface( mgr_index, GenericDiskType )->disk_info.sector_size );
+					}
+
+					// Verify I/Os are aligned on sector boundaries.
+
+					else if ( spec[s].align % manager->GetInterface( mgr_index, 
+						GenericDiskType )->disk_info.sector_size ) {
+
+						message.Format( "Access specification %s for \"%s\" on \"%s\" may be invalid.\n\n" 
+							"The alignment value is not a multiple of the "
+							"sector size for disk %s.  Sector size = %i.\n\n"
+							"Would you like to continue anyway?\n\n"
+							"Selecting \"Yes\" will also ignore other potentially invalid "
+							"specifications for this test.", 
+							GetAccessSpec( a )->name, name, manager->name, 
+							manager->GetInterface( mgr_index, GenericDiskType )->name, 
+							manager->GetInterface( mgr_index, GenericDiskType )->disk_info.sector_size );
+					}
+
+					// Verify a valid reply size.
+
+					else if ( spec[s].reply % manager->GetInterface( mgr_index, 
+						GenericDiskType )->disk_info.sector_size ) {
+
+						message.Format( "Access specification %s for \"%s\" on \"%s\" may be invalid.\n\n" 
+							"The reply size is not a multiple of the sector size "
+							"for disk %s.  Sector size = %i.\n\n"
+							"Would you like to continue anyway?\n\n"
+							"Selecting \"Yes\" will also ignore other potentially invalid "
+							"specifications for this test.", 
+							GetAccessSpec( a )->name, name, manager->name, 
+							manager->GetInterface( mgr_index, GenericDiskType )->name, 
+							manager->GetInterface( mgr_index, GenericDiskType )->disk_info.sector_size );
+					}
+
+					if ( !message.IsEmpty() ) {
+						if ( AfxMessageBox( message, MB_ICONQUESTION | MB_YESNO, 0 ) == IDYES ) {
+							invalidSpecOK = TRUE;
+						}
+						else {
+							return TRUE;
+						}
+					}
 				}
 			}
 
