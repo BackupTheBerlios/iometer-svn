@@ -47,7 +47,10 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Use cur_trans_slots to prevent shifting transaction ## */
+/* ##                 queue.                                              ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -125,6 +128,7 @@ Grunt::Grunt()
 
 	// Transaction request information.
 	total_trans_slots = 0;
+	cur_trans_slots = 0;
 	trans_slots = NULL;
 	available_trans_queue = NULL;
 
@@ -257,10 +261,11 @@ BOOL Grunt::Size_Target_Array( int count, const Target_Spec *target_specs )
 //
 BOOL Grunt::Resize_Transaction_Arrays()
 {
-	int		i;
-	int		max_queue_per_target = 0;
-	int		needed_queue_size = 0;
+	int	i;
+	int	max_queue_per_target = 0;
 	void	*new_mem;
+
+	cur_trans_slots = 0;
 
 	// Get the maximum number of I/O's which can be outstanding at one time 
 	// to all targets and a single target.
@@ -268,12 +273,13 @@ BOOL Grunt::Resize_Transaction_Arrays()
 	{
 		max_queue_per_target = __max( targets[i]->spec.queue_depth,
 			max_queue_per_target );
-		needed_queue_size += targets[i]->spec.queue_depth;
+		cur_trans_slots += targets[i]->spec.queue_depth;
 	}
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	if (io_cq->SetQueueSize(needed_queue_size) == FALSE)
+	if (io_cq->SetQueueSize(cur_trans_slots) == FALSE) {
 		return FALSE;
+	}
 #elif(IOMTR_OSFAMILY_WINDOWS)
 	// nop
 #else
@@ -283,15 +289,16 @@ BOOL Grunt::Resize_Transaction_Arrays()
 	//
 	// Ensure that the related I/O request arrays are large enough.
 	//
-	if ( total_trans_slots >= needed_queue_size )
+	if ( total_trans_slots >= cur_trans_slots ) {
 		return TRUE;
+	}
 
 	// Grow the transaction array.  We perform two casts to ensure that the
 	// memory is aligned properly.
 #if defined(IOMTR_OSFAMILY_NETWARE)	
-	if ( !(new_mem = (void*)((Transaction*)NXMemRealloc( trans_slots, needed_queue_size * sizeof(Transaction), 1 )) ) )
+	if ( !(new_mem = (void*)((Transaction*)NXMemRealloc( trans_slots, cur_trans_slots * sizeof(Transaction), 1 )) ) )
 #elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
-	if ( !(new_mem = (void*)((Transaction*)realloc( trans_slots, needed_queue_size * sizeof(Transaction) )) ) )
+	if ( !(new_mem = (void*)((Transaction*)realloc( trans_slots, cur_trans_slots * sizeof(Transaction) )) ) )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -308,10 +315,10 @@ BOOL Grunt::Resize_Transaction_Arrays()
 	// could also indicate that the queue is entirely full.)
 #if defined(IOMTR_OSFAMILY_NETWARE)	
 	if ( !(new_mem = (void*)((int*)NXMemRealloc( available_trans_queue, 
-		(needed_queue_size + 1) * sizeof(int), 1 )) ) )
+		(cur_trans_slots + 1) * sizeof(int), 1 )) ) )
 #elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
 	if ( !(new_mem = (void*)((int*)realloc( available_trans_queue, 
-		(needed_queue_size + 1) * sizeof(int) )) ) )
+		(cur_trans_slots + 1) * sizeof(int) )) ) )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -323,7 +330,7 @@ BOOL Grunt::Resize_Transaction_Arrays()
 	available_trans_queue = (int*)new_mem;
 
 	// Successfully resized all related transaction arrays.
-	total_trans_slots = needed_queue_size;
+	total_trans_slots = cur_trans_slots;
 	return TRUE;
 }
 
@@ -351,6 +358,7 @@ void Grunt::Free_Transaction_Arrays()
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	total_trans_slots = 0;
+	cur_trans_slots = 0;
 }
 
 
@@ -375,7 +383,7 @@ void Grunt::Initialize_Transaction_Arrays()
 	//
 	// Initialize transaction information.
 	//
-	for ( i = 0; i < total_trans_slots; i++ )
+	for ( i = 0; i < cur_trans_slots; i++ )
 	{
 		trans_slots[i].asynchronous_io.hEvent = NULL;
 		trans_slots[i].request_number = i;
@@ -935,8 +943,9 @@ void Grunt::Record_IO( Transaction *transaction, DWORDLONG end_IO )
 
 	// Put this transaction slot back on the available queue.
 	available_trans_queue[available_tail] = transaction->request_number;
-	if ( (++available_tail) > total_trans_slots )
+	if ( (++available_tail) > cur_trans_slots ) {
 		available_tail = 0;
+	}
 }
 
 
@@ -1120,10 +1129,12 @@ void Grunt::Do_IOs()
 			// Target is closing.  Move it to the tail of the available queue.
 			available_trans_queue[available_tail++] = 
 				available_trans_queue[available_head++];
-			if ( available_head > total_trans_slots )
+			if ( available_head > cur_trans_slots ) {
 				available_head = 0;
-			if ( available_tail > total_trans_slots )
+			}
+			if ( available_tail > cur_trans_slots ) {
 				available_tail = 0;
+			}
 
 			// Check to see if we can close the target.  Targets are not closed
 			// until all outstanding I/Os have completed.
@@ -1326,13 +1337,15 @@ void Grunt::Do_IOs()
 			// allow other requests, if any, to have a chance of going.
 			available_trans_queue[available_tail++] = 
 				available_trans_queue[available_head];
-			if ( available_tail > total_trans_slots )
+			if ( available_tail > cur_trans_slots ) {
 				available_tail = 0;
+			}
 		}
 
 		// Move the head of the available queue to reflect the last request.
-		if ( (++available_head) > total_trans_slots )
+		if ( (++available_head) > cur_trans_slots ) {
 			available_head = 0;
+		}
 	} // while grunt_state is not TestIdle
 }
 
