@@ -8,6 +8,9 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
 ==================================
 
 - Applied patches:
+   - scross_spec_list.patch by Lamont Cranston (Ensures that the access
+     specification list gets scrolled during the run - so the active
+     access specification can always be seen).
    - linux_kstat_build_fix.patch by Lamont Cranston (Fixes a minor bug
      in the build of the linux_kstat version for Linux 2.4).
    - IOTargetDisk_cpp.patch by Lamont Cranston (Closes the files in
