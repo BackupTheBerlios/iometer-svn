@@ -80,7 +80,7 @@ void	Wait_for_Prepare( void *grunt_thread_info );
 
 #ifndef UNIX
 // if we are not on UNIX the excluded filesystem stuff doesn't really matter
-#define DEFAULT_EXCLUDE_FILESYS
+#define DEFAULT_EXCLUDE_FILESYS ""
 #else // UNIX
 #ifdef LINUX
 #define DEFAULT_EXCLUDE_FILESYS "proc shm swap devpts"
