@@ -457,13 +457,11 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		printf("   My hostname: \"%s\"\n", hostinfo->h_name);
 
 		i=0;
-	 #if !defined(IOMTR_OS_NETWARE)	  // this blows up - don't know why
 		while ( hostinfo->h_aliases[i] != NULL )
 		{
 			printf("   Alias: \"%s\"\n", hostinfo->h_aliases[i]);
 			i++;
 		}
-	 #endif		
 	#endif
 
 	// report the network addresses.

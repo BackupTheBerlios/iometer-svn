@@ -163,7 +163,7 @@ TargetDisk::TargetDisk()
    	mmAppTag = (LONG)AllocateResourceTag(getnlmhandle(), "dynamo", (LONG)MM_APPLICATION_SIGNATURE);
 	appDef.classobjectsignature = MM_APPLICATION_SIGNATURE;
 	appDef.controlroutine = NULL;
-	appDef.name	= (unsigned char *)"mmDPMeterm";
+	appDef.name	= (unsigned char *)"mmDynamo";
 	appDef.type = MM_GENERAL_STORAGE_APPLICATION;
 	appDef.identifier = 0xEEDDCCBB;
 
@@ -1327,11 +1327,7 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
 #elif defined(IOMTR_OS_NETWARE)
-	 	if(MM_ReserveIOObject(&reservationHandle,atoi(file_name),MM_IO_MODE, atoi(file_name),NWalertroutine,applicationHandle))
-	 		((struct File *)disk_file)->fd = -1L;
-	 	else
-	 		((struct File *)disk_file)->fd = (int)reservationHandle;
-	 	((struct File *)disk_file)->type = PhysicalDiskType;
+		((struct File *)disk_file)->fd = NWOpenDevice(atoi(file_name), 0);
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile(file_name, GENERIC_READ | GENERIC_WRITE,
@@ -1372,19 +1368,6 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	return ( CreateIoCompletionPort( disk_file, io_cq->completion_queue, 0, 1 ) 
 		!= NULL );
 }
-
-
-
-
-
-#if defined(IOMTR_OSFAMILY_NETWARE)
-LONG NWalertroutine(unsigned long reservationHandle, unsigned long alertToken, unsigned long alertType, unsigned long alertReasion)
-{
-	// drive alerts - i.e deactivation and so on
-	return 0;
-}
-#endif
-
 
 
 

@@ -192,6 +192,9 @@ private:
 	   	LONG   token;
 	   	LONG   identifier;
 	} appDef;
+public:
+	int NWOpenDevice(LONG device, LONG mode);
+	int NWCloseDevice(HNDL handle);
 #endif
 #if defined(IOMTR_OS_SOLARIS)
 	BOOL		Look_For_Partitions();			// private member function to look for partitions on disk.

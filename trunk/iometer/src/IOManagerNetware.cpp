@@ -1,5 +1,5 @@
 /* ######################################################################### */
-/* ##                                                                     ## */
+/* ##                                                                     ## *
 /* ##  Dynamo / IOManagerNetware.cpp                                      ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
@@ -60,6 +60,9 @@
 #include <dirent.h>
 #include <ctype.h>
 #include <monitor.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
 
 /**********************************************************************
  * Forward Declarations
@@ -83,9 +86,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	DWORD volNum, next;
 	char disk_name[128];
 	#define MM_DIRECT_ACCESS_DEVICE 0
-
 	cout << "Reporting drive information..." << endl;
-
 	// *********************************************************************************
 	// DEVELOPER NOTES
 	// ---------------
@@ -98,7 +99,6 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// First find all virtual disks by returning volumes. Then search for
 	// physical disks using Media Manager.
 	//
-
 	for (volNum = 0; volNum < 4; volNum++)
 	{
 		ret = netware_vol_info(&vInfo, (int *)&volNum);
@@ -115,8 +115,6 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			continue;
 		if (vInfo.mounted != TRUE)
 			continue;
-		
-
 #ifdef _DEBUG
 		cout << "*** File system found: " << vInfo.name << "\n";
 #endif
@@ -128,12 +126,9 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 #endif
 			continue;
 		}
-
 		length = strlen((char *)vInfo.name);
-
 		strncpy(disk_name, (char *)vInfo.name, length);
 		disk_name[length] = 0;
-
 		if ( ! d.Init_Logical( disk_name ) ) 
 		{
 #ifdef _DEBUG
@@ -141,32 +136,26 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 #endif
 			continue;
 		}
-
 		// Drive exists and ready for use.
 		d.spec.type = LogicalDiskType;
 		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
-
 		disk_spec[count].name[length] = 0;
 		// check for this pattern is also in Manager;:Reported_As_Logical()
 		// and TargetDisk::Init_Logical().
 //		strcat(disk_spec[count].name, " [");
 //		strcat(disk_spec[count].name, "NSS");
 //		strcat(disk_spec[count].name, "]");
-
 #ifdef _DEBUG
 			cout << "   Found " << disk_spec[count].name << "." << endl << flush;
+			cout << "   type= << disk_spec[count].type << endl << flush;
 #endif
-	printf("name=%s,type=%X\n",disk_spec[count].name, disk_spec[count].type);
 		count++;
 		if (count >= MAX_TARGETS)
 			break;
 	}
-
 	if (count >= MAX_TARGETS)
 		return count;
-
 	// Now reporting physical drives (raw devices).
-	
 	cout << "  Physical drives (raw devices)..." << endl;
 	for (next = -1; (MM_FindObjectType(MM_IO_CLASS ,MM_DEVICE_OBJECT, &next) != MM_OBJECT_NOT_FOUND);)
 	{
@@ -179,6 +168,10 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			continue;
 		if (strstr((char *)info.name, "Floppy"))
 			continue;
+	 	if((ret=d.NWOpenDevice(next,1)) != -1)
+	 		d.NWCloseDevice(ret);
+	 	else
+			continue;
 #ifdef _DEBUG
 		cout << __FUNCTION__ << ": Found device " << info.name << "\n";
 #endif
@@ -188,13 +181,13 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			cout << __FUNCTION__ << ": Device is not reserved.\n";
 #endif
 			sprintf( disk_name, "[%d]", next);
-			printf("Manager::Report_Disks: name=%s\n",disk_name);
 			if (d.Init_Physical(disk_name)) 
 			{
 				d.spec.type = PhysicalDiskType;
 				memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
-
-	printf("name=%s,type=%X\n",disk_spec[count].name, disk_spec[count].type);
+#ifdef _DEBUG
+				cout "name=" << disk_spec[count].name << ",type=" << disk_spec[count].type << endl << flush;
+#endif
 				++count;
 			}
 		}
@@ -218,6 +211,65 @@ static int compareRawDiskNames(const void *a, const void *b) {
 }
 //
 //
+int Manager::Report_TCP( Target_Spec *tcp_spec )
+{
+	struct hostent		*hostinfo;
+	struct sockaddr_in	 sin;
+	char			 hostname[128];
+	int			 count = 0;
+	int 			 i;
+	cout << "Reporting TCP network information..." << endl;
+	// get the unqualified local host name
+	if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
+	{
+		cout << "*** Error " << WSAGetLastError() << "getting local host name.\n";
+		return 0;
+	}
+	// now get the host info for that host name
+	hostinfo = gethostbyname ( hostname );
+	if ( hostinfo == NULL )
+	{
+		cout << "*** Error " << WSAGetLastError() << "getting host info for \"" 
+			 << hostname << "\".\n";
+		return 0;
+	}
+	#ifdef _DEBUG
+		printf("   My hostname: \"%s\"\n", hostinfo->h_name);
+		i=0;
+	   // this blows up - don't know why
+	   //	while ( hostinfo->h_aliases[i] != NULL )
+	   //	{
+	   //		printf("   Alias: \"%s\"\n", hostinfo->h_aliases[i]);
+	   //		i++;
+	   //	}
+	#endif
+	// report the network addresses.
+	for ( i = 0; hostinfo->h_addr_list[i] != NULL; i++ ) 
+	{
+		memcpy ( &sin.sin_addr.s_addr, hostinfo->h_addr_list[i], hostinfo->h_length );
+		strncpy ( tcp_spec[count].name, inet_ntoa(sin.sin_addr), 
+			sizeof(tcp_spec[count].name) - 1 );
+		tcp_spec[count].type = TCPClientType;	// interface to access a client
+		#if _DEBUG
+			cout << "   Found " << tcp_spec[count].name << "." << endl;
+		#endif
+		if ( ++count >= MAX_NUM_INTERFACES )
+		{
+			cout << "*** Found the maximum number of supported network interfaces: " 
+				<< endl << "Only returning the first " << MAX_NUM_INTERFACES << "." << endl;
+			count = MAX_NUM_INTERFACES;
+			break;
+		}
+	}
+	#if 0	// for debugging multiple-network-interface GUI; change "#if 0" to "#if 1" to enable
+		strncpy ( nets[count], "foo", sizeof(nets[count]) - 1 );
+		cout << "   Added fake entry " << nets[count] << "." << endl << flush;
+		count++;
+	#endif
+	// All done.
+	cout << "   done." << endl;
+	return count;
+}
 int aio_suspend64(struct aiocb64 **cb, int a, struct timespec *)
 {
 	pthread_t tid = pthread_self();
@@ -253,9 +305,10 @@ int aio_read64(struct aiocb64 *cb, int type)
 						(cb->aio_offset/512),0, cb->aio_nbytes, cb->aio_buf, (LONG)cb, (void (*)())MM_CallBackRoutine);
 		cb->returnval = cb->aio_nbytes;
 		if (cb->error == 0)
+		{
 			cb->error = EINPROGRESS;
-		else
-			cb->error != cb->error;
+			cb->completion_key = EBUSY;
+		}
 	}
 	return (cb->error);
 }
@@ -286,9 +339,13 @@ int aio_write64(struct aiocb64 *cb, int type)
 int aio_cancel64(int a, struct aiocb64 *cb)
 {
 	if (cb == NULL)
-		printf("cancel all in queue\n");
+	{
+		//printf("cancel all in queue\n");
+	}
 	else
+	{
 		printf("cancel one\n");
+	}
 	return FALSE;
 }
 //
@@ -297,6 +354,30 @@ void MM_CallBackRoutine(LONG requestHandle, LONG applicationRequestToken, LONG r
 {
 	struct aiocb64 *cb = (struct aiocb64 *)applicationRequestToken;
 	cb->error = completionCode;
+}
+int TargetDisk::NWOpenDevice(LONG device, LONG mode)
+{
+	LONG rc = 0;
+	
+	rc=MM_ReserveIOObject(&reservationHandle, device, (mode?MM_IO_MODE:(MM_IO_MODE|MM_SHARED_PRIMARY_RESERVE)),
+	 							device, NWalertroutine,applicationHandle);
+	if (rc)
+ 		((struct File *)disk_file)->fd = -1L;
+ 	else
+ 		((struct File *)disk_file)->fd = (int)reservationHandle;
+ 	((struct File *)disk_file)->type = PhysicalDiskType;
+ 	if(rc)
+ 		cout << "TargetDisk::Open: MM_ReserveIOObject rc=" << rc << " for MMID " << atoi(file_name) << endl;
+	return ((struct File *)disk_file)->fd;
+}
+int TargetDisk::NWCloseDevice(HNDL handle)
+{
+	return MM_ReleaseIOObject(handle);
+}
+LONG NWalertroutine(unsigned long reservationHandle, unsigned long alertToken, unsigned long alertType, unsigned long alertReasion)
+{
+	// drive alerts - i.e deactivation and so on
+	return MM_SHARED_RESERVE_GRANTED;
 }
 
 #endif // IOMTR_OS_NETWARE

@@ -219,8 +219,7 @@ using namespace std;
  #include <nks/memory.h>
  #include <nks/fsio.h>
  #include <pthread.h>
- #include "mmpublic.h"
- #include "nwkcalls.h"
+ #include <mmpublic.h>
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX)
@@ -566,6 +565,27 @@ struct Results
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_NETWARE)
  // This LPOVERLAPPED typedef is from WINBASE.H
+ #if defined(IOMTR_OSFAMILY_NETWARE)
+ struct  aiocb64 {
+ 	int		aio_fildes;
+ 	void		*aio_buf;
+ 	size_t		aio_nbytes;
+ 	off_t		aio_offset;
+ 	int		aio_flag;
+ 	int		error;
+ 	int		returnval;
+ 	unsigned long	completion_key;
+ 	struct {
+ 		int sigev_notify;
+ 		}	aio_sigevent;
+	};
+ struct timeb {
+	long time;
+	unsigned short millitm;
+	short timezone;
+	short dstflag;
+	};
+ #endif
  typedef struct _OVERLAPPED {   
 	DWORD  Internal;
        	DWORD  InternalHigh;
@@ -600,27 +620,6 @@ struct Results
 	int type;
  #endif
  };
- #if defined(IOMTR_OSFAMILY_NETWARE)
- struct  aiocb64 {
- 	int		aio_fildes;
- 	void		*aio_buf;
- 	size_t		aio_nbytes;
- 	off_t		aio_offset;
- 	int		aio_flag;
- 	int		error;
- 	int		returnval;
- 	unsigned long	completion_key;
- 	struct {
- 		int sigev_notify;
- 		}	aio_sigevent;
-	};
- struct timeb {
-	long time;
-	unsigned short millitm;
-	short timezone;
-	short dstflag;
-	};
- #endif
 #endif 
 // ----------------------------------------------------------------------------
 
@@ -756,11 +755,10 @@ inline int IsBigEndian( void )
   #define __max(a,b)            (((a) < (b)) ? (b) : (a))
  #endif
 
-
  #if defined(IOMTR_OSFAMILY_NETWARE)
   #define _timeb		timeb
   #define _ftime		nwtime
-  #define Sleep(x)		sleep((x))
+  #define Sleep(x)		delay((x))
  #elif defined(IOMTR_OSFAMILY_UNIX)
   #define _timeb		timeb
   #define _ftime		ftime
@@ -831,6 +829,17 @@ inline int IsBigEndian( void )
  int aio_read64(struct aiocb64 *cb, int type);
  int aio_write64(struct aiocb64 *cb, int type);
  int aio_cancel64(int a, struct aiocb64 *cb);
+
+ #ifdef __cplusplus
+ extern "C"
+ {
+ #endif
+ extern LONG  GetTimerMinorTicksPerSecond(void);
+ extern unsigned long kGetProcessorInterruptCount(unsigned int, unsigned int *);
+ extern void  EnterDebugger();
+ #ifdef __cplusplus
+ }
+ #endif
 
  extern DWORDLONG rdtsc(void); 
 #endif

@@ -67,7 +67,6 @@
 #endif
 #include "IOCommon.h"
 
-
 // Needed for MFC Library support for assisting in finding memory leaks
 //
 // NOTE: Based on the documentation[1] I found, it should be enough to have

@@ -107,6 +107,10 @@
   #include <inet/mib2.h>
  #endif
 
+#if defined(IOMTR_OSFAMILY_NETWARE)
+  #include <monitor.h>
+#endif
+
 #endif
 
 
@@ -225,6 +229,9 @@ private:
 	PERF_OBJECT_TYPE		*perf_object;	// pointer to NT performance data for a specific object
 	PERF_INSTANCE_DEFINITION	*perf_instance; // pointer to an instance of a specific object
 	PERF_COUNTER_BLOCK		*perf_counters;	// pointer to NT performance counters for a specific instance of an object
+#endif
+#if defined(IOMTR_OS_NETWARE)
+	struct cpu_info info;
 #endif
 	//
 	// raw CPU performance counters for Windows NT

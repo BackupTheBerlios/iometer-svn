@@ -82,8 +82,7 @@ Performance::Performance()
 				 << "This error may indicate that you are trying to run on an\n"
 				 << "unsupported processor or OS.  See the Iometer User's Guide for\n"
 				 << "information on supported platforms.\n";
-		exit(1);
-	}
+		exit(1);	}
 
         // Set the clock ticks per second
 	clock_tick = GetTimerMinorTicksPerSecond();
@@ -165,11 +164,9 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 void Performance::Get_CPU_Counters(int snapshot)
 {
 	int i, j;
-	struct cpu_info info;
 
-	for(i = 0; i < processor_count; i++) 
+	for(i = j = 0; i < processor_count; i++) 
 	{
-		j = i;
 		netware_cpu_info(&info,&j);
 		raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] = info.ProcessorUtilization;
 		raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] = info.ProcessorUtilization;

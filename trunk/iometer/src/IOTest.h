@@ -191,7 +191,9 @@ struct VI_Spec
 	int			max_connections;
 	int			outstanding_ios;
 	#if defined(IOMTR_OSFAMILY_NETWARE)
-	 char padnw[4];
+	 char padnw[2]; // this has to keep changing and I do not know why
+	 				// orginally it was none, had to make it 4 to work with NetWare now 2??
+	 				// somebodies data size is changing on me and I don't know whose  or why
 	#endif
 
 };
