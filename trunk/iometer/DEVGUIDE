@@ -332,7 +332,11 @@ A.1 Iometer
 
     - AccessDialog.h           (CAccessDialog)
     - AccessDialog.cpp         (CAccessDialog)
-    
+
+      Responsible for the "Access Specification" dialog in the Iometer GUI.
+      The SetSize() function for instance is setting the size of the
+      Transfer Requests based on the three sliding listboxes (MB, KB, Bytes).
+
     - BigMeter.h               (CBigMeter)
     - BigMeter.cpp             (CBigMeter)
     - MeterCtrl.h              (CMeterCtrl)

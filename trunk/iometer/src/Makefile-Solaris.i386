@@ -45,7 +45,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2004-08-07 (daniel.scheibli@edelbyte.org)                   ##
+##               - Added iometer target and explained that there is no       ##
+##                 Iometer GUI for non MS Windows platforms so far.          ##
+##               2003-12-21 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Changed DYNAMO_DESTRUCTIVE to IOMTR_SETTING_OVERRIDE_FS   ##
 ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT          ##
 ##               2003-07-27 (daniel.scheibli@edelbyte.org)                   ##
@@ -112,11 +115,16 @@ OBJECTS= IOGlobals.o \
 # Make Rules
 help:
 	@echo
-	@echo "Please pick one of the listed targets."
-	@echo "Targets ...: all       Build the binaries"
-	@echo "             dynamo    Build the dynamo binary"
-	@echo "             clean     Remove old binaries and object files"
-	@echo
+	@echo "Please pick one of the listed targets:"
+	@echo                                                              
+	@echo "   all       Build the binaries"
+	@echo "   dynamo    Build the dynamo binary"
+	@echo "   iometer   Build the iometer binary (not supported) *"
+	@echo "   clean     Remove old binaries and object files"
+	@echo                                                              
+	@echo "   * = The Iometer GUI is so far only available for MS Windows," 
+	@echo "       but you can use it to control dynamo's running on Linux." 
+	@echo                                                              
 
 all: dynamo
 
@@ -127,6 +135,9 @@ clean:
 	$(RM) $(OBJECTS) dynamo
 
 install:
+	echo "Not Supported."
+
+iometer:
 	echo "Not Supported."
 
 .cpp.o:

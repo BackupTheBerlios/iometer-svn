@@ -52,7 +52,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-04-19 (tharmon@novell.com)                             ##
+##  Changes ...: 2004-08-07 (daniel.scheibli@edelbyte.org)                   ##
+##               - Added iometer target and explained that there is no       ##
+##                 Iometer GUI for non MS Windows platforms so far.          ##
+##               2004-04-19 (tharmon@novell.com)                             ##
 ##               - Adopted paths to CodeWarrier 8                            ##
 ##               2004-03-29 (tharmon@novell.com)                             ##
 ##               - NetWare make file                                         ##
@@ -131,11 +134,16 @@ LIBS = "C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Suppo
 # Make Rules
 help:
 	@echo
-	@echo "Please pick one of the listed targets."
-	@echo "Targets ...: all       Build the binaries"
-	@echo "             dynamo    Build the dynamo binary"
-	@echo "             clean     Remove old binaries and object files"
-	@echo
+	@echo "Please pick one of the listed targets:"
+	@echo                                                              
+	@echo "   all       Build the binaries"
+	@echo "   dynamo    Build the dynamo binary"
+	@echo "   iometer   Build the iometer binary (not supported) *"
+	@echo "   clean     Remove old binaries and object files"
+	@echo                                                              
+	@echo "   * = The Iometer GUI is so far only available for MS Windows," 
+	@echo "       but you can use it to control dynamo's running on Linux." 
+	@echo                                                              
 
 all: dynamo
 
@@ -161,6 +169,9 @@ clean:
 	$(RM) $(OBJECTS) dynamo.nlm dynamo.def dynamo.xdc
 
 install:
+	echo "Not Supported."
+
+iometer:
 	echo "Not Supported."
 
 .cpp.o:
