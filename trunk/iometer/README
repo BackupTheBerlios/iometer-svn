@@ -354,7 +354,13 @@ A.1 Iometer
     - Iometer.dsp             (<none>)
 
       Both Workspace and Project file are used to compile the Iometer code
-      with Microsoft Developer Studio.
+      with Microsoft Developer / Visual Studio.
+
+    - Iometer/makefile        (<none>)
+    - Iometer/sources         (<none>)
+
+      Files needed to build the Iometer GUI executable with the Microsoft
+      Driver Development Kit.
 
   ------------------------------------------------------------------------
 
@@ -529,7 +535,13 @@ A.2 Dynamo
     - Dynamo.dsp              (<none>)
     
       Both Workspace and Project file are used to compile the Dynamo code
-      with Microsoft Developer Studio.
+      with Microsoft Developer / Visual Studio.
+
+    - Dynamo/makefile         (<none>)
+    - Dynamo/sources          (<none>)
+
+      Files needed to build the Dynamo executable with the Microsoft Driver
+      Development Kit.
 
   ------------------------------------------------------------------------
 

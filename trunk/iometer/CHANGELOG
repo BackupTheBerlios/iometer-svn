@@ -27,6 +27,10 @@ ChangeLog (2003.nn.nn):
 - Documentation:
    - Added a remark into the .../README file (containing additions for
      running Dynamo on a Linux machine with NTPL support).
+- Others:
+   - Added the source and makefile provided by Vedran Degoricija to get
+     the Iometer and Dynamo executable build using the Microsoft Driver
+     Development Kit (DDK).
 
 
 
