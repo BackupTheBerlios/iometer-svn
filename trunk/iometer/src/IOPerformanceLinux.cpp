@@ -20,16 +20,15 @@
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - Added some more GHz processor stuff.                ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - Changed Get_NI_Counters so interfaces that do not   ## */
 /* ##                 contain statistics in /proc/net/dev do not cause    ## */
 /* ##                 dynamo to die.  Right now the only interface that   ## */
 /* ##                 does this is for Intel Link Aggregation (ians)      ## */
-/* ##  Changes ...: 2003-02-09 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               2003-02-09 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Modified Get_CPU_Counters to add the Jiffies for    ## */
 /* ##                 user mode with low priority (nice) to the user      ## */
 /* ##                 mode utilization as well as the total utilization.  ## */
-/* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Applied the iometer-initial-datatypes.patch file    ## */
 /* ##                 (brings some minor changes to main() function).     ## */

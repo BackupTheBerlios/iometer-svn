@@ -20,7 +20,7 @@
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
 /* ##               -Added some more processor info stuff                 ## */
-/* ##  Changes ...: 2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               2003-02-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Applied proc-speed-fix.txt patch file               ## */
 /* ##                 (dropping two type casts in the                     ## */
