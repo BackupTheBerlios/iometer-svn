@@ -54,7 +54,20 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-07 (mingz@ele.uri.edu)                        ## */
+/* ##               - Changed all im_kstat to iomtr_kstat with Daniel     ## */
+/* ##                 suggestion. A better name.                          ## */
+/* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added im_kstat ioctl call in Get_Processor_Count.   ## */
+/* ##               - Added im_kstat ioctl call in Get_Processor_Speed.   ## */
+/* ##               - Added im_kstat ioctl call in Get_CPU_Counters.      ## */
+/* ##               - Handle two /proc/stat style in Get_CPU_Counters.    ## */
+/* ##               - Implement Get_TCP_Counters.                         ## */
+/* ##               - Added im_kstat ioctl call in Get_NI_Counters.       ## */
+/* ##               - Fixed a time difference computation error in        ## */
+/* ##                 Calculate_NI_Stats() since time_counter unit is     ## */
+/* ##                 not nanosecond but clock_tick                       ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -85,8 +98,18 @@
 #if defined(IOMTR_OS_LINUX)
 
 
+
 #include <assert.h>
+
 #include "IOPerformance.h"
+#include "iomtr_kstat/iomtr_kstat.h"
+
+extern int kstatfd;
+extern int procstatstyle;
+
+
+
+
 
 //
 // Initializing system performance data.
@@ -110,6 +133,8 @@ Performance::Performance() {
 	}
 
         // Set the clock ticks per second
+	// TODO: try to find a correct way to get this number
+	// DF: Base on ''man sysconf'', this macro is obsolete now. so things become tricky
 	clock_tick = sysconf(_SC_CLK_TCK);
 	
 	// Initialize all the arrays to 0.
@@ -155,6 +180,13 @@ int Performance::Get_Processor_Count()
 	//////////////////////////////////////////////////////////////////////
 	char stats[16 * 1024 + 1], *search;
 	int fd, byteCount, cpuCount;
+
+	int nr_cpu = 0;
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCPUNUM, &nr_cpu) >= 0) {
+		cout << "# CPU: " << nr_cpu << endl;
+		return nr_cpu;
+	}
+
 	fd = open("/proc/stat", O_RDONLY);
 	if (fd < 0) {
 	  cout << "*** Unable to determine number of processors in system.";
@@ -204,8 +236,15 @@ double Performance::Get_Processor_Speed()
 	char label[40];
 	int scanDecodes;
 	double result;
-	FILE *cpuInfo = fopen("/proc/cpuinfo", "r");
+	FILE *cpuInfo;
 
+	int khz;
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCPUKHZ, &khz) >= 0) {
+		cout << "CPU KHZ: " << khz << endl;
+		return (double)khz * 1000.0;
+	}
+	
+	cpuInfo = fopen("/proc/cpuinfo", "r");
 	do {
 		fscanf(cpuInfo, "%7c", label);
 		if (!strncmp(label, "cpu MHz", 7)) {
@@ -273,55 +312,130 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot) {
 void Performance::Get_CPU_Counters(int snapshot)
 {
 	int	  numScans, c, i;
-	char      tmpBuf[40];
-	__int64   jiffiesCpuNiceUtilization;
-
-        // First few rows of the /proc/stat output.
-        // --------------------------------------------------------------------
-	// cpu  20969 2260 50042 1069377
-	// cpu0 20969 2260 50042 1069377
-	// page 1279455 540189
-	// swap 30 483
-	// intr 1896409 1142648 2 0 0 128558 0 0 0 2 0 34836 465132 4 0 91210 34017 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	// ...
-        // --------------------------------------------------------------------
-	FILE *cpuStat = fopen("/proc/stat", "r");
-	assert(cpuStat != NULL);
-	fscanf(cpuStat, "cpu %*s %*s %*s %*s\n");	
-	for(i = 0; i < processor_count; i++) {
-		numScans = fscanf(cpuStat, "%s", tmpBuf);
-                if((numScans == 1) && (strlen(tmpBuf) >= 3) && (strncmp(tmpBuf, "cpu", 3) == 0)) {
-			fscanf(cpuStat, " %lld %lld %lld %*s\n", &raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot],
-			                                         &jiffiesCpuNiceUtilization,
-					                         &raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot]);
-			raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
+	char      tmpBuf[100];
+	__int64   jiffiesCpuNiceUtilization, jiffiesCpuidle, jiffiesCpuiowait, jiffiesCpuirq, jiffiesCpusoftirq;
+	FILE *cpuStat;
+	struct cpu_data_type raw_cpu;
+	
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCPUDATA, &raw_cpu) >= 0) {
+		for (i = 0; i < processor_count; i++) {
+			raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] = raw_cpu.user_time[i];
+			raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot] = raw_cpu.system_time[i];
 			raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] = raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] + raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
-			continue;
 		}
-		do {
-			c = getc(cpuStat);
-		} while ((c != '\n') && (c != EOF));
-		break;
+		raw_cpu_data[0][CPU_IRQ][snapshot] = raw_cpu.intr;
+		return;
 	}
-        for(;;) {
-		numScans = fscanf(cpuStat, "%s", tmpBuf);
-		if((numScans == 1) && (strlen(tmpBuf) == 4) && (strncmp(tmpBuf, "intr", 4) == 0)) {
-			fscanf(cpuStat, " %lld ", &raw_cpu_data[0][CPU_IRQ][snapshot]);
-			break;
-		}		
-		do {
-			c = getc(cpuStat);
-		} while ((c != '\n') && (c != EOF));
-		if(c == EOF) {
+
+	cpuStat = fopen("/proc/stat", "r");
+	assert(cpuStat != NULL);
+	switch (procstatstyle) {
+	case PROCSTAT24STYLE:
+		// First few rows of the /proc/stat output in 2.4 style.
+		// --------------------------------------------------------------------
+		// cpu  20969 2260 50042 1069377
+		// cpu0 20969 2260 50042 1069377
+		// page 1279455 540189
+		// swap 30 483
+		// intr 1896409 1142648 2 0 0 128558 0 0 0 2 0 34836 465132 4 0 91210 34017 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		// ...
+		// --------------------------------------------------------------------
+		fscanf(cpuStat, "cpu %*s %*s %*s %*s\n");	
+		for(i = 0; i < processor_count; i++) {
+			numScans = fscanf(cpuStat, "%s", tmpBuf);
+			if((numScans == 1) && (strlen(tmpBuf) >= 3) && (strncmp(tmpBuf, "cpu", 3) == 0)) {
+				fscanf(cpuStat, " %lld %lld %lld %*s\n", &raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot],
+									&jiffiesCpuNiceUtilization,
+									&raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot]);
+				raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
+				raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] = raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] + raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
+				continue;
+			}
+			do {
+				c = getc(cpuStat);
+			} while ((c != '\n') && (c != EOF));
 			break;
 		}
+		for(;;) {
+			numScans = fscanf(cpuStat, "%s", tmpBuf);
+			if((numScans == 1) && (strlen(tmpBuf) == 4) && (strncmp(tmpBuf, "intr", 4) == 0)) {
+				fscanf(cpuStat, " %lld ", &raw_cpu_data[0][CPU_IRQ][snapshot]);
+				break;
+			}		
+			do {
+				c = getc(cpuStat);
+			} while ((c != '\n') && (c != EOF));
+			if(c == EOF) {
+				break;
+			}
+		}
+		break;
+	case PROCSTAT26STYLE:
+		// First feww rows of the /proc/stat output in 2.6 style
+		// cpu  31483 0 87972 461075 9775 1319 200
+		// cpu0 31483 0 87972 461075 9775 1319 200
+		// intr 6473496 5918277 10963 0 0 0 0 0 7 1 2 0 365055 154381 0 24810 0 0 
+		//...
+		fscanf(cpuStat, "cpu %*s %*s %*s %*s %*s %*s %*s\n");
+		for(i = 0; i < processor_count; i++) {
+			numScans = fscanf(cpuStat, "%s", tmpBuf);
+			if((numScans == 1) && (strlen(tmpBuf) >= 3) && (strncmp(tmpBuf, "cpu", 3) == 0)) {
+				fscanf(cpuStat, " %lld %lld %lld %lld %lld %lld %lld\n", 
+									&raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot],
+									&jiffiesCpuNiceUtilization,
+									&raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot],
+									&jiffiesCpuidle, 
+									&jiffiesCpuiowait, 
+									&jiffiesCpuirq, 
+									&jiffiesCpusoftirq);
+				raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
+				raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot] += jiffiesCpuirq + jiffiesCpusoftirq;
+				raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] = raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] + raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
+			}
+		}
+		for(;;) {
+			numScans = fscanf(cpuStat, "%s", tmpBuf);
+			if((numScans == 1) && (strlen(tmpBuf) == 4) && (strncmp(tmpBuf, "intr", 4) == 0)) {
+				fscanf(cpuStat, " %lld ", &raw_cpu_data[0][CPU_IRQ][snapshot]);
+				break;
+			}		
+			do {
+				c = getc(cpuStat);
+			} while ((c != '\n') && (c != EOF));
+			if(c == EOF) {
+				break;
+			}
+		}
+		break;
+	default:
+		// should never be here
+		cerr << "Can not get CPU performance data" << endl;
 	}
 	fclose(cpuStat);
 }
 
-void Performance::Get_TCP_Counters(int snapshot) {}
-
-
+void Performance::Get_TCP_Counters(int snapshot) 
+{
+	FILE *fp;
+	__int64 insegs, outsegs, retranssegs;
+	struct tcp_data_type raw_tcp;
+	
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETTCPDATA, &raw_tcp) >= 0) {
+		raw_tcp_data[TCP_SEGMENTS_RESENT][snapshot] = raw_tcp.retranssegs;
+		return;
+	}
+	
+	// DF: a kind of stupid workable solution. :)
+	fp = fopen("/proc/net/snmp", "r");
+	fscanf(fp, "Ip: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
+	fscanf(fp, "Ip: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
+	fscanf(fp, "Icmp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
+	fscanf(fp, "Icmp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
+	fscanf(fp, "Tcp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
+	fscanf(fp, "Tcp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %lld %lld %lld %*s %*s\n", &insegs, &outsegs, &retranssegs);
+	raw_tcp_data[TCP_SEGMENTS_RESENT][snapshot] = retranssegs;
+	fclose(fp);
+}
 
 //
 // Calculating CPU statistics based on snapshots of performance counters.
@@ -431,7 +545,19 @@ void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 void Performance::Get_NI_Counters(int snapshot) {
 	int c, scanCount, packetIn, packetOut;
 	char ifname[32];
-	FILE *netInfo = fopen("/proc/net/dev", "r");
+	FILE *netInfo;
+	struct ni_data_type raw_net;
+	
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETNIDATA, &raw_net) >= 0) {
+		for (network_interfaces = 0; network_interfaces < MAX_NUM_INTERFACES; network_interfaces++) {
+			raw_ni_data[network_interfaces][NI_IN_ERRORS][snapshot] = raw_net.in_err[network_interfaces];
+			raw_ni_data[network_interfaces][NI_OUT_ERRORS][snapshot] = raw_net.out_err[network_interfaces];
+			raw_ni_data[network_interfaces][NI_PACKETS][snapshot] = raw_net.nr_pkt[network_interfaces];
+		}
+		return;
+	}
+
+	netInfo = fopen("/proc/net/dev", "r");
 	assert(netInfo != NULL);
 	// Pull out the first two lines of the file. These two lines contain
 	// labels for the columns.
@@ -504,9 +630,13 @@ void Performance::Calculate_NI_Stats( Net_Results *net_results )
 			// we are doing now) but reported wrong values while working with such 
 			// large numbers.
 			//
+			//result = ((double) raw_ni_data[net][stat][LAST_SNAPSHOT] - 
+			//	raw_ni_data[net][stat][FIRST_SNAPSHOT]) * 1000000000.0 / 
+			//	((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
+			
+			// DF: I think the time_counter do not use nanoseconds but clock_tick
 			result = ((double) raw_ni_data[net][stat][LAST_SNAPSHOT] - 
-				raw_ni_data[net][stat][FIRST_SNAPSHOT]) * 1000000000.0 / 
-				((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
+				raw_ni_data[net][stat][FIRST_SNAPSHOT]) * clock_tick / timediff;
 
 			net_results->ni_stats[net][stat] = result;
 

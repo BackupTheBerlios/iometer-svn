@@ -13,6 +13,7 @@ Table of Contents
 Iometer Developer's Guide
 
    * 1     Introduction
+   * 1.1   Coding style
 
    * 2     Building Iometer
    * 2.1   Makefile issues
@@ -41,10 +42,31 @@ Iometer Developer's Guide
 
 Starting with the development of Iometer you first have to have access to
 the source code. Best is to use the CVS server provided by sourceforge.
+
 If you do not have a change to get this done (restrictive firewall etc.)
 you can download the nightly tarball of the CVS respository from:
 
 http://cvs.sourceforge.net/cvstarballs/iometer-cvsroot.tar.bz2
+
+Another good source might be the development snapshots (iometer-devel
+package) that you can find in the download area at SourceForge.
+
+  ------------------------------------------------------------------------
+
+1.1 Coding style
+
+Right now there is not much to tell, as the source code is still under
+consolidation. But you should at least considere the following:
+
+ o Use normal tab spacing (tab = 8 spaces).
+
+ o Place the open "{" after the condition (for instance "if(...) {").
+
+ o If you want to mark the code to indicate that something still has
+   to be done there - use the "TODO:" token (simular to the "FIXME"
+   token in the Linux kernel). Of course it is best if you do not
+   have a need for such indicators - meaning you directly go with the
+   final version of the code.
 
   ------------------------------------------------------------------------
 
@@ -90,6 +112,7 @@ find important global defines (-D<key>[=<value>]):
    IOMTR_CPU_IA64           Intel Itanium family (64 bit)
    IOMTR_CPU_MIPS           MIPS CPU (used in SGI machines etc.) *
    IOMTR_CPU_SPARC          Sun Sparc processor (64 bit)
+   IOMTR_CPU_XSCALE         Intel XScale processor *
    
    * = Not yet implemented / supported.
 

@@ -48,7 +48,14 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-07 (mingz@ele.uri.edu)                        ## */
+/* ##               - Changed call from im_kstat to iomtr_kstat           ## */
+/* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added ioctl call to get jiffies value from          ## */
+/* ##                 im_kstat module;                                    ## */
+/* ##               - Added code to get jiffies value from 2.6 /proc/stat ## */
+/* ##                 style;                                              ## */
+/* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the Windows 64 Bit on AMD64.                        ## */
@@ -72,6 +79,15 @@
 // Include our central headerfile
 #include "IOCommon.h"
 
+#if defined(IOMTR_OS_LINUX)
+ #include "iomtr_kstat/iomtr_kstat.h"
+
+ extern int kstatfd;
+ extern int procstatstyle;
+#endif
+
+
+
 
 
 // Implements the time measurment functions
@@ -79,12 +95,34 @@
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_LINUX)
  DWORDLONG jiffies(void) {
-	DWORDLONG jiffies_user, jiffies_nice, jiffies_system, jiffies_idle;
-	FILE *fp = fopen("/proc/stat", "r");
-	fscanf(fp, "cpu %*s %*s %*s %*s\n");
-	fscanf(fp, "cpu0 %lld %lld %lld %lld\n", &jiffies_user, &jiffies_nice, &jiffies_system, &jiffies_idle);
-	fclose(fp);
-	return(jiffies_user + jiffies_nice + jiffies_system + jiffies_idle);
+	DWORDLONG jiffies_user, jiffies_nice, jiffies_system, jiffies_idle, jiffies_iowait, jiffies_irq, jiffies_softirq;
+	FILE *fp;
+	unsigned long long jf;
+	
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCURJIFFIES, &jf) >= 0) {
+		//printf("JIFFIE: %llu\n", jf);
+		return (DWORDLONG)jf;
+	}
+
+	switch (procstatstyle) {
+	case PROCSTAT24STYLE:
+		fp = fopen("/proc/stat", "r");
+		fscanf(fp, "cpu %*s %*s %*s %*s\n");
+		fscanf(fp, "cpu0 %lld %lld %lld %lld\n", &jiffies_user, &jiffies_nice, &jiffies_system, &jiffies_idle);
+		fclose(fp);
+		return(jiffies_user + jiffies_nice + jiffies_system + jiffies_idle);
+	case PROCSTAT26STYLE:
+		fp = fopen("/proc/stat", "r");
+		fscanf(fp, "cpu %*s %*s %*s %*s %*s %*s %*s\n");
+		fscanf(fp, "cpu0 %lld %lld %lld %lld %lld %lld %lld\n", &jiffies_user, &jiffies_nice, &jiffies_system, &jiffies_idle,
+			&jiffies_iowait, &jiffies_irq, &jiffies_softirq);
+		fclose(fp);
+		return(jiffies_user + jiffies_nice + jiffies_system + jiffies_idle + jiffies_iowait + jiffies_irq + jiffies_softirq);
+	default:
+		// should never be here
+		cerr << "Can not get jiffies value!" << endl;
+	}
+	return 0;
  }
  #if defined(IOMTR_CPU_I386)
   DWORDLONG rdtsc(void) {
@@ -96,6 +134,12 @@
         //	unsigned long long int x;
         //	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
         //	return(x);
+  }
+ #elif defined(IOMTR_CPU_XSCALE)
+  DWORDLONG rdtsc(void) {
+	// DF_FIXME
+	clock_gettime(0, NULL);
+	return 0;
   }
  #else
   // Was the following 2 lines in before, but for which CPU (nevertheless it is useless!)?

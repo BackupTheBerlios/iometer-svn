@@ -52,7 +52,14 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved BLKSSZGET, BLKBSZGET and BLKGETSIZE64         ## */
+/* ##                 from the IOTargetDisk.cpp file to here.             ## */
+/* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added a IOMTR_CPU_XSCALE cpu type                   ## */
+/* ##               - Added define for /proc/stat style in order to       ## */
+/* ##                 support different kernel version                    ## */
+/* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the Windows 64 Bit on AMD64.                        ## */
@@ -132,12 +139,13 @@
 #endif
 // ----------------------------------------------------------------------------
 // Check the Processor mapping
-#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC))
+#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
+    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
@@ -188,6 +196,9 @@ using namespace std;
  #include <signal.h>
  #include <aio.h>
  #include <netinet/in.h>   // in_addr_t
+ #if defined(IOMTR_OS_LINUX)
+  #include <sys/ioctl.h>
+ #endif
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
@@ -358,6 +369,14 @@ using namespace std;
 
  #define FILE_ELEMENT		1
  #define CQ_ELEMENT		0
+
+ #if defined(IOMTR_OS_LINUX)
+  // different Linux kernel has different /proc/stat style.
+  // Currently we only support vanilla 2.4 and 2.6 alike
+  #define PROCSTATUNKNOWN	0x00
+  #define PROCSTAT24STYLE	0x01
+  #define PROCSTAT26STYLE	0x02
+ #endif
 #endif
 // ----------------------------------------------------------------------------
 
@@ -683,6 +702,16 @@ inline int IsBigEndian( void )
 #if defined(IOMTR_OS_LINUX)
  extern DWORDLONG jiffies(void);
  extern DWORDLONG rdtsc(void);
+ 
+ #if defined(_IO) && !defined(BLKSSZGET)
+  #define BLKSSZGET    _IO(0x12,104)
+ #endif
+ #if defined(_IOR) && !defined(BLKBSZGET)
+  #define BLKBSZGET    _IOR(0x12,112,size_t)
+ #endif
+ #if defined(_IO) && !defined(BLKGETSIZE64)
+  #define BLKGETSIZE64 _IOR(0x12,114,sizeof(unsigned long long))
+ #endif
 #endif 
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_SOLARIS)

@@ -48,7 +48,18 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-12 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved BLKSSZGET, BLKBSZGET and BLKGETSIZE64         ## */
+/* ##                 from here to the IOCommon.h file.                   ## */
+/* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added Set_Starting_Sector() code for XScale         ## */
+/* ##               - Changed getSectorSizeOfPhysDisk() to use BLKBSZGET  ## */
+/* ##                 ioctl call to get sector size. Dmitry Yusupov       ## */
+/* ##                 suggest this;                                       ## */
+/* ##               - Removed getSectorTableLoc() and getDevNums()        ## */
+/* ##               - Changed getSizeOfPhysDisk() to use BLKGETSIZE64     ## */
+/* ##                 ioctl call to get disk size                         ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied the large_work_file patch from              ## */
 /* ##                 Russell Reed (for files >2GB on 32 bit).            ## */
 /* ##               2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
@@ -78,7 +89,7 @@
 /* ######################################################################### */
 
 
-
+#include "IOCommon.h"
 #include "IOTargetDisk.h"
 #include "IOAccess.h"
 
@@ -115,10 +126,10 @@
  **********************************************************************/
 #if defined(IOMTR_OS_LINUX)
 static int getSectorSizeOfPhysDisk(const char *devName);
-static long long getSizeOfPhysDisk(const char *devName);
-static BOOL getDevNums(const char *devName, int *major, int *minor);
-static off_t getSectorTableLoc(void);
+static unsigned long long getSizeOfPhysDisk(const char *devName);
 #endif
+
+
 
 
 
@@ -199,6 +210,10 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
  #endif
 #elif defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
 		Set_Starting_Sector( spec.disk_info.starting_sector );
+#elif defined(IOMTR_CPU_XSCALE)
+		// TODO: Need to double check if this is correct for xscale
+		cout << spec.disk_info.starting_sector << endl;
+		Set_Starting_Sector( spec.disk_info.starting_sector);
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -1633,174 +1648,31 @@ DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
 #endif // SOLARIS
 
 #if defined(IOMTR_OS_LINUX)
-//
-// Get the sector size of a device. We do this by getting the address of the
-// kernel's device sector size table, then reading "/dev/kmem" to examine this
-// table. See getSectorTableLoc, below, for more detail on the structure of this
-// table.
-//
-// This function will always return 0 (error) if the user does not have root
-// access, because only root can read the "/dev/kmem" file.
-//
-// Parameters:
-//   devName - The full path name of the device.
-// Returns:
-//   The size (in bytes) of a sector of the device, or 0 if the sector size
-//   could not be read.
-//
+
 static int getSectorSizeOfPhysDisk(const char *devName) {
-  off_t sectorTableLoc = (off_t)getSectorTableLoc();
-  int major, minor;
-  off_t seekResult;
-  ssize_t readResult;
-  int *sectorSubtableLoc;
-  int result;
-
-  if (!getDevNums(devName, &major, &minor)) {
-    cerr << __FUNCTION__ << ": "
-      "Can't get device numbers to find block size of \"" << devName << "\"." << endl;
-    return(0);
-  }
-  int fd = open("/dev/kmem", O_RDONLY);
-  if (fd < 0) {
-    cerr << __FUNCTION__ << ": "
-      "Can't open \"/dev/kmem\" to find block size." << endl;
-    return(0);
-  }
-  
-  cout << "Major number is " << major << ", Minor number is " << minor << "." << endl;
-
-  sectorTableLoc += major * sizeof(int *);
-  seekResult = lseek(fd, sectorTableLoc, SEEK_SET);
-  assert(seekResult == sectorTableLoc);
-
-  readResult = read(fd, &sectorSubtableLoc, sizeof(int *));
-  assert(readResult == sizeof(int *));
-
-	if (sectorSubtableLoc == NULL) {
-		// A NULL subtable means that it is default size...that is, 512
-		// byte blocks.
-		close(fd);
-		return(512);
+	char devNameBuf[40];
+	const char *fullDevName;
+	int fd, ssz;
+	
+	if (devName[0] == '/') {
+		fullDevName = devName;
+	} else {
+		sprintf(devNameBuf, "/dev/%s", devName);
+		fullDevName = devNameBuf;
 	}
-	cout << "Sector table loc is " << hex << sectorTableLoc << endl;
-	cout << "Subtable loc is " << hex << (off_t)sectorSubtableLoc << endl;
-
-  sectorSubtableLoc += minor * sizeof(int *);
-  seekResult = lseek(fd, (off_t)sectorSubtableLoc, SEEK_SET);
-  assert(seekResult == (off_t)sectorSubtableLoc);
-  
-  readResult = read(fd, &result, sizeof(int));
-  assert(readResult == sizeof(int));
-
-  close(fd);
-	cout << "Block size is " << result << endl;
-
-  return(result);
+	if ((fd = open(fullDevName, O_RDWR)) < 0) {
+		cerr << "Fail to open device" << endl;
+		return 0;
+	}
+	// I think Dmitry Yusupov is right, could use BLKBSZGET here, but BLKSSZGET
+	// should be OK as well. :P
+	if (ioctl(fd, BLKBSZGET, &ssz) < 0) {
+		cerr << "Fail to get sector size for " << fullDevName << endl;
+		return 0; 
+	}
+	return ssz;
 }
 
-//
-// Return the address (in kernel memory space) of the sector table. This table
-// is an array of pointers, indexed by device major number. A NULL as a pointer
-// indicates that all minor devices have the default Linux sector size, which
-// is 512 bytes. A non-NULL value is a pointer to an array of integers indexed
-// by device minor number, with each element holding the size (in bytes) of
-// a sector of this device.
-// We find the address of the table by scanning through the "/proc/ksyms" file,
-// which lists the addresses of all externally resolvable kernel symbols. Sample
-// output of /proc/ksyms:
-//////////////////////////////////////////////////////////////////////
-// c808d141 i82557_config_cmd	[eepro100]
-// c808d157 i82558_config_cmd	[eepro100]
-// c808de54 speedo_debug	[eepro100]
-// c808b04c eepro100_init	[eepro100]
-// c8088318 mixer_devs_Raa8cbba2	[sound]
-// c8088300 audio_devs_Ra15b59d8	[sound]
-// c808832c num_mixers_R9d845b18	[sound]
-// c8088314 num_audiodevs_R4cd01bdd	[sound]
-// c8088370 midi_devs_R2534ed79	[sound]
-// ... etc, many more symbols (including hardsect_size_...), follow ...
-//////////////////////////////////////////////////////////////////////
-// Returns:
-//   The address (cast to be of type off_t) of the start of this table.
-//
-static off_t getSectorTableLoc(void) {
-  unsigned long symbolPos;
-  FILE *symTable;
-  char symbolName[81];
-  int c, scanResult;
-
-  symTable = fopen("/proc/ksyms", "r");
-  assert(symTable != NULL);
-  int nameLen = strlen("hardsect_size");
-
-  for (;;) {
-    scanResult = fscanf(symTable, "%lx %80s", &symbolPos, symbolName);
-    assert(scanResult == 2);
-    if (!strncmp(symbolName, "hardsect_size", nameLen)) {
-      fclose(symTable);
-      return((off_t)symbolPos);
-    }
-		do {
-			c = getc(symTable);
-		}
-		while ((c != '\n') && (c != EOF));
-  }
-}
-
-//
-// Get the major and minor device numbers for a given device. We get this by
-// calling "stat" on the device and extracting the data.
-//
-// Parameters:
-//   devName - The full path name of the device.
-//   major - Output for writing the major device number.
-//   minor - Output for writing the minor device number.
-// Returns:
-//   TRUE if the numbers were successfully read. FALSE if there was some
-//   error.
-//
-static BOOL getDevNums(const char *devName, int *major, int *minor) {
-  char devNameBuf[40];
-  const char *fullDevName;
-  struct stat devInfo;
-  int statResult;
-
-  if (devName[0] == '/') {
-    fullDevName = devName;
-  } else {
-    sprintf(devNameBuf, "/dev/%s", devName);
-    fullDevName = devNameBuf;
-  }
-  statResult = stat(fullDevName, &devInfo);
-  if (statResult < 0) {
-    cerr << __FUNCTION__ << ": "
-      "Error statting device \"" << fullDevName << "\".\n";
-    return(FALSE);
-  }
-  if (!S_ISBLK(devInfo.st_mode)) {
-    cerr << __FUNCTION__ << ": "
-      "Object \"" << fullDevName << "\" is not a block device!\n";
-    return(FALSE);
-  }
-  
-  *major = (devInfo.st_rdev >> 3) & 0xff;
-  *minor = devInfo.st_rdev & 0xff;
-  return(TRUE);
-}
-
-//
-// Return the size (in bytes) of a physical disk. We get this information from
-// the file "/proc/partitions". Sample output of /proc/partitions follow:
-//////////////////////////////////////////////////////////////////////
-// major minor  #blocks  name
-// 
-//    8     0    8887080 sda
-//    8     1    8225248 sda1
-//    8     2     658665 sda2
-//   22     0    2499840 hdc
-//   22     1    1249888 hdc1
-//   22     2    1249920 hdc2
 //////////////////////////////////////////////////////////////////////
 //
 // Parameters:
@@ -1809,40 +1681,29 @@ static BOOL getDevNums(const char *devName, int *major, int *minor) {
 // Return value:
 //   The size (in bytes) of the named device.
 //
-static long long getSizeOfPhysDisk(const char *devName) {
-	int c, numMatched;
-	long long result;
-	char devNameIn[21];
+static unsigned long long getSizeOfPhysDisk(const char *devName) {
+	char devNameBuf[40];
+	const char *fullDevName;
+	int fd;
+	unsigned long long sz;
 
-	assert(!strncmp(devName, "/dev/", 5));
-	devName += 5;
-	FILE *partInfo = fopen("/proc/partitions", "r");
-	assert(partInfo != NULL);
-	for (;;) {
-		do {
-			c = getc(partInfo);
-		} while ((c != EOF) && (c != '\n'));
-		numMatched = fscanf(partInfo, "%*d %*d %lld %20s",
-												&result, devNameIn);
-		if (numMatched != 2) {
-			cerr << "Could not get size of device \"" << devName << "\"\n";
-			fclose(partInfo);
-			return(0);
-		}
-		devNameIn[20] = '\0';
-		if (!strcmp(devNameIn, devName)) {
-			fclose(partInfo);
-			/*
-			 * In /proc/partitions, the block size is always 1024 bytes.
-			 */
-			return(result * 1024);
-		}
+	if (devName[0] == '/') {
+		fullDevName = devName;
+	} else {
+		sprintf(devNameBuf, "/dev/%s", devName);
+		fullDevName = devNameBuf;
 	}
+	if ((fd = open(fullDevName, O_RDWR)) < 0) {
+		cerr << "Fail to open device" << endl;
+		return 0;
+	}
+	if (ioctl(fd, BLKGETSIZE64, &sz) < 0) {
+		cerr << "Fail to get size for " << fullDevName << endl;
+		return 0; 
+	}
+	cout << "Device " << fullDevName << " size:" << sz << "Bytes." << endl;
+	return sz;
 }
 
-#endif
+#endif // Linux
 #endif // UNIX
-
-
-
-

@@ -50,7 +50,14 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-07 (mingz@ele.uri.edu)                        ## */
+/* ##               - Changed call from im_kstat to iomtr_kstat.          ## */
+/* ##                 Daniel suggest to use this clearer name.            ## */
+/* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added /proc/stat style detect code and invoke       ## */
+/* ##                 it in main().                                       ## */
+/* ##               - Added code to try to utilize the im_kstat module.   ## */
+/* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed DYNAMO_DESTRUCTIVE to                       ## */
 /* ##                 IOMTR_SETTING_OVERRIDE_FS                           ## */
 /* ##               - Consolidated the ParseParam() method.               ## */
@@ -91,7 +98,8 @@
  #if defined(IOMTR_OS_SOLARIS)
   #include <synch.h>
  #elif defined(IOMTR_OS_LINUX)
-  // nop
+  int kstatfd;
+  int procstatstyle = PROCSTATUNKNOWN;  
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
@@ -118,6 +126,41 @@ static void ParseParam(	int   argc,
 // Temporary global data for Syntax() to use
 const char *g_pVersionStringWithDebug = NULL;
 
+#if defined(IOMTR_OS_LINUX)
+int InitIoctlInterface(void)
+{
+	int res;
+        res = open("/dev/iomtr_kstat", O_RDONLY);
+	if (res < 0)
+		cerr << "Fail to open kstat device file" << endl;
+	return res;
+}
+
+void CleanupIoctlInterface(int fd)
+{
+	if (fd > 0)
+		close(fd);
+}
+
+int DetectProcStatStyle(void)
+{
+	FILE *fp;
+	unsigned long long x1, x2, x3, x4, x5, x6, x7;
+	int res;
+
+	// a simple work around to detect stat style. should check more customized kernels.
+	fp = fopen("/proc/stat", "r");
+	res = fscanf(fp, "cpu %lld %lld %lld %lld %lld %lld %lld\n", &x1, &x2, &x3, &x4, &x5, &x6, &x7);
+	if (res == 4)
+		return PROCSTAT24STYLE;
+	else if (res == 7)
+		return PROCSTAT26STYLE;
+	else
+		cerr << "Fail to detect the style of /proc/stat output." << endl;
+	return PROCSTATUNKNOWN;
+}
+#endif
+
 int CDECL main( int argc, char *argv[] )
 {
 	Manager	manager;
@@ -130,6 +173,12 @@ int CDECL main( int argc, char *argv[] )
 	aioDefaults.aio_threads = 2;
 	aioDefaults.aio_threads = 2;
 	aio_init(&aioDefaults);
+	kstatfd = InitIoctlInterface();
+	procstatstyle = DetectProcStatStyle();
+	if (kstatfd < 0 && procstatstyle == -1) {
+		cerr << "IoMeter can not get correct status information" << endl;
+		exit(1);
+	}
 #endif
 
 	iometer[0]                 = 0;
@@ -269,6 +318,10 @@ int CDECL main( int argc, char *argv[] )
 	}
 	cout << "Ending execution." << endl;
 	Sleep( 1000 );
+
+#if defined(IOMTR_OS_LINUX)
+	CleanupIoctlInterface(kstatfd);
+#endif	
 	return(0);
 }
 
