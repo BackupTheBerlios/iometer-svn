@@ -8,6 +8,8 @@ ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-netware.patch by Thayne Harmon (modifies the usage output
+     to reflect volume exclusion, adoped Makefile to use Code Warrier 8).
    - iometer-2003.12.16-post.DS2.DanielIcfVersionStringWithDash.patch
      by Daniel Scheibli (Enables support for trailing dashes in the
      version string of loaded ICF file).

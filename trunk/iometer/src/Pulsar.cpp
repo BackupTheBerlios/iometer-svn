@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-04-19 (tharmon@novell.com)                       ## */
+/* ##               - Extended the usage output for Netware to            ## */
+/* ##                 list the switch for excluding volumes.              ## */
+/* ##               2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added a check to enforce that -m has to be          ## */
 /* ##                 specified if -i was given.                          ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -420,8 +423,11 @@ void Syntax( const char* errmsg /*=NULL*/ )
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type]" << endl;
-#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
+#elif defined(IOMTR_OS_NETWARE)
+	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
+	cout << "       [/x excluded_volumes]" << endl;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -458,7 +464,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
  #endif
 
     cout << endl;
-	
+
 	exit( 0 );
 }
 

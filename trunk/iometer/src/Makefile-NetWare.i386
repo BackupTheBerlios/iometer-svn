@@ -52,7 +52,9 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-03-29 (tharmon@novell.com)                             ##
+##  Changes ...: 2004-04-19 (tharmon@novell.com)                             ##
+##               - Adopted paths to CodeWarrier 8                            ##
+##               2004-03-29 (tharmon@novell.com)                             ##
 ##               - NetWare make file                                         ##
 ##                                                                           ##
 ###############################################################################
@@ -89,9 +91,9 @@ CFLAGS= -c 					\
         -I-					\
         -IC:/Novell/NDK/libc/include \
         -IC:/Novell/NDK/libc/imports \
-        -I"C:\Program Files\Metrowerks\CodeWarrior\Novell Support\Metrowerks Support\Headers" \
-        -I"C:\Program Files\Metrowerks\CodeWarrior\Novell Support\Metrowerks Support\Libraries" \
-        -I"C:\Program Files\Metrowerks\CodeWarrior\Novell Support\Metrowerks Support\Libraries\MSL C++\Include" \
+        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Headers" \
+        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries" \
+        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries\MSL C++\Include" \
 		-D_GNU_SOURCE \
         -DIOMTR_OSFAMILY_NETWARE -DIOMTR_OS_NETWARE \
         -DIOMTR_CPU_I386 \
@@ -121,9 +123,9 @@ OBJECTS= IOGlobals.o \
 	     IOCQAIO.o IOCompletionQ.o \
 	     IOAccess.o
 
-LIBS = "C:\Program Files\Metrowerks\CodeWarrior\Novell Support\Metrowerks Support\Libraries\MSL C++\mwcpp.lib" \
-       "C:\Program Files\Metrowerks\CodeWarrior\Novell Support\Metrowerks Support\Libraries\MSL C++\mwcppd.lib" \
-       "C:\Program Files\Metrowerks\CodeWarrior\Novell Support\Metrowerks Support\Libraries\Runtime\mwcrtld.lib" \
+LIBS = "C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries\MSL C++\mwcpp.lib" \
+       "C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries\MSL C++\mwcppd.lib" \
+       "C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries\Runtime\mwcrtld.lib" \
        C:/Novell/NDK/libc/imports/libcpre.o
 
 # Make Rules
