@@ -7,6 +7,11 @@
 ChangeLog (2003.nn.nn):
 =======================
 
+- Applied patches:
+  - iometer-2003.05.10-IoMtrGlobalDefines1.patch by Daniel Scheibli
+    (introduces the IOMTR_* global defines to consolidate the different
+    global defines coming with the different platforms - ease future
+    ports).
 - Documentation:
    - Added a remark into the .../README file (containing additions for
      running Dynamo on a Linux machine with NTPL support).
