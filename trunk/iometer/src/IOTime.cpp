@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-07 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-02-12 (mingz@ele.uri.edu)                        ## */
+/* ##               - Implemented rdtsc under xscale via CCNT.            ## */
+/* ##               2004-02-07 (mingz@ele.uri.edu)                        ## */
 /* ##               - Changed call from im_kstat to iomtr_kstat           ## */
 /* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added ioctl call to get jiffies value from          ## */
@@ -136,11 +138,19 @@
         //	return(x);
   }
  #elif defined(IOMTR_CPU_XSCALE)
+
+#define CCNT_IOC_MAGIC		0xAC
+#define CCNT_IOC_GETCCNT	_IOR(CCNT_IOC_MAGIC, 1, unsigned long long)
+extern int ccntfd;
+
   DWORDLONG rdtsc(void) {
-	// DF_FIXME
-	clock_gettime(0, NULL);
-	return 0;
+	unsigned long long ccnt;
+	if (ioctl(ccntfd, CCNT_IOC_GETCCNT, &ccnt) < 0 ) {
+		ccnt = 0;
+	}
+	return(ccnt);
   }
+  
  #else
   // Was the following 2 lines in before, but for which CPU (nevertheless it is useless!)?
   //	/* Totally cheesy rewrite of rdtsc! */

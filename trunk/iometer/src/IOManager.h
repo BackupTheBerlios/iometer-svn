@@ -48,7 +48,19 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved the Dump_*_Results() function prototypes      ## */
+/* ##                 (used for debugging purposes) from here to          ## */
+/* ##                 IOCommon.h.                                         ## */
+/* ##               - Moved the *_double_swap() functions prototypes      ## */
+/* ##                 (for Linux/XScale) from here to IOCommon.h.         ## */
+/* ##               2004-02-16 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added defines in class Manager for double-precision ## */
+/* ##                 word order swap on ARM architecture.                ## */
+/* ##               2004-02-15 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added defines in class Manager for dump results     ## */
+/* ##                 contents for debug purpose.                         ## */
+/* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed DYNAMO_DESTRUCTIVE to                       ## */
 /* ##                 IOMTR_SETTING_OVERRIDE_FS                           ## */
 /* ##               2003-07-14 (daniel.scheibli@edelbyte.org)             ## */
@@ -179,7 +191,5 @@ private:
 
 	BOOL		record;
 };
-
-
 
 #endif

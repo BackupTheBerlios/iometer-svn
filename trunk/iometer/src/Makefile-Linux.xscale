@@ -45,7 +45,9 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-10-22 (mingz@ele.uri.edu)                              ##
+##  Changes ...: 2004-02-13 (mingz@ele.uri.edu)                              ##
+##               - Added -static flag to generate static dynamo binary code  ##
+##               2003-10-22 (mingz@ele.uri.edu)                              ##
 ##               - Copy the makefile-linux.i386, modified it, to generate    ##
 ##                 a workable dynamo for arm CPU. currently only tested the  ##
 ##                 Intel XScale IOP321 and IOP331                            ##
@@ -77,7 +79,8 @@ CFLAGS=	-O3 \
 	-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
 	-DDYNAMO_DESTRUCTIVE \
 	-DNO_DYNAMO_VI \
-	-D_REENTRANT
+	-D_REENTRANT \
+ 	-static
 #	-ggdb
 
 

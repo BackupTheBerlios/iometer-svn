@@ -8,6 +8,8 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+   - iometer-121603ds2-xscale.patch by Ming Zhang (adds Linux on 
+     XScale support for Intel IQ80321 and IQ80331).
    - iometer-121603-ds2-report_tcp.patch by Ming Zhang (rewrite of the
      Report_TCP() function for Linux - more robust when the hostname is
      not setup properly).

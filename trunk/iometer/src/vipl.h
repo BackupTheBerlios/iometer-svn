@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...:                                                       ## */
+/* ##               2003-02-15 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added padding in VIP_NET_ADDRESS because of         ## */
+/* ##                 the alignment issue between IA32 and ARM arch       ## */
+/* ##               2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the CS/_CS destinction so that Solaris on   ## */
 /* ##                 x86 (i386) is the only exception.                   ## */
 /* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
@@ -140,6 +144,9 @@ typedef struct {
         VIP_UINT16      HostAddressLen;
         VIP_UINT16      DiscriminatorLen;
         VIP_UINT8       HostAddress[1]; 
+	
+	// architecture difference between IA32 and ARM
+	char		padding[8 - sizeof(VIP_UINT16) * 2 - sizeof(VIP_UINT8)];
 } VIP_NET_ADDRESS;
 
 

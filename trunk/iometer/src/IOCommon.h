@@ -52,7 +52,13 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-13 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved the Dump_*_Results() function prototypes      ## */
+/* ##                 (used for debugging purposes) from here to          ## */
+/* ##                 ByteOrder.cpp                                       ## */
+/* ##               - Moved the *_double_swap() function prototypes       ## */
+/* ##                 (for Linux/XScale) from IOManager.h to here.        ## */
+/* ##               2004-02-13 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Increased MAX_NAME from 64 to 80 - according to     ## */
 /* ##                 swapctl(2) man page in Solaris 2.6 (relevant due    ## */
 /* ##                 to the Get_All_Swap_Devices() function).            ## */
@@ -641,6 +647,13 @@ inline int IsBigEndian( void )
   { return(-42); }   /* ##### Unknown       */
  }
 }
+
+#if defined(_DEBUG)
+ void	Dump_Raw_Result(struct Raw_Result *res);
+ void	Dump_Manager_Results(struct Manager_Results *res);
+ void	Dump_CPU_Results(struct CPU_Results *res);
+ void	Dump_Net_Results(struct Net_Results *res);
+#endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX)
  BOOL    SetQueueSize(HANDLE, int);
@@ -707,6 +720,14 @@ inline int IsBigEndian( void )
 #if defined(IOMTR_OS_LINUX)
  extern DWORDLONG jiffies(void);
  extern DWORDLONG rdtsc(void);
+
+ #if defined(IOMTR_CPU_XSCALE)
+  extern void double_wordswap(double *d);
+  extern void Manager_Info_double_swap(struct Manager_Info *p);
+  extern void Manager_Results_double_swap(struct Manager_Results *p);
+  extern void CPU_Results_double_swap(struct CPU_Results *p);
+  extern void Net_Results_double_swap(struct Net_Results *p);
+ #endif
  
  #if defined(_IO) && !defined(BLKSSZGET)
   #define BLKSSZGET    _IO(0x12,104)

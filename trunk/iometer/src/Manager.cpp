@@ -234,8 +234,10 @@ Worker* Manager::AddWorker( TargetType type,
 	// The data of the message is the number of workers to spawn.
 	msg.purpose = ADD_WORKERS;
 	msg.data = 1;
-	Send( &msg );
-	Receive( &msg );
+	if (Send( &msg ) != MESSAGE_SIZE)
+		ErrorMessage("Message may not be sent correctly in Manager::AddWorker().");
+	if (Receive( &msg ) != MESSAGE_SIZE)
+		ErrorMessage("Message may not be received correctly in Manager::AddWorker().");
 
 	// Verifying that the worker was created.
 	if ( !msg.data )

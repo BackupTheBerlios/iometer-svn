@@ -158,8 +158,6 @@ struct Data_Message
 	Message_Data	data;		// Detailed data sent with the data message.
 };
 
-
-
 #define MESSAGE_SIZE		sizeof( Message )
 #define DATA_MESSAGE_SIZE	sizeof( Data_Message )
 

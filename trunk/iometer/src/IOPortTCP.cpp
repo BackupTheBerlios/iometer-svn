@@ -712,6 +712,7 @@ DWORDLONG PortTCP::SynchReceive( LPVOID msg, DWORD size )
 		if ( bytes_read == 0 || bytes_read == SOCKET_ERROR )
 		{
 			// socket has been closed, return error
+			cerr << "Get port error in SynchReceive." << endl;
 			return PORT_ERROR;
 		}
 

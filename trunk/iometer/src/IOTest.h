@@ -51,7 +51,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-02-15 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added padding in struct Target_Spec because of      ## */
+/* ##                 the alignment issue between IA32 and ARM arch.      ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -209,6 +212,8 @@ struct Target_Spec
 	BOOL		test_connection_rate;
 	long		trans_per_conn;
 
+	char		padding[4];	// xscale and ia32 arch difference. need this padding.
+	
 	// Random value used to keep connections in synch.
 	DWORDLONG	random;
 };

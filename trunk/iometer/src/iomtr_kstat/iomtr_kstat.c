@@ -4,7 +4,7 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Job .......: a simple module to export kernel information for      ## */
+/* ##  Job .......: A simple module to export kernel information for      ## */
 /* ##               dynamo to use a low-overhead way to get kernel        ## */
 /* ##               status.                                               ## */
 /* ##               it creates a virtual character device and exchange    ## */
@@ -48,13 +48,15 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Remarks ...: <none>                                                ## */
+/* ##  Remarks ...: Some 2.4.x kernels are highly hacked by vendors and   ## */
+/* ##               has a lot of back port stuff from 2.6.x kernel. So    ## */
+/* ##               can not use the kernel version code to detect these   ## */
+/* ##               difference any more.                                  ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...:                                                       ## */
-/* ##               2004-02-04 (mingz(at)ele.uri.edu)                     ## */
-/* ##               - initital code. export all kernel status value       ## */
+/* ##  Changes ...: 2004-02-04 (mingz(at)ele.uri.edu)                     ## */
+/* ##               - Initital code. Export all kernel status value       ## */
 /* ##                 dynamo need                                         ## */
 /* ##                                                                     ## */
 /* ######################################################################### */

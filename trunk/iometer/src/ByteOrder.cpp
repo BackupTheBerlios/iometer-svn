@@ -50,7 +50,18 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved the Dump_*_Results() functions (used for      ## */
+/* ##                 debugging purposes) from IOManager.cpp to here.     ## */
+/* ##               - Moved the *_double_swap() functions for the         ## */
+/* ##                 Linux/XScale combination from IOManager.cpp         ## */
+/* ##                 to here.                                            ## */
+/* ##               2004-02-16 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added a special double-precision number word        ## */
+/* ##                 swapping code for ARM architecture here. A 2 word   ## */
+/* ##                 double number is same order in word but different   ## */
+/* ##                 order between two words compared with IA32.         ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -75,6 +86,138 @@ inline void reorder(Net_Results&, int);
 inline void reorder(Raw_Result&);
 void reorder(Message&);
 void reorder(Data_Message&, int union_type, int send_recv);
+
+
+
+#if defined(_DEBUG)
+void Dump_CPU_Results(struct CPU_Results *res)
+{
+	if (!res)
+		return;
+	cout << " CPU Counters:";
+	cout << "   " << res->CPU_utilization[0][CPU_TOTAL_UTILIZATION];
+	cout << "   " << res->CPU_utilization[0][CPU_USER_UTILIZATION];
+	cout << "   " << res->CPU_utilization[0][CPU_PRIVILEGED_UTILIZATION];
+	cout << "   " << res->CPU_utilization[0][CPU_IRQ];
+	cout << endl;
+}
+
+void Dump_Net_Results(struct Net_Results *res)
+{
+	if (!res)
+		return;
+	cout << " Net Counters:";
+	cout << "   " << res->tcp_stats[TCP_SEGMENTS_RESENT];
+	cout << "   " << res->ni_stats[0][NI_PACKETS];
+	cout << "   " << res->ni_stats[0][NI_OUT_ERRORS];
+	cout << "   " << res->ni_stats[0][NI_IN_ERRORS];
+	cout << endl;
+}
+
+void Dump_Manager_Results(struct Manager_Results *res)
+{
+	if (!res)
+		return;
+	cout << "Dump manager result: "<< endl;
+	cout << " time_counter = " << res->time_counter << endl;
+	Dump_CPU_Results(&(res->cpu_results));
+	Dump_Net_Results(&(res->net_results));
+}
+
+void Dump_Raw_Result(struct Raw_Result *res)
+{
+	if (!res)
+		return;
+	cout << "Dump raw result: "<< endl;
+	cout << "   " << "bytes_read =" << res->bytes_read << endl;
+	cout << "   " << "bytes_written =" << res->bytes_written << endl;
+	cout << "   " << "read_count =" << res->read_count << endl;
+	cout << "   " << "write_count =" << res->write_count << endl;
+	cout << "   " << "transaction_count =" << res->transaction_count << endl;
+	cout << "   " << "connection_count =" << res->connection_count << endl;
+	cout << "   " << "read_errors =" << res->read_errors << endl;
+	cout << "   " << "write_errors =" << res->write_errors << endl;
+	cout << "   " << "max_raw_read_latency =" << res->max_raw_read_latency << endl;
+	cout << "   " << "read_latency_sum =" << res->read_latency_sum << endl;
+	cout << "   " << "max_raw_write_latency =" << res->max_raw_write_latency << endl;
+	cout << "   " << "write_latency_sum =" << res->write_latency_sum << endl;
+	cout << "   " << "max_raw_transaction_latency =" << res->max_raw_transaction_latency << endl;
+	cout << "   " << "max_raw_connection_latency =" << res->max_raw_connection_latency << endl;
+	cout << "   " << "transaction_latency_sum =" << res->transaction_latency_sum << endl;
+	cout << "   " << "connection_latency_sum =" << res->connection_latency_sum << endl;
+	cout << "   " << "counter_time =" << res->counter_time << endl;
+	cout << "Dump raw result end. "<< endl;
+}
+#endif
+
+
+
+#if defined(IOMTR_OS_LINUX) && defined(IOMTR_CPU_XSCALE)
+//
+//	This can be optimized definitely.
+//
+/* This is the standard way, leave here for understanding its purpose.
+void double_wordswap(double *d)
+{
+	unsigned char *c;
+	unsigned char tmp[4];
+	
+	c = (unsigned char *)d;
+	memcpy(tmp, c, 4);
+	memcpy(c, c + 4, 4);
+	memcpy(c + 4, tmp, 4);
+}
+*/
+
+//
+// I guess this should be much faster than upper code, am I right?
+//
+void double_wordswap(double *d)
+{
+	unsigned long *c, t;
+	
+	c = (unsigned long *)d;
+	t = *c;
+	*c = *(c + 1);
+	*(c + 1) = t;
+}
+
+//
+// ARM can run as little endian or big endian. But even it runs
+// at little endian, it has different word order for double-precision
+// number.
+//
+void Manager_Info_double_swap(struct Manager_Info *p)
+{
+	double_wordswap(&(p->processor_speed));
+}
+
+void Manager_Results_double_swap(struct Manager_Results *p)
+{
+	CPU_Results_double_swap(&(p->cpu_results));
+	Net_Results_double_swap(&(p->net_results));
+}
+
+void CPU_Results_double_swap(struct CPU_Results *p)
+{
+	int i, j;
+	
+	for (i = 0; i < MAX_CPUS; i++)
+		for (j = 0; j < CPU_RESULTS; j++)
+			double_wordswap(&(p->CPU_utilization[i][j]));
+}
+
+void Net_Results_double_swap(struct Net_Results *p)
+{
+	int i, j;
+	
+	for (i = 0; i < TCP_RESULTS; i++)
+		double_wordswap(&(p->tcp_stats[i]));
+	for (i = 0; i < MAX_NUM_INTERFACES; i++)
+		for (j = 0; j < NI_RESULTS; j++)
+			double_wordswap(&(p->ni_stats[i][j]));
+}
+#endif
 
 
 

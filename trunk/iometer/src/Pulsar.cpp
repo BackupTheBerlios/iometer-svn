@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-07 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-02-12 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added /dev/ccnt ioctl code for linux                ## */
+/* ##                 on some Intel XScale architectures.                 ## */
+/* ##               2004-02-07 (mingz@ele.uri.edu)                        ## */
 /* ##               - Changed call from im_kstat to iomtr_kstat.          ## */
 /* ##                 Daniel suggest to use this clearer name.            ## */
 /* ##               2004-02-06 (mingz@ele.uri.edu)                        ## */
@@ -159,6 +162,36 @@ int DetectProcStatStyle(void)
 		cerr << "Fail to detect the style of /proc/stat output." << endl;
 	return PROCSTATUNKNOWN;
 }
+
+#if defined(IOMTR_CPU_XSCALE)
+
+int ccntfd;
+
+//
+// Detect whether an embedded Linux kernel for XScale CPU like IOP321 and IOP331 has
+// /proc/cpu/ccnt support. We use this CCNT to get rdtsc like value.
+//
+int InitCCNTInterface(void)
+{
+	int res;
+	
+	res = open("/dev/ccnt", O_RDONLY);
+	if (res < 0) {
+		cerr << "Fail to find CCNT interface." << endl;
+		cerr << "Please compile your kernel with CCNT (cycle counter) support" << endl;
+		cerr << "   and create corresponding /dev/ccnt node by ccntmknod script." << endl;
+	}
+	return res;
+}
+
+void CleanupCCNTInterface(int fd)
+{
+	if (fd > 0)
+		close(fd);
+}
+
+#endif // IOMTR_CPU_XSCALE
+
 #endif
 
 int CDECL main( int argc, char *argv[] )
@@ -179,6 +212,10 @@ int CDECL main( int argc, char *argv[] )
 		cerr << "IoMeter can not get correct status information" << endl;
 		exit(1);
 	}
+#if defined(IOMTR_CPU_XSCALE)
+	if ((ccntfd = InitCCNTInterface()) < 0)
+		exit(1);
+#endif
 #endif
 
 	iometer[0]                 = 0;
@@ -321,7 +358,10 @@ int CDECL main( int argc, char *argv[] )
 
 #if defined(IOMTR_OS_LINUX)
 	CleanupIoctlInterface(kstatfd);
-#endif	
+#if defined(IOMTR_CPU_XSCALE)
+	CleanupCCNTInterface(ccntfd);
+#endif
+#endif
 	return(0);
 }
 

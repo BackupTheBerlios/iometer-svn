@@ -49,10 +49,21 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-19 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved the Dump_*_Results() functions (used for      ## */
+/* ##                 debugging purposes) from here to ByteOrder.cpp      ## */
+/* ##               - Moved the *_double_swap() functions for the         ## */
+/* ##                 Linux/XScale combination into ByteOrder.cpp         ## */
+/* ##               2004-02-19 (mingz@ele.uri.edu)                        ## */
 /* ##               - Rewrote the Report_TCP for linux code,              ## */
 /* ##                 The old one is buggy and if you do not set          ## */
 /* ##                 hostname correctly, it always return a 127.0.0.1    ## */
+/* ##               2004-02-16 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added various double-precision swap for results.    ## */
+/* ##                 With these, IoMeter can run on ARM now              ## */
+/* ##               2004-02-13 (mingz@ele.uri.edu)                        ## */
+/* ##               - Enhanced output information in Add_Workers()        ## */
+/* ##                 and various _DEBUG                                  ## */
 /* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed NO_DYNAMO_VI to IOMTR_SETTING_VI_SUPPORT    ## */
 /* ##               2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
@@ -264,6 +275,9 @@ BOOL Manager::Login( char* port_name )
 		(void)reorder(msg);
 		(void)reorder(data_msg, DATA_MESSAGE_MANAGER_INFO, SEND);
 	}
+#if defined (IOMTR_OS_LINUX) && defined (IOMTR_CPU_XSCALE)
+	Manager_Info_double_swap(&data_msg.data.manager_info);
+#endif
 	login_port->Send( &msg );
 	login_port->Send( &data_msg, DATA_MESSAGE_SIZE );
 
@@ -615,6 +629,9 @@ int Manager::Report_VIs( Target_Spec *vi_spec )
 
 	// All done.
 	cout << "   done." << endl;
+#if _DEBUG
+	cout << "Find " << count << " network interface." << endl;
+#endif
 	return count;
 #else
 	return(0);
@@ -756,6 +773,9 @@ void Manager::Report_Results( int which_perf )
 	{
 		(void) reorder(data_msg, DATA_MESSAGE_MANAGER_RESULTS, SEND);
 	}
+#if defined (IOMTR_OS_LINUX) && defined (IOMTR_CPU_XSCALE)
+	Manager_Results_double_swap(&data_msg.data.manager_results);
+#endif
 	prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 
 	// Sending back a result message for each worker thread.  Using multiple
@@ -1028,6 +1048,7 @@ BOOL Manager::Process_Message()
 			(void) reorder(data_msg, DATA_MESSAGE_TEST_SPEC, RECV);
 		}
 		msg.data = (int)Set_Access( msg.data, &(data_msg.data.spec) );
+		
 		if( IsBigEndian() )
 		{
 			(void) reorder(msg);
@@ -1422,7 +1443,7 @@ void Manager::Add_Workers( int count )
 	msg.data = 0;
 
 	#if _DEBUG 
-		cout << "Adding a new worker." << endl << flush;
+		cout << "Adding " << count << " new worker(s)." << endl << flush;
 	#endif
 
 	for ( int i = 0; i < count; i++ )
@@ -1449,9 +1470,14 @@ void Manager::Add_Workers( int count )
 		}
 	}
 
+#if _DEBUG
+	cout << msg.data << " worker(s) are created." << endl;
+#endif
+
 	if( IsBigEndian() )
 	{
 		(void) reorder(msg);
 	}
+	
 	prt->Send( &msg );
 }
