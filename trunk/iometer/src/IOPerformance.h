@@ -53,7 +53,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
@@ -66,31 +70,49 @@
 #define PERFORMANCE_DEFINED
 
 
+
 #include "IOCommon.h"
 
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+
  #include <stdio.h>
+
  #if defined(IOMTR_OS_SOLARIS)
   #include <kstat.h>
  #endif
- #include <sys/sysinfo.h>
+
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+  #include <sys/sysinfo.h>
+ #endif
+
  #include <sys/socket.h>
+
  #if defined(IOMTR_OS_SOLARIS)
   #include <sys/sockio.h>
  #endif
+
  #include <netinet/in.h>
- #include <net/if.h>
+
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+  #include <net/if.h>
+ #endif
 
  #include <stropts.h>
+
  #if defined(IOMTR_OS_SOLARIS)
   #include <sys/stream.h>
   #include <sys/tihdr.h>
   #include <inet/mib2.h>
  #endif
+
 #endif
 
+
+
 #define MAX_PERF_SIZE	4096	// Initial memory size allocated to NT performance data.
+
 
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
@@ -109,34 +131,34 @@
 //
 
 // Processor performance counters.
-#define PERF_PROCESSOR			238
+#define PERF_PROCESSOR				238
 // Specific processor counters.
 #define PERF_CPU_TOTAL_UTILIZATION		6
 #define PERF_CPU_USER_UTILIZATION		142
-#define PERF_CPU_PRIVILEGED_UTILIZATION	144
-#define PERF_CPU_IRQ					148
+#define PERF_CPU_PRIVILEGED_UTILIZATION		144
+#define PERF_CPU_IRQ				148
 #define PERF_CPU_DPC_UTILIZATION		696
 #define PERF_CPU_IRQ_UTILIZATION		698
 
 // Network performance counters.
-#define PERF_NETWORK_TCP				638
+#define PERF_NETWORK_TCP			638
 #define PERF_NETWORK_INTERFACE			510
 // Specific network counters.
 #define PERF_TCP_SEGMENTS_RESENT		656
-#define PERF_NI_PACKETS					400
-#define PERF_NI_OUT_ERRORS				540
-#define PERF_NI_IN_ERRORS				528
+#define PERF_NI_PACKETS				400
+#define PERF_NI_OUT_ERRORS			540
+#define PERF_NI_IN_ERRORS			528
 
-#define MILLISECOND                     1000
+#define MILLISECOND                    		1000
 
 
 
 struct Perf_Counter_Info
 {
 	DWORD	index;		// identification of counter
-	int		offset;		// offset of counter from counter block header
+	int	offset;		// offset of counter from counter block header
 	DWORD	type;		// information retrieved about the counter's type,
-						// such as its update frequency, size, etc.
+				// such as its update frequency, size, etc.
 };
 
 
@@ -153,19 +175,19 @@ public:
 	void Calculate_NI_Stats( Net_Results *net_results );
 
 	double		processor_speed;		// Frequency (Hz) of system processors.
-	int			processor_count;		// Number of system processors.
-	int			network_interfaces;		// Number of (virtual) NICs in the system.
+	int		processor_count;		// Number of system processors.
+	int		network_interfaces;		// Number of (virtual) NICs in the system.
 
 	__int64		time_counter[MAX_SNAPSHOTS];	// Time that NT performance snapshots were taken.
-	int			clock_tick;
+	int		clock_tick;
 #if defined(IOMTR_OS_SOLARIS)
 	double		timediff;
 	kstat_ctl_t	*kc;
 	char		nic_names[MAX_NUM_INTERFACES][IFNAMSIZ]; // array of pointers to hold network interface names.
 	struct strbuf	strbuf_ctl, strbuf_data;
-	int			streamfd;						// File descriptor to the stream.
+	int		streamfd;				 // File descriptor to the stream.
 	char		*ctlbuf, *databuf;
-#elif defined(IOMTR_OS_LINUX)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
 	long long timediff;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORDLONG timediff;
@@ -191,7 +213,7 @@ private:
 	double		Calculate_Stat( __int64 start_value, __int64 end_value, DWORD counter_type );
 #endif
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	void		Get_CPU_Counters(int snapshot);
 	void		Get_NI_Counters(int snapshot);
 	void		Get_TCP_Counters(int snapshot);

@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the socklen_t defintion (based on the OS).  ## */
 /* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Assimilated the patch from Robert Jones which is    ## */
@@ -67,7 +71,7 @@
 #include "Network.h"
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include "winsock2.h"
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
  #include <sys/time.h>
  #include <unistd.h>
  #include <sys/socket.h>
@@ -86,6 +90,9 @@
  // nop
 #elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #define socklen_t int  
+#elif defined(IOMTR_OS_NETWARE)
+ #define socklen_t unsigned int
+ #define TCP_NODELAY	1
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -101,7 +108,7 @@ public:
 	virtual ReturnVal	Create( BOOL create_server );
 	virtual ReturnVal	Connect( const char *ip_address, 
 							unsigned short port_number );
-	ReturnVal			ConnectSocket( SOCKADDR_IN *address );
+	ReturnVal		ConnectSocket( SOCKADDR_IN *address );
 	virtual ReturnVal	Accept();
 	virtual ReturnVal	Destroy();
 	virtual ReturnVal	Receive( LPVOID buffer, DWORD bytes, LPDWORD return_value,
@@ -110,9 +117,9 @@ public:
 							LPOVERLAPPED asynchronous_io, DWORD flags = 0 );
 	virtual DWORD		Peek();
 	virtual ReturnVal	Close( BOOL close_server );
-	ReturnVal			WaitForDisconnect();
-	void				SetTimeout( int sec, int usec );
-	void				SetAddress( BOOL set_server, 
+	ReturnVal		WaitForDisconnect();
+	void			SetTimeout( int sec, int usec );
+	void			SetAddress( BOOL set_server, 
 							const char *ip_address = NULL,
 							unsigned short port_num = 0 );
 
@@ -121,13 +128,13 @@ public:
 	SOCKADDR_IN		client_address;		// IP address, port.
 
 	SOCKET			server_socket;		// Socket where server listens for 
-										// connections.  Not used by client.
+							// connections.  Not used by client.
 	SOCKET			client_socket;		// Socket used for client/server data 
-										// transmission.
-#if defined(IOMTR_OSFAMILY_UNIX)
+							// transmission.
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File		server_fp;			// The actual structures that will hold
-	struct File		client_fp;			//     the client and server sockets on UNIX.
-	int				maxfd;				// The max nos of fds' for select() call.
+	struct File		client_fp;			// the client and server sockets on UNIX.
+	int			maxfd;				// The max nos of fds' for select() call.
 	
 #ifdef WORKAROUND_LISTEN_BUG
 	BOOL 			listening;			// flag to indicate if a socket is listening or not.
@@ -147,9 +154,9 @@ protected:
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	WSABUF			wsa_buf;
 #endif
-	timeval		timeout;
+	timeval			timeout;
 	static LONG		sockets_in_use;		// Used to control WinSock 
-										// initialization/cleanup.
+							// initialization/cleanup.
 };
 
 

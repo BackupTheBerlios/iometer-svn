@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved the Dump_*_Results() function prototypes      ## */
 /* ##                 (used for debugging purposes) from here to          ## */
 /* ##                 IOCommon.h.                                         ## */
@@ -94,7 +98,7 @@
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done! 
  #endif
-#elif defined(IOMTR_OSFAMILY_WINDOWS)
+#elif defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_WINDOWS)
  // if we are not on UNIX the excluded filesystem stuff doesn't really matter
  #define DEFAULT_EXCLUDE_FILESYS   ""
 #else
@@ -121,17 +125,17 @@ public:
 	BOOL		Login( char* port_name );
 	BOOL		Run();
 
-	Port	       *prt;                   // Communication port to Iometer.
+	Port	        *prt;                  // Communication port to Iometer.
 
 	Grunt*		grunts[MAX_WORKERS];   // I/O workers.
 	
-	void	       *data;					// Buffer for I/O requests.
+	void	        *data;					// Buffer for I/O requests.
 	int		data_size;				// Size of currently allocated data buffer.
 
 	char		manager_name[MAX_WORKER_NAME];	        // Name of manager, customizable on command line.
 	char            exclude_filesys[MAX_EXCLUDE_FILESYS];   // filesystem types to exclude, command line option
 	
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	char* 		swap_devices;
 	BOOL		is_destructive;
 	BOOL		is_buffered;
@@ -141,8 +145,8 @@ private:
 	Message		msg;	       // Directional messages from Iometer.
 	Data_Message	data_msg;      // Data messages from Iometer.
 	int		grunt_count;   // Number of worker threads available.
-	char	       *m_pVersionString;
-	char	       *m_pVersionStringWithDebug;
+	char	       	*m_pVersionString;
+	char	       	*m_pVersionStringWithDebug;
 
 	// Performance results functions and data.
 	void		Report_Results( int which_perf );

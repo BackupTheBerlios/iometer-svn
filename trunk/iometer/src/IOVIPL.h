@@ -50,7 +50,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -61,15 +65,17 @@
 #define	VIPL_DEFINED
 
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  #define HINSTANCE HANDLE
 #endif
 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+ #include "IOCommon.h"
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+  #include <dlfcn.h>
+ #endif
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include <afxwin.h>
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
- #include "IOCommon.h"
- #include <dlfcn.h>
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -233,7 +239,7 @@ public:
 
 	// VI
 	static fVipCreateVi		VipCreateVi;
-	static fVipDestroyVi	VipDestroyVi;
+	static fVipDestroyVi		VipDestroyVi;
 
 	// Client/server connection
 	static fVipConnectWait		VipConnectWait;
@@ -262,27 +268,27 @@ public:
 	static fVipCQDone		VipCQDone;
 	static fVipCQWait		VipCQWait;
 	static fVipCreateCQ		VipCreateCQ;
-	static fVipDestroyCQ	VipDestroyCQ;
+	static fVipDestroyCQ		VipDestroyCQ;
 	static fVipResizeCQ		VipResizeCQ;
 
 	// Information
-	static fVipQueryNic					VipQueryNic;
-	static fVipSetViAttributes			VipSetViAttributes;
-	static fVipQueryVi					VipQueryVi;
-	static fVipSetMemAttributes			VipSetMemAttributes;
-	static fVipQueryMem					VipQueryMem;
+	static fVipQueryNic			VipQueryNic;
+	static fVipSetViAttributes		VipSetViAttributes;
+	static fVipQueryVi			VipQueryVi;
+	static fVipSetMemAttributes		VipSetMemAttributes;
+	static fVipQueryMem			VipQueryMem;
 	static fVipQuerySystemManagementInfo	VipQuerySystemManagementInfo;
 
 	// Peer-to-peer connection
-	static fVipConnectPeerRequest	VipConnectPeerRequest;
+	static fVipConnectPeerRequest		VipConnectPeerRequest;
 	static fVipConnectPeerDone		VipConnectPeerDone;
 	static fVipConnectPeerWait		VipConnectPeerWait;
 
 	// Name service
 	static fVipNSInit			VipNSInit;
-	static fVipNSGetHostByName	VipNSGetHostByName;
-	static fVipNSGetHostByAddr	VipNSGetHostByAddr;
-	static fVipNSShutdown		VipNSShutdown;
+	static fVipNSGetHostByName		VipNSGetHostByName;
+	static fVipNSGetHostByAddr		VipNSGetHostByAddr;
+	static fVipNSShutdown			VipNSShutdown;
 	//
 	///////////////////////////////////////////////////////////////////////////
 };

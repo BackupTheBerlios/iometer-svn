@@ -54,7 +54,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the socklen_t defintion (based on the OS).  ## */
 /* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Assimilated the patch from Robert Jones which is    ## */
@@ -79,7 +83,7 @@
 #endif // _MSC_VER >= 1000
 
 #include "IOPort.h"
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  #include <sys/socket.h>
  #include <netinet/in.h>
  #include <netdb.h>
@@ -90,7 +94,7 @@
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  #define SOCKET	int
 #endif
 
@@ -98,6 +102,8 @@
  // nop
 #elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #define socklen_t int  
+#elif defined(IOMTR_OS_NETWARE)
+ #define socklen_t unsigned int
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -130,7 +136,7 @@ public:
 
 protected:
 	// private data members used only by PortTCP
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	int 				server_socket;
 	int 				client_socket;
 #elif defined(IOMTR_OSFAMILY_WINDOWS)

@@ -49,7 +49,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Replaced the [BIG|LITTLE]_ENDIAN_ARCH defines by    ## */
 /* ##                 IsBigEndian() function calls.                       ## */
 /* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
@@ -68,7 +72,7 @@
 #include "IOCQAIO.h"
 
 
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  #ifndef _LP64
  #define _LP64 /* to get at the 64 bit max long. */
  #define _LP64_DEFINED
@@ -91,17 +95,19 @@
 #define TEST_FILE		"iobw.tst"
 
 #if defined(IOMTR_OSFAMILY_UNIX)
-#define ERROR_DISK_FULL					ENOSPC
-#define SECTOR_SIZE						512
-
-#if defined(IOMTR_OS_SOLARIS)
- #define RAW_DEVICE_DIR					"/dev/rdsk"
-#elif defined(IOMTR_OS_LINUX)
- #define RAW_DEVICE_DIR					"/dev"
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
-#endif
-
+ #define ERROR_DISK_FULL					ENOSPC
+ #define SECTOR_SIZE						512
+ #if defined(IOMTR_OS_SOLARIS)
+  #define RAW_DEVICE_DIR					"/dev/rdsk"
+ #elif defined(IOMTR_OS_LINUX)
+  #define RAW_DEVICE_DIR					"/dev"
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
+ #endif
+#elif defined(IOMTR_OSFAMILY_NETWARE)
+ #define ERROR_DISK_FULL					1
+ #define SECTOR_SIZE						512
+ LONG NWalertroutine(unsigned long, unsigned long, unsigned long, unsigned long);
 #endif
 
 
@@ -113,7 +119,7 @@ class TargetDisk : public Target
 public:
 	
 	TargetDisk();
-	~TargetDisk() { };
+	~TargetDisk();
 
 	BOOL		Initialize( Target_Spec *target_info, CQ *cq );
 
@@ -122,7 +128,7 @@ public:
 	BOOL		Init_Logical( char drive );
 	// Initialize physical (system) disks (e.g. physicaldisk0, physicaldisk1, etc.).
 	BOOL		Init_Physical( int drive );
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	BOOL		Init_Logical( char *drive );
 	BOOL		Init_Physical( char *drive );
 #else
@@ -153,24 +159,44 @@ protected:
 private:
 
 	CQAIO		*io_cq;
-
 	HANDLE		disk_file;
-#if defined(IOMTR_OSFAMILY_UNIX)
-	struct File		file_handle;
+
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+	struct File	file_handle;
 #endif
-	DWORDLONG	size;					// Size of the disk in bytes.
-	DWORD		alignment;				// Alignment I/Os on this address.
+
+	DWORDLONG	size;				// Size of the disk in bytes.
+	DWORD		alignment;			// Alignment I/Os on this address.
 	DWORDLONG	sector_align_mask;		// Bit mask to align requests to sector sizes.
-										// This only works for sectors a power of 2.
-										// Set to NOT_POWER_OF_TWO otherwise.
+							// This only works for sectors a power of 2.
+							// Set to NOT_POWER_OF_TWO otherwise.
 	DWORDLONG	starting_position;		// First bytes where transfers occur.
 	DWORDLONG	ending_position;		// Last byte where transfers can occur.
 	DWORDLONG	offset;
 	DWORD		bytes_transferred;		// Number of bytes successfully transferred to the disk.
+
+#if defined(IOMTR_OSFAMILY_NETWARE)
+ 	LONG mmAppTag;
+ 	HNDL reservationHandle;
+	HNDL applicationHandle;
+	OBID objectid;
+	LONG reservationmode;
+	LONG alerttoken;
+	struct ApplicationRegistrationDef1
+	{															
+	   	LONG   classobjectsignature;
+   		BYTE  *name;
+	   	LONG (*controlroutine)(LONG token,LONG _function,LONG p1,LONG p2,LONG p3,LONG bufferlength,void *buffer );
+	   	LONG   privilegedapplicationkey;
+	   	LONG   type;
+	   	LONG   token;
+	   	LONG   identifier;
+	} appDef;
+#endif
 #if defined(IOMTR_OS_SOLARIS)
-	BOOL		Look_For_Partitions();	// private member function to look for partitions on disk.
+	BOOL		Look_For_Partitions();			// private member function to look for partitions on disk.
 	DWORDLONG	Get_Partition_Size(char *, int);	// private member function to get the partition size.
-	DWORDLONG	Get_Slice_Size(char *, int);	// private member function to get the slice size.
+	DWORDLONG	Get_Slice_Size(char *, int);		// private member function to get the slice size.
 #endif
 };
 

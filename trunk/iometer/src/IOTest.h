@@ -51,7 +51,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-15 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-02-15 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added padding in struct Target_Spec because of      ## */
 /* ##                 the alignment issue between IA32 and ARM arch.      ## */
 /* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
@@ -67,7 +71,7 @@
 
 
 #include "IOAccess.h"
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  #include "IOCommon.h"
 #endif
 #include "vipl.h"
@@ -93,11 +97,11 @@ struct Test_Spec
 //
 enum TargetType
 {
-	// Valid...			0xX0000000
+	// Valid...		0xX0000000
 	GenericType =		0x80000000,
 	ActiveType =		0x40000000,
 
-	// Disk...			0x-X000000
+	// Disk...		0x-X000000
 	GenericDiskType =	0x88000000,
 	PhysicalDiskType =	0x8C000000,
 	LogicalDiskType =	0x8A000000,
@@ -107,12 +111,12 @@ enum TargetType
 	GenericServerType =	0x800C0000,
 	GenericClientType =	0x800A0000,
 
-	// TCP...			0x-00-X000
+	// TCP...		0x-00-X000
 	GenericTCPType =	0x80088000,
 	TCPServerType =		0x800C8000,
 	TCPClientType =		0x800A8000,
 
-	// VI...			0x-00-0X00
+	// VI...		0x-00-0X00
 	GenericVIType =		0x80080800,
 	VIServerType =		0x800C0800,
 	VIClientType =		0x800A0800,
@@ -139,10 +143,10 @@ struct Disk_Spec
 {
 	BOOL		ready;
 	
-	int			sector_size;
-	int			maximum_size;
+	int		sector_size;
+	int		maximum_size;
 
-	int			starting_sector;
+	int		starting_sector;
 };
 
 
@@ -155,7 +159,7 @@ struct TCP_Spec
 	// Address of local and remote TCP connection.
 	unsigned short	local_port;
 
-	char			remote_address[MAX_NAME];
+	char		remote_address[MAX_NAME];
 	unsigned short	remote_port;
 };
 
@@ -183,9 +187,13 @@ struct VI_Spec
 	char			remote_address_fill_bytes[VI_ADDRESS_SIZE + VI_DISCRIMINATOR_SIZE - 1];
 
 	// VI specific limitations.
-	int				max_transfer_size;
-	int				max_connections;
-	int				outstanding_ios;
+	int			max_transfer_size;
+	int			max_connections;
+	int			outstanding_ios;
+	#if defined(IOMTR_OSFAMILY_NETWARE)
+	 char padnw[4];
+	#endif
+
 };
 
 
@@ -208,7 +216,7 @@ struct Target_Spec
 	};
 
 	// Target independent test specifications.
-	int			queue_depth;
+	int		queue_depth;
 	BOOL		test_connection_rate;
 	long		trans_per_conn;
 

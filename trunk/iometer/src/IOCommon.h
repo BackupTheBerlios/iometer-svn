@@ -52,7 +52,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Applied Thayne Harmon's patch for supporting        ## */
+/* ##                 Netware support (on I386).                          ## */
+/* ##               2004-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved the Dump_*_Results() function prototypes      ## */
 /* ##                 (used for debugging purposes) from here to          ## */
 /* ##                 ByteOrder.cpp                                       ## */
@@ -131,31 +135,33 @@
 // System family, Operating System and CPU (see README).
 // ----------------------------------------------------------------------------
 // Check Operating System family mapping
-#if ( defined(IOMTR_OSFAMILY_UNIX) && !defined(IOMTR_OSFAMILY_WINDOWS)) || \
-    (!defined(IOMTR_OSFAMILY_UNIX) &&  defined(IOMTR_OSFAMILY_WINDOWS))
+#if ( defined(IOMTR_OSFAMILY_NETWARE) && !defined(IOMTR_OSFAMILY_UNIX) && !defined(IOMTR_OSFAMILY_WINDOWS)) || \
+    (!defined(IOMTR_OSFAMILY_NETWARE) &&  defined(IOMTR_OSFAMILY_UNIX) && !defined(IOMTR_OSFAMILY_WINDOWS)) || \
+    (!defined(IOMTR_OSFAMILY_NETWARE) && !defined(IOMTR_OSFAMILY_UNIX) &&  defined(IOMTR_OSFAMILY_WINDOWS))
  // nop
 #else    
  #error ===> ERROR: Check the Operating System to Operating System family mapping!
 #endif
 // ----------------------------------------------------------------------------
 // Check the Operating System mapping
-#if ( defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) &&  defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_SOLARIS) &&  defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) &&  defined(IOMTR_OS_WIN64))
+#if ( defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) &&  defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) &&  defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) &&  defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) &&  defined(IOMTR_OS_WIN64))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_OS_* global define!
 #endif
 // ----------------------------------------------------------------------------
 // Check the Processor mapping
-#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC)) || \
-    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_XSCALE) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC))
+#if ( defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) &&  defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) &&  defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) &&  defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) &&  defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) &&  defined(IOMTR_CPU_SPARC) && !defined(IOMTR_CPU_XSCALE)) || \
+    (!defined(IOMTR_CPU_ALPHA) && !defined(IOMTR_CPU_AMD64) && !defined(IOMTR_CPU_I386) && !defined(IOMTR_CPU_IA64) && !defined(IOMTR_CPU_MIPS) && !defined(IOMTR_CPU_SPARC) &&  defined(IOMTR_CPU_XSCALE))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
@@ -167,7 +173,7 @@
 // Include the different header files
 // (both, OS family based and common)
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OSFAMILY_WINDOWS)
+#if defined(IOMTR_OSFAMILY_WINDOWS)   // Only first, because it is needed here!
  #define VC_EXTRALEAN
  #pragma warning (disable: 4242)
  #include <process.h>
@@ -193,14 +199,28 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <sys/timeb.h>
 #include <math.h>
 // ----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
 using namespace std;
 // ----------------------------------------------------------------------------
+#if defined(IOMTR_OSFAMILY_NETWARE)
+ #include <sys/timeval.h>
+ #include <sys/time.h>
+ #include <sys/socket.h>
+ #include <unistd.h>
+ #include <signal.h>
+ #include <netinet/in.h>   // in_addr_t
+ #include <nks/memory.h>
+ #include <nks/fsio.h>
+ #include <pthread.h>
+ #include "mmpublic.h"
+ #include "nwkcalls.h"
+#endif
+// ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX)
+ #include <sys/timeb.h>
  #include <unistd.h>
  #include <pthread.h>
  #include <signal.h>
@@ -212,10 +232,11 @@ using namespace std;
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
+ #include <sys/timeb.h>
  #if (_MSC_VER < 1300) || defined(USING_DDK)
   #include "ostream64.h"
  #endif
-#endif 
+#endif
 // ----------------------------------------------------------------------------
 #include "IOVersion.h"   // version info definitions
 // ----------------------------------------------------------------------------
@@ -225,7 +246,7 @@ using namespace std;
 // Define the different data types
 // (both, OS family based and common)
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  #define __int64   long long
  #define __int32   long
  #define __int16   short
@@ -234,7 +255,19 @@ using namespace std;
  typedef long long	       _int64;
  //typedef long long	       LARGE_INTEGER; 
  typedef unsigned long long    DWORDLONG;
- typedef long		       LONG;
+
+ #if defined(IOMTR_OSFAMILY_NETWARE)
+  #ifndef LONG
+   #define LONG	unsigned long
+  #endif
+  #ifndef WORD
+   #define WORD	unsigned short
+  #endif
+ #elif defined(IOMTR_OSFAMILY_UNIX)
+  typedef long		       LONG;
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
  typedef unsigned long	       DWORD;
  
  typedef int		       INT;
@@ -356,7 +389,7 @@ using namespace std;
 #define SEND   1
 #define RECV   2
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  //param does not contain a valid internet address
  // (For Win32 || _WIN64, INADDR_NONE is defined as 0xffffffff)
  #ifndef INADDR_NONE
@@ -380,6 +413,11 @@ using namespace std;
 
  #define FILE_ELEMENT		1
  #define CQ_ELEMENT		0
+
+ #if defined(IOMTR_OSFAMILY_NETWARE)
+  #define SIGEV_NONE		0
+  #define AIO_NOTCANCELED	1
+ #endif
 
  #if defined(IOMTR_OS_LINUX)
   // different Linux kernel has different /proc/stat style.
@@ -428,7 +466,10 @@ struct Manager_Info
 	char	       version[MAX_VERSION_LENGTH];
 	char	       names[2][MAX_NETWORK_NAME];
 	unsigned short port_number;   // used only with TCP/IP.
-	int	       processors;
+#if defined(IOMTR_OSFAMILY_NETWARE)	
+	char pad[2];
+#endif	
+	int	       	   processors;
 	double	       processor_speed;
 };
 // Basic result information stored by worker threads.
@@ -518,7 +559,7 @@ struct Results
 	double	     max_connection_latency;
 };
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_NETWARE)
  // This LPOVERLAPPED typedef is from WINBASE.H
  typedef struct _OVERLAPPED {   
 	DWORD  Internal;
@@ -550,7 +591,31 @@ struct Results
 	int   fd;
 	int   completion_key;
 	IOCQ *iocq;
+ #if defined(IOMTR_OSFAMILY_NETWARE)
+	int type;
+ #endif
  };
+ #if defined(IOMTR_OSFAMILY_NETWARE)
+ struct  aiocb64 {
+ 	int		aio_fildes;
+ 	void		*aio_buf;
+ 	size_t		aio_nbytes;
+ 	off_t		aio_offset;
+ 	int		aio_flag;
+ 	int		error;
+ 	int		returnval;
+ 	unsigned long	completion_key;
+ 	struct {
+ 		int sigev_notify;
+ 		}	aio_sigevent;
+	};
+  struct timeb {
+	long time;
+	unsigned short millitm;
+	short timezone;
+	short dstflag;
+	};
+ #endif
 #endif 
 // ----------------------------------------------------------------------------
 
@@ -562,9 +627,9 @@ struct Results
 const char NEW_WORKER_COMMAND[]    = "start /MIN ";
 const char NEW_WORKER_EXECUTABLE[] = "dynamo";
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_NETWARE)
  extern pthread_mutex_t lock_mt;   // we use one global locking mutex
-#endif 
+#endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_CPU_SPARC)
  extern double processor_speed_to_nsecs;
@@ -655,7 +720,7 @@ inline int IsBigEndian( void )
  void	Dump_Net_Results(struct Net_Results *res);
 #endif
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  BOOL    SetQueueSize(HANDLE, int);
  HANDLE  CreateIoCompletionPort(HANDLE, HANDLE, DWORD, DWORD);
  BOOL    GetQueuedCompletionStatus(HANDLE, LPDWORD, LPDWORD, LPOVERLAPPED *, DWORD);
@@ -686,9 +751,18 @@ inline int IsBigEndian( void )
   #define __max(a,b)            (((a) < (b)) ? (b) : (a))
  #endif
 
- #define _timeb		        timeb
- #define _ftime			ftime
- #define Sleep(x) 		usleep((x) * 1000)
+
+ #if defined(IOMTR_OSFAMILY_NETWARE)
+  #define _timeb		timeb
+  #define _ftime		nwtime
+  #define Sleep(x)		sleep((x))
+ #if defined(IOMTR_OSFAMILY_UNIX)
+  #define _timeb		timeb
+  #define _ftime		ftime
+  #define Sleep(x) 		usleep((x) * 1000)
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
 
  #define LOCK					    \
 	 if (pthread_mutex_lock(&lock_mt))          \
@@ -739,6 +813,17 @@ inline int IsBigEndian( void )
   #define BLKGETSIZE64 _IOR(0x12,114,sizeof(unsigned long long))
  #endif
 #endif 
+// ----------------------------------------------------------------------------
+#if defined(IOMTR_OS_NETWARE)
+ int aio_suspend64(struct aiocb64 **cb, int a, struct timespec *);
+ int aio_error64(struct aiocb64 *cb);
+ int aio_return64(struct aiocb64 *cb);
+ int aio_read64(struct aiocb64 *cb, int type);
+ int aio_write64(struct aiocb64 *cb, int type);
+ int aio_cancel64(int a, struct aiocb64 *cb);
+
+ extern DWORDLONG rdtsc(void); 
+#endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_SOLARIS)
  extern "C" DWORDLONG rdtsc();
