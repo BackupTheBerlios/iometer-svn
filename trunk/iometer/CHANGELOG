@@ -8,8 +8,12 @@ ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
+   - netware_h.patch by Thayne Harmon (adds a part of the Netware
+     support - actually it adds the header file changes).
+   - netwareonly_cpp.patch by Thayne Harmon (adds a part of the
+     Netware support - actually it adds new Netware specific files).
    - iometer-121603ds2-iomtrkstat-xscale.patch by Ming Zhang (adds
-     Linux on XSacle support for Intel IQ80321 and IQ80331 to the
+     Linux on XScale support for Intel IQ80321 and IQ80331 to the
      iomtr_kstat module).
    - iometer-121603ds2-xscale.patch by Ming Zhang (adds Linux on 
      XScale support for Intel IQ80321 and IQ80331).
