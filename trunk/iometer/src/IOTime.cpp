@@ -182,7 +182,7 @@
 
  unsigned __int64 __getReg (int);
 
- #ifdef _M_IA64
+ #if defined(IOMTR_CPU_IA64)
  #pragma intrinsic (__getReg)
  #endif // _M_IA64
 

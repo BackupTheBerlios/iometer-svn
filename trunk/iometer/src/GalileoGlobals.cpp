@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the Windows 64 Bit on AMD64.                        ## */
@@ -82,7 +85,7 @@
 //       will be a MFC hacker who could advice here.
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #ifdef _DEBUG
   #define new DEBUG_NEW
   #undef THIS_FILE

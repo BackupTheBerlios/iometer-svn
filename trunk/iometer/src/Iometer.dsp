@@ -47,7 +47,7 @@ RSC=rc.exe
 # ADD BASE MTL /nologo /mktyplib203 /win32
 # ADD MTL /nologo /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 
-# ADD RSC /l 0x409 /d "_GALILEO_"
+# ADD RSC /l 0x409 /d "_GALILEO_" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -75,7 +75,7 @@ LINK32=link.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
-# ADD RSC /l 0x409 /d "_DEBUG" /d "_GALILEO_"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "_GALILEO_" /D "IOMTR_OSFAMILY_WINDOWS" /D "IOMTR_OS_WIN32" /D "IOMTR_CPU_I386"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo

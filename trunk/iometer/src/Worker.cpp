@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed IOTime.h inclusion (now in IOCommon.h)      ## */
 /* ##               - Integrated the License Statement into this header.  ## */
 /* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
@@ -81,7 +84,7 @@
 //       will be a MFC hacker who could advice here.
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #ifdef _DEBUG
   #define new DEBUG_NEW
   #undef THIS_FILE
@@ -614,7 +617,7 @@ BOOL Worker::SetTargets()
 			                               target->spec.vi_info.remote_address.DiscriminatorLen );
 			vi_discriminator_length = min( vi_discriminator_length, VI_DISCRIMINATOR_SIZE );
 
-#if defined (_M_IX86) || defined (_M_IA64)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
 			// Intel processor (little-endian) -- use the first VI_DISCRIMINATOR_SIZE bytes 
 			// (least significant bytes) of the current 64-bit system time as the discriminator.
 			vi_discriminator = (VI_DISCRIMINATOR_TYPE)rdtsc();

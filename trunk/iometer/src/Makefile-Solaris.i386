@@ -72,14 +72,12 @@ STRIP=/usr/ccs/bin/strip
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
 # Note 2) -DDYNAMO_DESTRUCTIVE controls inclusion of destructive dynamo code.
 # Note 3) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
-# TODO: -DUNIX -DSOLARIS will be removed after the switch to IOMTR_* is completed!!!
 #
 # Always enable CCFLAGS=-compat=4 on Sparc till the transition from compile
 # version SC4 to SC5 is complete.
 # This flag instructs the compiler to build SC4 binaries.
 CFLAGS= -O \
         -Wall \
-        -DUNIX -DSOLARIS \
 	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_SOLARIS \
 	-DIOMTR_CPU_I386 \
         -D_LARGEFILE64_SOURCE \

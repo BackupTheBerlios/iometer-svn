@@ -81,7 +81,7 @@
 //       will be a MFC hacker who could advice here.
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #ifdef _DEBUG
   #define new DEBUG_NEW
   #undef THIS_FILE

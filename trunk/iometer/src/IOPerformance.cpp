@@ -431,7 +431,7 @@ double Performance::Get_Processor_Speed()
 
 	// If there are more than one processors, well, we get the speed of the first one.
 	speed = infop.pi_clock;
-#elif defined(LINUX)
+#elif defined(IOMTR_OS_LINUX)
  // nop
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!

@@ -1,92 +1,108 @@
-/*
-Intel Open Source License 
-
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// PageDisplay.h: Interface for the CPageDisplay  class, which is responsible
-// for the "Results Display" tab in Iometer's main window.
-//
-//////////////////////////////////////////////////////////////////////
-
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Iometer / PageDisplay.h                                            ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Interface for the CPageDisplay  class, which is       ## */
+/* ##               responsible for the "Results Display" tab in          ## */
+/* ##               Iometer's main window.                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               - added new header info.                              ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 #ifndef PAGEDISPLAY_DEFINED
-	#define PAGEDISPLAY_DEFINED
+#define PAGEDISPLAY_DEFINED
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CPageDisplay dialog
 
 #include "GalileoApp.h"
 
-#define	DISPLAY_TIMER			IDD_DISPLAY
-#define NUM_STATUS_BARS			6
-#define NUM_UPDATE_TIMES		11
+#define	DISPLAY_TIMER				IDD_DISPLAY
+#define NUM_STATUS_BARS				6
+#define NUM_UPDATE_TIMES			11
 
 
 // Types of results which may be displayed.
-#define ERROR_RESULT					0
-#define READ_ERROR_RESULT				1
-#define WRITE_ERROR_RESULT				2
+#define ERROR_RESULT				0
+#define READ_ERROR_RESULT			1
+#define WRITE_ERROR_RESULT			2
 
-#define IOPS_RESULT						3
-#define	READ_IOPS_RESULT				4
-#define WRITE_IOPS_RESULT				5
+#define IOPS_RESULT				3
+#define	READ_IOPS_RESULT			4
+#define WRITE_IOPS_RESULT			5
 
-#define MBPS_RESULT						6
-#define READ_MBPS_RESULT				7
-#define WRITE_MBPS_RESULT				8
+#define MBPS_RESULT				6
+#define READ_MBPS_RESULT			7
+#define WRITE_MBPS_RESULT			8
 
 #define CONNECTION_PER_SEC_RESULT		9
 #define TRANSACTION_PER_SEC_RESULT		10
 
-#define MAX_LATENCY_RESULT				11
+#define MAX_LATENCY_RESULT			11
 #define MAX_READ_LATENCY_RESULT			12
 #define MAX_WRITE_LATENCY_RESULT		13
-#define MAX_TRANSACTION_LATENCY_RESULT	14
-#define MAX_CONNECTION_LATENCY_RESULT	15
+#define MAX_TRANSACTION_LATENCY_RESULT		14
+#define MAX_CONNECTION_LATENCY_RESULT		15
 
-#define AVG_LATENCY_RESULT				16
+#define AVG_LATENCY_RESULT			16
 #define AVG_READ_LATENCY_RESULT			17
 #define AVG_WRITE_LATENCY_RESULT		18
-#define AVG_TRANSACTION_LATENCY_RESULT	19
-#define AVG_CONNECTION_LATENCY_RESULT	20
+#define AVG_TRANSACTION_LATENCY_RESULT		19
+#define AVG_CONNECTION_LATENCY_RESULT		20
 
 #define CPU_UTILIZATION_RESULT			21
 #define USER_UTILIZATION_RESULT			22
-#define PRIVILEGED_UTILIZATION_RESULT	23
+#define PRIVILEGED_UTILIZATION_RESULT		23
 #define DPC_UTILIZATION_RESULT			24
 #define IRQ_UTILIZATION_RESULT			25
 
@@ -94,11 +110,11 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define CPU_EFFECTIVENESS_RESULT		27
 
-#define NI_PACKET_RESULT				28
-#define NI_ERROR_RESULT					29
-#define TCP_SEGMENT_RESULT				30
+#define NI_PACKET_RESULT			28
+#define NI_ERROR_RESULT				29
+#define TCP_SEGMENT_RESULT			30
 
-#define NUM_RESULTS						31
+#define NUM_RESULTS				31
 
 
 // Submenu codes for the IDR_POPUP_DISPLAY_LIST pop-up menu
