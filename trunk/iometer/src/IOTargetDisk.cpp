@@ -48,11 +48,17 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed a note about the Reported_As_Logical()      ## */
+/* ##                 function as this one was removed.                   ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Initialize iocq structure member.                   ## */
 /* ##               - Cleanup some function pointer math.                 ## */
 /* ##               - Clean a few comments with non-printing characters.  ## */
 /* ##               - Correct the size of data stored through pointers.   ## */
+/* ##               2004-08-21 (mingz@ele.uri.edu)                        ## */
+/* ##               - Changed "/dev" to RAW_DEVICE_DIR in                 ## */
+/* ##                 getSectorSizeOfPhysDisk() and getSizeOfPhysDisk()   ## */ 
 /* ##               2004-05-27 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Close files in getSizeOfPhysDisk and                ## */
 /* ##                 getSectorSizeOfPhysDisk for linux                   ## */
@@ -313,7 +319,6 @@ BOOL TargetDisk::Init_Logical( char *drive )
 	// Strip off file system Information about the logical drives.
 	char *p;
 	// check for this pattern is also in Manager::Report_Disks()
-	// and Manager::Reported_As_Logical().
 	p = strstr(drive, " [");
 	if (p)
 	{
@@ -1892,7 +1897,7 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 	if( devName[0] == '/' ) {
 		fullDevName = devName;
 	} else {
-		sprintf( devNameBuf, "/dev/%s", devName );
+		sprintf( devNameBuf, "%s/%s", RAW_DEVICE_DIR, devName );
 		fullDevName = devNameBuf;
 	}
 	if( (fd = open( fullDevName, O_RDWR )) < 0 ) {
@@ -1933,7 +1938,7 @@ static unsigned long long getSizeOfPhysDisk(const char *devName) {
 	if( devName[0] == '/' ) {
 		fullDevName = devName;
 	} else {
-		sprintf(devNameBuf, "/dev/%s", devName);
+		sprintf(devNameBuf, "%s/%s", RAW_DEVICE_DIR, devName);
 		fullDevName = devNameBuf;
 	}
 	if( (fd = open(fullDevName, O_RDWR)) < 0 ) {

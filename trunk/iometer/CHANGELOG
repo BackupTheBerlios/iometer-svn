@@ -8,6 +8,12 @@ ChangeLog (IOMETER2 - 2004.mm.dd):
 ==================================
 
 - Applied patches:
+   - iometer-2004.07.30-post.Ming002AbsolutePathForDevices.patch by
+     Ming Zhang (Small patch that now reports the raw device names
+     with leading RAW_DEVICE_DIR instead of the constant "/dev").
+   - iometer-2004.07.30-post.Daniel001RemoveReportedAsLogical.patch
+     by Daniel Scheibli (Minor cleanup that removes the no longer
+     used Report_As_Logical() function).
    - em64t.patch by Henryx W. Tieman (Adds the x86_64 port for AMD
      Operton and Intel Xeon with EM64T running Linux or Windows).
    - iometer-2004.07.30-post.Ming001AnyBlockDevice.patch by Ming Zhang

@@ -49,10 +49,13 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-07-02 (thayneharmon@users.sourceforge.net)       ## */
+/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed a note about the Reported_As_Logical()      ## */
+/* ##                 function as this one was removed.                   ## */
+/* ##               2004-07-02 (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - fixed error in collecting volumes where the         ## */
 /* ##                 netware_vol_info() automacticlly increments the     ## */
-/* ##                 sequence											  ## */
+/* ##                 sequence						  ## */
 /* ##               2004-01-01 (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - Initial code.                                       ## */
 /* ##                                                                     ## */
@@ -132,8 +135,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		d.spec.type = LogicalDiskType;
 		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
 		disk_spec[count].name[length] = 0;
-		// check for this pattern is also in Manager;:Reported_As_Logical()
-		// and TargetDisk::Init_Logical().
+		// check for this pattern is also in TargetDisk::Init_Logical().
 //		strcat(disk_spec[count].name, " [");
 //		strcat(disk_spec[count].name, "NSS");
 //		strcat(disk_spec[count].name, "]");

@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed a note about the Reported_As_Logical()      ## */
+/* ##                 function as this one was removed.                   ## */
+/* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
 /* ##               - Extended the Report_Disks() method to considere     ## */
 /* ##                 the blkdevlist.                                     ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -201,7 +204,6 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
 
 		disk_spec[count].name[length] = 0;
-		// check for this pattern is also in Manager;:Reported_As_Logical()
 		// and TargetDisk::Init_Logical().
 		strcat(disk_spec[count].name, " [");
 		strcat(disk_spec[count].name, ment->mnt_type);

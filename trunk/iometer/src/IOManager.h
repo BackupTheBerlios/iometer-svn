@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed the Reported_As_Logical() function as       ## */
+/* ##                 it does not get used in any part of the code.       ## */
+/* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added a member blkdevlist in class Manager          ## */
 /* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -174,9 +177,6 @@ private:
 	int		Report_Disks( Target_Spec *disk_spec );
 #if defined(IOMTR_OSFAMILY_UNIX)
 	// These UNIX-specific methods are defined in IOManagerUNIX.cpp.
-#if defined(IOMTR_SETTING_OVERRIDE_FS)
-	BOOL		Reported_As_Logical(Target_Spec *spec, char *rdisk, int count);
-#endif // IOMTR_SETTING_OVERRIDE_FS
 	BOOL		Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count);
 
 	BOOL 		Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end);

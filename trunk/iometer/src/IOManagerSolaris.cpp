@@ -48,7 +48,12 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-02-13 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed the Reported_As_Logical() function as       ## */
+/* ##                 it does not get used in any part of the code.       ## */
+/* ##               - Removed the IOMTR_SETTING_OVERRIDE_FS dependency    ## */
+/* ##                 for the Part_Reported_As_Logical() function.        ## */
+/* ##               2004-02-13 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Reworked the Get_All_Swap_Devices() function to     ## */
 /* ##                 fix a few minor inconsistencies.                    ## */
 /* ##               2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
@@ -141,8 +146,8 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// These disks can be accessed through the /dev/md/rdsk interfaces. Again, they should
 	// not already be mounted as file systems and file names should be sorted.
 	//
-	// The existing functions Reported_As_Logical() and Sort_Raw_Disk_Names() (for physical
-	// disks) and Look_For_Partitions() should easily work for the others too.
+	// The existing functions Sort_Raw_Disk_Names() (for physical disks) and
+	// Look_For_Partitions() should easily work for the others too.
 	// We should probably give more generic names to these functions.
 	//
 	// Also, if the new cases are implemented, then we should re-introduce prefixing raw
@@ -207,8 +212,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
 
 		disk_spec[count].name[length] = 0;
-		// check for this pattern is also in Manager;:Reported_As_Logical()
-		// and TargetDisk::Init_Logical().
+		// check for this pattern is also in TargetDisk::Init_Logical().
 		strcat(disk_spec[count].name, " [");
 		strcat(disk_spec[count].name, mtab.mnt_fstype);
 		if (buffered)
@@ -935,72 +939,7 @@ BOOL Manager::Has_File_System(char *file_name, char *fstype)
 	return(FALSE);
 }
 
-#if defined(IOMTR_SETTING_OVERRIDE_FS)
-BOOL Manager::Reported_As_Logical(Target_Spec *spec, char *rdisk, int count)
-{
-	int					i, retval;
-	char				*p;
-	char				rstr[MAX_NAME], lstr[MAX_NAME];		// for physical/logical disks.
-	FILE 				*fp;
-	struct mnttab		mtab, mpref;
 
-	//
-	// TO BE MORE PRECISE :
-	//		This function checks if the "rdisk" has already been mounted.
-	// The file systems listed in the mnttab file are already mounted. So, we have two 
-	// cases :
-	// The file system is listed for testing (eg: ufs) or not listed (eg. procfs)
-	// But we need only check if the file sys is mounted and thats sufficient. That will
-	// ensure that we don't crash anything running.
-	//
-	p = strstr(rdisk, "p0");
-	strncpy(rstr, rdisk, p - rdisk);
-	rstr[p - rdisk] = 0;
-
-	if ((fp = fopen(mnttab, "r")) == NULL)
-	{
-		cout << "open (mount tab) file " << mnttab << " failed with error " << errno << endl;
-		cout << "Set environment variable MNTTAB to correct pathname" << endl;
-		// We wont try to report any disk. Could expose the OS partition to 
-		// destructive tests.
-		return TRUE;
-	}
-
-	for (i = 0; i < count; i++)
-	{
-		// Initialize the mpref structure to NULL. Solaris does'nt do it.
-		memset(&mpref, 0, sizeof(struct mnttab));
-#ifdef _DEBUG
-		cout << "checking if physical disk already reported as logical." << endl
-			<< "	logical disk : " << spec[i].name << " physical disk : " << rdisk << endl;
-#endif
-		// check for this pattern is also in Manager::Report_Disks()
-		// and TargetDisk::Init_Logical().
-		p = strstr(spec[i].name, " [");
-		strncpy(lstr, spec[i].name, p - spec[i].name);
-		lstr[p - spec[i].name] = 0;
-
-		mpref.mnt_mountp = lstr;
-		if ((retval = getmntany(fp, &mtab, &mpref)) == 0)
-		{
-			// found the entry in mnttab.
-			if (strstr(mtab.mnt_special, rstr))
-			{
-				// the entry contains this physical disk name (in the form c0t0d0).
-				// further the entry is in the list of reported logical disks.
-				// So, this physical disk has already been reported as a logical disk.
-#ifdef _DEBUG
-				cout << "physical disk " << rdisk << " reported logical disk "
-					<< mtab.mnt_mountp << endl;
-#endif
-				fclose(fp);
-				return TRUE;
-			}
-		}
-	}
-	fclose(fp);
-	return FALSE;
-}
 
 BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count)
 {
@@ -1062,7 +1001,8 @@ BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count
 	fclose(fp);
 	return FALSE;
 }
-#endif // IOMTR_SETTING_OVERRIDE_FS
+
+
 
 BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
 {
