@@ -50,7 +50,14 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-04-19 (tharmon@novell.com)                       ## */
+/* ##  Changes ...: 2004-08-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure common style.                ## */
+/* ##               - Added some OS checks to make the block device       ## */
+/* ##                 stuff work on non Linux/Solaris OS'es.              ## */
+/* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added a new parameter to support user supplied      ## */
+/* ##                 block device list.                                  ## */
+/* ##               2004-04-19 (tharmon@novell.com)                       ## */
 /* ##               - Extended the usage output for Netware to            ## */
 /* ##                 list the switch for excluding volumes.              ## */
 /* ##               2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
@@ -139,7 +146,8 @@ static void ParseParam(	int   argc,
 			char iometer[MAX_NETWORK_NAME],
 			char manager_name[MAX_WORKER_NAME],
 			char manager_computer_name[MAX_NETWORK_NAME],
-			char manager_exclude_fs[MAX_EXCLUDE_FILESYS] );
+			char manager_exclude_fs[MAX_EXCLUDE_FILESYS],
+			char blkdevlist[MAX_TARGETS][MAX_NAME] );
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -208,8 +216,40 @@ void CleanupCCNTInterface(int fd)
 }
 
 #endif // IOMTR_CPU_XSCALE
+#endif // IOMTR_OS_LINUX
 
+
+
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+int check_blk_dev(char *devname)
+{
+	struct stat buf;
+	
+	if (strlen(devname) >= MAX_NAME) {
+		return -1;
+	}
+	if (stat(devname, &buf)) {
+		return -1;
+	}
+	if (!S_ISBLK(buf.st_mode)) {
+		return -1;
+	}
+	return 0;
+}
+#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	// nop	
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
+
+
+
+
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##   M A I N ( )                                                       ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 
 int CDECL main( int argc, char *argv[] )
 {
@@ -247,7 +287,8 @@ int CDECL main( int argc, char *argv[] )
 	        iometer,
        		manager.manager_name,
         	manager.prt->network_name,
-        	manager.exclude_filesys
+        	manager.exclude_filesys,
+		manager.blkdevlist
 	);
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
 
@@ -391,9 +432,13 @@ int CDECL main( int argc, char *argv[] )
 }
 
 
-//
-// Show command line syntax to the user.
-//
+
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##   S Y N T A X ( )                                                   ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
+
 void Syntax( const char* errmsg /*=NULL*/ )
 {
 	if ( errmsg )
@@ -422,7 +467,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
-	cout << "       [-x excluded_fs_type]" << endl;
+	cout << "       [-x excluded_fs_type] [-b extra_device] [-f extra_device_file]" << endl;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
 #elif defined(IOMTR_OS_NETWARE)
@@ -452,8 +497,16 @@ void Syntax( const char* errmsg /*=NULL*/ )
 
  #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "   excluded_fs_type - type of filesystems to exclude from device search" << endl;
-        cout << "      This string should contain the filesystem types that are not reported" << endl;
-        cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
+	cout << "      This string should contain the filesystem types that are not reported" << endl;
+	cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
+	cout << endl;
+	cout << "   extra_device - block device name to be included in the test if this device" << endl;
+	cout << "      CAN NOT be detected automatically by dynamo. You can use it multiple times," << endl;
+	cout << "      for example, -b dev1 -b dev2 -b dev3..." << endl;
+	cout << endl;
+	cout << "   extra_device_file - a file store extra device names with each name in one line" << endl;
+	cout << "      use this in case you have lots of extra device need to be claimed." << endl;
+	cout << "      You MUST use absolute path for device name here." << endl;
  #elif defined(IOMTR_OSFAMILY_NETWARE)
 	cout << "   excluded_volumes - volumes to exclude from volume or device search" << endl;
 	cout << "      The default is \"" << "none" << "\"." << endl;
@@ -470,8 +523,6 @@ void Syntax( const char* errmsg /*=NULL*/ )
 
 
 
-
-
 /* ######################################################################### */
 /* ##                                                                     ## */
 /* ##   P A R S E P A R A M ( )                                           ## */
@@ -483,7 +534,8 @@ void ParseParam(
 	char iometer[MAX_NETWORK_NAME],
 	char manager_name[MAX_WORKER_NAME],
 	char manager_computer_name[MAX_NETWORK_NAME],
-	char manager_exclude_fs[MAX_EXCLUDE_FILESYS] )
+	char manager_exclude_fs[MAX_EXCLUDE_FILESYS],
+	char blkdevlist[MAX_TARGETS][MAX_NAME])
 {
 	// Local variables
 	
@@ -491,6 +543,8 @@ void ParseParam(
 	
 	BOOL bParamIometer = FALSE;
 	BOOL bParamDynamo  = FALSE;
+	int count = 0;
+	ifstream devfile;
 
 	// Walk through the parameter list
 
@@ -564,12 +618,51 @@ void ParseParam(
 				break;
 			case 'X':
 				if ( ( strlen( argv[I] ) + strlen( manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
-			                Syntax("Excluded filesystem list too long.");
+					Syntax("Excluded filesystem list too long.");
 					return;
 				}
 				strcat( manager_exclude_fs, argv[I] );
         			strcat( manager_exclude_fs, " " );
 				break;
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+			case 'B':
+				if (check_blk_dev(argv[I])) {
+					Syntax("Not a valid block device.");
+					return;
+				}
+				if (count < MAX_TARGETS) {
+					strcpy(blkdevlist[count++], argv[I]);
+				}
+				else {
+					cout << "Too many targets you want to test, skip " << argv[I] << endl;
+				}
+				break;
+			case 'F':
+				char devname[MAX_NAME];
+				
+				devfile.open(argv[I]);
+				if (!devfile.is_open()) { 
+					Syntax("Can not open device file list.");
+					return;
+				}
+				while (!devfile.eof()) {
+					memset(devname, 0, MAX_NAME);
+					devfile.getline(devname, MAX_NAME - 1);
+					if (check_blk_dev(devname))
+						continue;
+					if (count < MAX_TARGETS) {
+						strcpy(blkdevlist[count++], devname);
+					}
+					else {
+						cout << "Too many targets you want to test, skip " << devname << endl;
+					}					
+				}
+				break;
+#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	// nop	
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 			default:
 				{
 					char tmpary[2] = { cSwitchKey, 0 };
@@ -597,7 +690,3 @@ void ParseParam(
 	
 	return;
 }
-
-
-
-

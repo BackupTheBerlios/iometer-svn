@@ -398,8 +398,11 @@ BOOL TargetDisk::Init_Physical( char *drive )
 		sprintf( spec.name, "%s", drive );
 	}
 
-	sprintf( file_name, "%s/%s", RAW_DEVICE_DIR, spec.name );
-	
+	if (!strstr(spec.name, RAW_DEVICE_DIR))
+		sprintf( file_name, "%s/%s", RAW_DEVICE_DIR, spec.name );
+	else
+		sprintf( file_name, "%s", spec.name );
+		
 	spec.type = PhysicalDiskType;
 	size = 0;
 	starting_position = 0;
@@ -1909,10 +1912,11 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 //   The size (in bytes) of the named device.
 //
 static unsigned long long getSizeOfPhysDisk(const char *devName) {
-	char               devNameBuf[40];
+	char               devNameBuf[MAX_NAME];
 	const char         *fullDevName;
 	int                fd;
-	unsigned long long sz;
+	unsigned long long sz64;
+	unsigned long sz32;
 
 	if( devName[0] == '/' ) {
 		fullDevName = devName;
@@ -1924,18 +1928,23 @@ static unsigned long long getSizeOfPhysDisk(const char *devName) {
 		cerr << "Fail to open device" << endl;
 		return 0;
 	}
-	if( ioctl(fd, BLKGETSIZE64, &sz) < 0 ) {
-		cerr << "Fail to get size for " << fullDevName << endl;
-	        close( fd );
-		return 0; 
+	if( ioctl(fd, BLKGETSIZE64, &sz64) < 0 ) {
+		cerr << "Fail to get size for " << fullDevName << " by BLKGETSIZE64"<< endl;
+		if( ioctl(fd, BLKGETSIZE, &sz32) < 0 ) {
+			cerr << "Fail to get size for " << fullDevName << "by BLKGETSIZE" << endl;
+				close( fd );
+			return 0; 
+		}
+		else
+			sz64 = sz32 << 9;
 	}
-
+ 	
 	#ifdef _DEBUG
-		cout << "Device " << fullDevName << " size:" << sz << "Bytes." << endl;
+		cout << "Device " << fullDevName << " size:" << sz64 << "Bytes." << endl;
 	#endif
 
-        close( fd );
-	return sz;
+	close( fd );
+	return sz64;
 }
 
 #endif // Linux

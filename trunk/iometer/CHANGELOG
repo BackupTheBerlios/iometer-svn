@@ -8,6 +8,10 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
 ==================================
 
 - Applied patches:
+   - iometer-2004.07.30-post.Ming001AnyBlockDevice.patch by Ming Zhang
+     (adds command line arguments to the Linux and Solaris variant of
+     Dynamo, to allow the user to specify block devices which are not
+     detected by the automatic detection).
    - iometer-2003.12.16-post.DS3-netware.patch by Thayne Harmon (Fixes
      the detection of the volumens - for the NetWare port).
    - IOGrunt.patch by Lamont Cranston (Prevents a shifting queue for

@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-04-15 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added initialization of blkdevlist.                 ## */
+/* ##               2004-04-15 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Moved Report_Disks() over to IOManagerWin.cpp.      ## */
 /* ##               2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure compiling under Windows.     ## */
@@ -145,6 +147,7 @@ Manager::Manager()
 	
 	record = FALSE;
 	grunt_count = 0;
+	memset(blkdevlist, 0, sizeof(char) * MAX_TARGETS * MAX_NAME);
 }
  
 

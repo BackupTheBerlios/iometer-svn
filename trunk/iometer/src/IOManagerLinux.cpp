@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Extended the Report_Disks() method to considere     ## */
+/* ##                 the blkdevlist.                                     ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added MAX_NAME change detection to ensure that      ## */
 /* ##                 the fscanf()'s stays in sync with it.               ## */
 /* ##               - Applied Dan Bar Dov's patch for adding              ## */
@@ -115,15 +118,16 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	usedDevs[0] = '\0';
 
 	cout << "Reporting drive information..." << endl;
-
+	
 	// *********************************************************************************
 	// DEVELOPER NOTES
 	// ---------------
 	//
-	// For linux, I return two sets of data:
+	// For linux, I return three sets of data:
 	// 1) The root directory for all mounted normal (non-exclude_filesys) filesystems.
 	//    These are our "logical" disks. They are found by scanning /etc/mtab.
-	// 2) The device names for all unmounted block devices. These are our "physical"
+	// 2) The device names supplied from command line.
+	// 3) The device names for all unmounted block devices. These are our "physical"
 	//    disks. They are found by reading /proc/partitions, then skipping all devices
 	//    that are in mtab.
 	//
@@ -215,6 +219,22 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	if (count >= MAX_TARGETS)
 		return count;
 
+	cout << "  Physical drives (raw devices)..." << endl;
+	
+	int i, valid_devcnt;
+	for (i = 0; i < MAX_TARGETS; i++) {
+		if (blkdevlist[i][0] == 0) {
+			break;
+		}
+		if (d.Init_Physical(blkdevlist[i])) {
+			d.spec.type = PhysicalDiskType;
+			memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
+			if (++count >= MAX_TARGETS)
+				return count;
+		}
+	}
+	valid_devcnt = i;
+	
 	// Now reporting physical drives (raw devices). Data from /proc/partitions.
 	// Example output from /proc/partitions:
 	//////////////////////////////////////////////////////////////////////
@@ -227,9 +247,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	//////////////////////////////////////////////////////////////////////
 	// Note: In the above example, "hdc" is a CD-ROM, and "sda1" and "sda2" are
 	// two partitions on the disk represented by "sda".
-	
-	cout << "  Physical drives (raw devices)..." << endl;
-	
+		
 	file = fopen("/proc/partitions", "r");
 	if (file == NULL) {
 		cerr << "Open \"/proc/partitions\" failed (errno " << errno <<"). "
@@ -257,12 +275,24 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		cout << __FUNCTION__ << ": Found device " << devName << "\n";
 #endif
 		if (strstr(usedDevs, paddedDevName) == NULL) {
+			int duplicate;
 			// Nobody has mounted this device. Try to open it for reading; if we can,
 			// then add it to our list of physical devices.
 #ifdef _DEBUG
 			cout << __FUNCTION__ << ": Device is not mounted.\n";
 #endif
-			if (d.Init_Physical(devName)) {
+			duplicate = 0;
+			for (i = 0; i < valid_devcnt; i++) {
+				if ((devName[0] == '/' && !strcmp(devName, blkdevlist[i])) ||
+					(devName[0] != '/' && !strcmp(devName, blkdevlist[i] + strlen("/dev/")))) {
+#ifdef _DEBUG
+					cout << "Find duplicate dev:" << devName << ", Ignoring." << endl;
+#endif
+					duplicate = 1;
+					break;
+				}
+			}
+			if ((!duplicate) && d.Init_Physical(devName)) {
 				d.spec.type = PhysicalDiskType;
 				memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
 				++count;

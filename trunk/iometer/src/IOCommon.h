@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-06-10 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added the BLKGETSIZE here.                          ## */
+/* ##               2004-06-10 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Corrected the macro definition for BLKGETSIZE64.    ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Applied Dan Bar Dov's patch for adding              ## */
@@ -813,13 +815,16 @@ inline int IsBigEndian( void )
   extern void Net_Results_double_swap(struct Net_Results *p);
  #endif
  
- #if defined(_IO) && !defined(BLKSSZGET)
+ #if defined(_IO)  && !defined(BLKSSZGET)
   #define BLKSSZGET    _IO(0x12,104)
  #endif
  #if defined(_IOR) && !defined(BLKBSZGET)
   #define BLKBSZGET    _IOR(0x12,112,size_t)
  #endif
- #if defined(_IO) && !defined(BLKGETSIZE64)
+ #if defined(_IO)  && !defined(BLKGETSIZE)
+  #define BLKGETSIZE   _IO(0x12,96)
+ #endif
+ #if defined(_IO)  && !defined(BLKGETSIZE64)
   #define BLKGETSIZE64 _IOR(0x12,114,unsigned long long)
  #endif
 #endif 

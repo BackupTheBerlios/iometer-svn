@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added a member blkdevlist in class Manager          ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -135,6 +137,7 @@ public:
 	char		manager_name[MAX_WORKER_NAME];	        // Name of manager, customizable on command line.
 	char            exclude_filesys[MAX_EXCLUDE_FILESYS];   // filesystem types to exclude, command line option
 	
+	char		blkdevlist[MAX_TARGETS][MAX_NAME];	// store command line supplied device name.
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	char* 		swap_devices;
 	BOOL		is_destructive;
