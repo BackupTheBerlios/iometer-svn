@@ -28,7 +28,9 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-03-24 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2004-08-17 (daniel.scheibli@edelbyte.org)                   ##
+##               - Modified script to reflect new version (2004.07.30).      ##
+##               2004-03-24 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Do not install Iometer.ico any more as the new icon       ##
 ##                 is now part of the executable itself.                     ##
 ##               2004-03-20 (daniel.scheibli@edelbyte.org)                   ##
@@ -47,10 +49,10 @@
 
 ##### Global settings
 #------------------------------------------------------------------------------
-Name "Iometer 2003.12.16"
+Name "Iometer 2004.07.30"
 
-OutFile "iometer-2003.12.16.win32-setup.exe"
-InstallDir "$PROGRAMFILES\Iometer.org\Iometer 2003.12.16"
+OutFile "iometer-2004.07.30.win32.i386-setup.exe"
+InstallDir "$PROGRAMFILES\Iometer.org\Iometer 2004.07.30"
 
 CRCCheck on
 XPStyle on
@@ -124,19 +126,19 @@ SubSectionEnd
 #------------------------------------------------------------------------------
 Section "Start Menu Shortcuts" SectionStartMenu
 
-	CreateDirectory "$SMPROGRAMS\Iometer 2003.12.16"
-	CreateShortCut  "$SMPROGRAMS\Iometer 2003.12.16\Iometer.lnk"                     "$INSTDIR\iometer.exe"   "" "$INSTDIR\iometer.exe"   0
+	CreateDirectory "$SMPROGRAMS\Iometer 2004.07.30"
+	CreateShortCut  "$SMPROGRAMS\Iometer 2004.07.30\Iometer.lnk"                     "$INSTDIR\iometer.exe"   "" "$INSTDIR\iometer.exe"   0
         IfFileExists "$INSTDIR\iometer.pdf"   "" +2
-		CreateShortCut "$SMPROGRAMS\Iometer 2003.12.16\Iometer Users Guide.lnk"  "$INSTDIR\iometer.pdf"   "" "$INSTDIR\iometer.pdf"   0
-	CreateShortCut  "$SMPROGRAMS\Iometer 2003.12.16\Import Wizard for MS Access.lnk" "$INSTDIR\Wizard.mdb"    "" "$INSTDIR\Wizard.mdb"    0
-	CreateShortCut  "$SMPROGRAMS\Iometer 2003.12.16\Uninstall Iometer.lnk"           "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+		CreateShortCut "$SMPROGRAMS\Iometer 2004.07.30\Iometer Users Guide.lnk"  "$INSTDIR\iometer.pdf"   "" "$INSTDIR\iometer.pdf"   0
+	CreateShortCut  "$SMPROGRAMS\Iometer 2004.07.30\Import Wizard for MS Access.lnk" "$INSTDIR\Wizard.mdb"    "" "$INSTDIR\Wizard.mdb"    0
+	CreateShortCut  "$SMPROGRAMS\Iometer 2004.07.30\Uninstall Iometer.lnk"           "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 
 SectionEnd
 #------------------------------------------------------------------------------
 Section "Uninstall"
   
-	Delete "$SMPROGRAMS\Iometer 2003.12.16\*.*"
-	RMDir  "$SMPROGRAMS\Iometer 2003.12.16"
+	Delete "$SMPROGRAMS\Iometer 2004.07.30\*.*"
+	RMDir  "$SMPROGRAMS\Iometer 2004.07.30"
 
 	Delete "$INSTDIR\Iometer.exe"
 	Delete "$INSTDIR\Dynamo.exe"
