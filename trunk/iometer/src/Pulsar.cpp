@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-12-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Consolidated the ParseParam() method.               ## */
+/* ##               - Disabled accepting parameters without switch.       ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
 /* ##                 Vedran Degoricija, to get the code compile with     ## */
 /* ##                 the MS DDK on IA64.                                 ## */
@@ -101,12 +104,12 @@
 /////////////////////////////////////////////////////////////////////////////
 static void Syntax( const char* errmsg = NULL );
 
-static void ParseParam(	const char* pszParam,
-                        BOOL bLast,
-			char iometer[MAX_NETWORK_NAME],
-			char manager_name[MAX_WORKER_NAME],
-			char manager_computer_name[MAX_NETWORK_NAME],
-			char manager_exclude_fs[MAX_EXCLUDE_FILESYS] );
+static void ParseParam(	int   argc,
+                        char *argv[],
+			char  iometer[MAX_NETWORK_NAME],
+			char  manager_name[MAX_WORKER_NAME],
+			char  manager_computer_name[MAX_NETWORK_NAME],
+			char  manager_exclude_fs[MAX_EXCLUDE_FILESYS] );
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -117,6 +120,7 @@ int CDECL main( int argc, char *argv[] )
 {
 	Manager	manager;
 	char	iometer[MAX_NETWORK_NAME];
+
 #if defined(IOMTR_OS_LINUX)
 	struct aioinit aioDefaults;
 
@@ -126,21 +130,20 @@ int CDECL main( int argc, char *argv[] )
 	aio_init(&aioDefaults);
 #endif
 
-	iometer[0] = 0;
-	manager.manager_name[0] = 0;
+	iometer[0]                 = 0;
+	manager.manager_name[0]    = 0;
 	manager.exclude_filesys[0] = 0;
 
 	//provide a temporary global ptr to the version string for Syntax() to use
 	g_pVersionStringWithDebug = manager.GetVersionString(TRUE);
-	for (int counter=1; counter<argc; counter++)
-		ParseParam(argv[counter],
-	                               counter==argc-1,
-	                               iometer,
-	                               manager.manager_name,
-	                               manager.prt->network_name,
-	                               manager.exclude_filesys
-	                               );
-
+	ParseParam(
+		argc,
+		argv,
+		iometer,
+		manager.manager_name,
+		manager.prt->network_name,
+		manager.exclude_filesys
+	);
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
 
 	// If there were command line parameters, indicate that they were recognized.
@@ -155,13 +158,13 @@ int CDECL main( int argc, char *argv[] )
 	}
 	if ( manager.exclude_filesys[0] )
         {
-        cout << "\nExcluding the following filesystem types:" << endl;
-        cout << "   \"" << manager.exclude_filesys << "\"" << endl;
+		cout << "\nExcluding the following filesystem types:" << endl;
+		cout << "   \"" << manager.exclude_filesys << "\"" << endl;
         }
         else
         {
-        strcpy(manager.exclude_filesys, DEFAULT_EXCLUDE_FILESYS);
-         }
+		strcpy(manager.exclude_filesys, DEFAULT_EXCLUDE_FILESYS);
+        }
 	cout << endl;
 
 #if defined(IOMTR_OSFAMILY_UNIX)
@@ -284,17 +287,27 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << endl;
 	cout << "SYNTAX" << endl;
 	cout << endl;
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo /?" << endl;
+#elif defined(IOMTR_OS_LINUX)
+	cout << "dynamo -?" << endl;
 #elif defined(IOMTR_OS_SOLARIS)
 	// Solaris 2.7 must have the switch (? is used for its own purpose).
 	cout << "dynamo \\?" << endl;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-	cout << "dynamo [iometer_computer_name [manager_name [manager_network_name]]]" << endl;
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_network_name]" << endl;
-	cout << "       [/x excluded_fs_type]" << endl;
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+	cout << "dynamo [-i iometer_computer_name] [-n manager_name] [-m manager_network_name]" << endl;
+	cout << "       [-x excluded_fs_type]" << endl;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
 	cout << endl;
 	cout << "   ? - show Dynamo version number and command line syntax" << endl;
 	cout << endl;
@@ -312,179 +325,141 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "      with this manager. The default is the IP adress of the host's first" << endl;
 	cout << "      NIC." << endl;
 	cout << endl;
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	// nop	
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "   excluded_fs_type - type of filesystems to exclude from device search" << endl;
         cout << "      This string should contian the filesystem types that are not reported" << endl;
         cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
-        cout << endl;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 
+        cout << endl;
 	
 	exit( 0 );
 }
 
 
 
-void ParseParam( const char* pszParam,
-                 BOOL bLast,
-		 char iometer[MAX_NETWORK_NAME],
-		 char manager_name[MAX_WORKER_NAME],
-		 char manager_computer_name[MAX_NETWORK_NAME],
-                 char manager_exclude_fs[MAX_EXCLUDE_FILESYS] )
 
+
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##   P A R S E P A R A M ( )                                           ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
+void ParseParam(
+	int   argc,
+	char *argv[],
+	char  iometer[MAX_NETWORK_NAME],
+	char  manager_name[MAX_WORKER_NAME],
+	char  manager_computer_name[MAX_NETWORK_NAME],
+	char  manager_exclude_fs[MAX_EXCLUDE_FILESYS] )
 {
-	static int param_count = 0;
-	static BOOL switches = FALSE;
-	static char last_switch = 0;
-	char temp_switch;
+	// Local variables
+	
+	char cSwitchKey;
 
-	param_count++;
+	// Walk through the parameter list
 
-	// See if the user is requesting syntax help.
-	if ( pszParam[0] == '?' || pszParam[1] == '?' )
-		Syntax();
+	for( int I = 1; I < argc; I++ ) {
 
-	if ( last_switch )
-	{
-		temp_switch = last_switch;
-		last_switch = 0;
-
-		// Previous switch expects another parameter.
-		switch ( temp_switch )
-		{
-		case 'I':
-			if ( iometer[0] != '\0' )	// make sure it hasn't already been set
-			{
-				Syntax("Iometer address was specified more than once.");
-			}
-			else if ( strlen(iometer) >= MAX_NETWORK_NAME )
-			{
-				Syntax("Iometer address parameter was too long.");
-			}
-			else if ( pszParam[0] == '/' || pszParam[0] == '-' )
-			{
-				Syntax("Iometer address should follow the /I switch.");
-			}
-			else
-			{
-				strcpy(iometer, pszParam);
-			}
-			return;
-		case 'N':
-			if ( manager_name[0] != '\0' )	// make sure it hasn't already been set
-			{
-				Syntax("Manager name was specified more than once.");
-			}
-			else if ( strlen(pszParam) >= MAX_WORKER_NAME )
-			{
-				Syntax("Manager name parameter was too long.");
-			}
-			else if ( pszParam[0] == '/' || pszParam[0] == '-' )
-			{
-				Syntax("Manager name should follow the /N switch.");
-			}
-			else
-			{
-				strcpy(manager_name, pszParam);
-			}
-			return;
-		case 'M':
-			if ( pszParam[0] == '/' || pszParam[0] == '-' )
-			{
-				Syntax("Manager network name should follow the /M switch.");
-			}
-			else
-			{
-				strcpy(manager_computer_name, pszParam);
-			}
-			return;
-		case 'X':
-                        if ( pszParam[0] == '/' || pszParam[0] == '-' )
-                         {
-                              Syntax("Excluded filesystem type should follow the /X switch.");
-                         }
-                         else if ( strlen(pszParam) + strlen(manager_exclude_fs) >= MAX_EXCLUDE_FILESYS)
-                         {
-                                 Syntax("Excluded filesystem list too long.");
-                         }
-                         else
-                        {
-                                 strcat(manager_exclude_fs, pszParam);
-                                 strcat(manager_exclude_fs, " ");
-                         }
-                         return;
-
-		default:
-			{
-				char tmpary[2] = {last_switch, 0};
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-				Syntax("Unrecognized switch: " + (CString)tmpary + ".");
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-				char temp_array[128];
-				strcpy(temp_array, "Unrecognized switch: ");
-				strcat(temp_array, tmpary);
-				strcat(temp_array, ".");
-				Syntax(temp_array);
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done!
-#endif
-			}
-			return;
-		}
-	}
-
-	// Is this parameter a switch?
-	if ( pszParam[0] == '/' || pszParam[0] == '-' )
-	{
-		if ( strlen(pszParam) != 2 )
-		{
-			Syntax("Exactly one letter must follow a switch character.\n"
-				"Switch characters are \"/\" and \"-\".");
+		// See if the user is requesting syntax help.
+		
+		if ( ( argv[I][0] == '?' ) || ( argv[I][1] == '?' ) ) {
+			Syntax();
 			return;
 		}
 
-		switches = TRUE;
-		last_switch = toupper( pszParam[1] );
+		// Ensure that the each parameter has a leading switch
+		
+		if ( ( argv[I][0] != '-' ) && ( argv[I][0] != '/' ) ) {
+			Syntax( "Exactly one letter must follow a switch character.\n"
+				"Switch characters are \"-\" and \"/\"." );
+			return;			
+		}
 
-	//////////////////////////////////////////////////////////////////////
-	// This is an example of how to allow switches that have meaning on
-	// their own, without any additional parameters.
-	//
-	//	if ( last_switch == 'V' )	// spit out version number and exit
-	//	{
-	//		// Set BOOL variable indicating that this switch was specified.
-	//		// Make sure it's initialized in the constructor.
-	//		show_version = TRUE;
-	//
-	//		last_switch = 0;	// don't look for more parameters related to this switch
-	//		return;				// don't allow it to reach the bLast checking
-	//	}
-	//////////////////////////////////////////////////////////////////////
-
-		if ( bLast )
-		{
+		if ( strlen( argv[I] ) != 2 ) {
+			Syntax( "Exactly one letter must follow a switch character.\n"
+				"Switch characters are \"-\" and \"/\"." );
+			return;			
+		}
+		
+		// Ensure that each parameter has a value following the switch
+		
+		if( ( I + 1 ) >= argc ) {
 			Syntax("An additional parameter was expected after the last switch.");
 			return;
 		}
 
-		return;
-	}
+		// Process the parameters based on the switch
 
-	// If switches haven't been used (so far)...
-	if ( !switches )
-	{
-		switch (param_count)
-		{
-		case 1:
-			strcpy(iometer, pszParam);
-			return;
-		case 2:
-			strcpy(manager_name, pszParam);
-			return;
-		case 3:
-			strcpy(manager_computer_name, pszParam);
-			return;
-		default:
-			Syntax("Too many parameters.");
-			return;
+		cSwitchKey = toupper( argv[I][1] );
+		I++;
+		
+		switch( cSwitchKey ) {
+			case 'I':
+				if ( iometer[0] != '\0' ) {
+					Syntax("Iometer address was specified more than once.");
+					return;
+				}
+				if ( strlen( argv[I] ) >= MAX_NETWORK_NAME ) {
+					Syntax("Iometer address parameter was too long.");
+					return;
+				}
+				strcpy( iometer, argv[I] );
+				break;
+			case 'N':
+				if ( manager_name[0] != '\0' ) {
+					Syntax("Manager name was specified more than once.");
+					return;
+				}
+				if ( strlen( argv[I] ) >= MAX_WORKER_NAME ) {
+					Syntax("Manager name parameter was too long.");
+					return;
+				}
+				strcpy( manager_name, argv[I] );
+				break;
+			case 'M':
+				// No check for more then once specification (as we have a default)
+				if ( strlen( argv[I] ) >= MAX_NETWORK_NAME ) {
+					Syntax("Manager network name parameter was too long.");
+					return;
+				}
+				strcpy( manager_computer_name, argv[I] );
+				break;
+			case 'X':
+				if ( ( strlen( argv[I] ) + strlen( manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
+					Syntax("Excluded filesystem list too long.");
+					return;
+				}
+				strcat( manager_exclude_fs, argv[I] );
+				strcat( manager_exclude_fs, " " );
+				break;
+			default:
+				{
+					char tmpary[2] = { cSwitchKey, 0 };
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+					Syntax( "Unrecognized switch: " + (CString)tmpary + "." );
+#elif defined(IOMTR_OSFAMILY_UNIX)
+					char temp_array[128];
+					strcpy( temp_array, "Unrecognized switch: " );
+					strcat( temp_array, tmpary );
+					strcat( temp_array, "." );
+					Syntax( temp_array );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+				}
+				break;
 		}
 	}
+	
+	return;
 }
+
+
+
+
