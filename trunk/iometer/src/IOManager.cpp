@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Code cleanup to ensure compiling under Windows.     ## */
+/* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -124,7 +126,9 @@ Manager::Manager()
 {
 	data_size = 0;
 	data = NULL;
+#if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	swap_devices = NULL;
+#endif // IOMTR_OSFAMILY_UNIX
 	SetLastError( 0 );
 
 	//init file version strings
