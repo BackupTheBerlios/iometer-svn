@@ -13,7 +13,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - replaces EXCLUDE_FILESYS define with a string       ## */
+/* ##                 so filesystem types are no longer hard coded.       ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added new header holding the changelog.             ## */
 /* ##               - Modified EXCLUDE_FILESYS to support NFS devices     ## */
 /* ##                 per default (was excluded by default).              ## */
@@ -64,6 +67,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // functions in Manager.
 // 
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifdef LINUX
 #include "IOManager.h"
@@ -74,8 +78,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>
 #include <sys/swap.h>
 
-// Another values for EXCLUDE_FILESYS are "nfs",...
-#define EXCLUDE_FILESYS			"proc swap devpts"
 static char *mnttab;
 
 #define USED_DEVS_MAX_SIZE (4 * 1024)
@@ -104,11 +106,11 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// ---------------
 	//
 	// For linux, I return two sets of data:
-	// 1) The root directory for all mounted normal (non-EXCLUDE_FILESYS) filesystems.
-	//    These are our "logical" disks. They are found by scanning /etc/mounttab.
+	// 1) The root directory for all mounted normal (non-exclude_filesys) filesystems.
+	//    These are our "logical" disks. They are found by scanning /etc/mtab.
 	// 2) The device names for all unmounted block devices. These are our "physical"
 	//    disks. They are found by reading /proc/partitions, then skipping all devices
-	//    that are in mounttab.
+	//    that are in mtab.
 	//
 	// **********************************************************************************
 	
@@ -153,7 +155,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		}
 
 		// see if the current file sys is an excluded file system type for dynamo.
-		if (strstr(EXCLUDE_FILESYS, ment->mnt_type) != NULL) {
+		if (strstr(exclude_filesys, ment->mnt_type) != NULL) {
 #if LINUX_DEBUG
 			cout << "*** File system type \"" << ment->mnt_type << "\" excluded.\n";
 #endif

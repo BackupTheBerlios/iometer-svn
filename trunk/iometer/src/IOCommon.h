@@ -14,7 +14,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - Added MAX_EXCLUDE_FILESYS so excluded filesystem    ## */
+/* ##                 types are no longer hard coded.                     ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Different changes to support compilation with       ## */
 /* ##                 gcc 3.2 (known as cout << hex error).               ## */
 /* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
@@ -373,6 +376,7 @@ enum ReturnVal {
 #define MAX_NETWORK_NAME	128
 #define MAX_NUM_INTERFACES	32
 #define MAX_WORKER_NAME		128
+#define MAX_EXCLUDE_FILESYS     128
 
 #define ALL_MANAGERS		-16
 #define MANAGER				-8

@@ -1,3 +1,22 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Dynamo) / IOManagerSolaris.cpp                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: OS specific Manager functions for Solaris             ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - replaces EXCLUDE_FILESYS define with a string       ## */
+/* ##                 so filesystem types are no longer hard coded.       ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -43,6 +62,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // functions in Manager.
 // 
 //////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
 
 #ifdef SOLARIS
 #include "IOManager.h"
@@ -57,7 +77,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/mnttab.h>
 
 #define MNTTAB_FILE				"/etc/mnttab"
-#define EXCLUDE_FILESYS			"proc specfs config"
 static char *mnttab;
 
 //
@@ -146,7 +165,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	{
 		buffered = FALSE;
 		// see if the current file sys is an excluded file system type for dynamo.
-		if (strstr(EXCLUDE_FILESYS, mtab.mnt_fstype) != NULL)
+		if (strstr(exclude_filesys, mtab.mnt_fstype) != NULL)
 			continue;
 
 		if (hasmntopt(&mtab, "forcedirectio") == NULL)

@@ -1,3 +1,25 @@
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  (Dynamo) / IOManager.h                                             ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: This is the headerfile for the dynamo Manager class   ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - Added exclude_filesys string so excluded filesystem ## */
+/* ##                 types are no longer hard coded.                     ## */
+/* ##               - Moved DEFAULT_EXCLUDE_FILESYS in to here from the   ## */
+/* ##                 platform dependent cpp files                        ## */
+/* ##               - Added shm to the DEFAULT_EXCLUDE_FILESYS list       ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 /*
 Intel Open Source License 
 
@@ -44,7 +66,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // system-level results (CPU and network), etc.  
 //
 //////////////////////////////////////////////////////////////////////
-
+/* ######################################################################### */
 #ifndef MANAGER_DEFINED
 #define MANAGER_DEFINED
 
@@ -55,6 +77,18 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 void	Wait_for_Prepare( void *grunt_thread_info );
+
+#ifndef UNIX
+// if we are not on UNIX the excluded filesystem stuff doesn't really matter
+#define DEFAULT_EXCLUDE_FILESYS
+#else // UNIX
+#ifdef LINUX
+#define DEFAULT_EXCLUDE_FILESYS "proc shm swap devpts"
+#endif // LINUX
+#ifdef SOLARIS
+#define DEFAULT_EXCLUDE_FILESYS "proc specfs config"
+#endif // SOLARIS
+#endif // UNIX
 
 
 //
@@ -79,6 +113,7 @@ public:
 	int			data_size;				// Size of currently allocated data buffer.
 
 	char		manager_name[MAX_WORKER_NAME];	// Name of manager, customizable on command line.
+	char            exclude_filesys[MAX_EXCLUDE_FILESYS]; // filesystem types to exclude, command line option
 	
 #ifdef UNIX
 	char* 		swap_devices;

@@ -4,7 +4,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Job .......: <to be set>                                           ## */
+/* ##  Job .......: This is file contains is basically the interface      ## */
+/* ##               for dynamo.  It handles parameter parsing, usage      ## */
+/* ##               info and the actual main() method.                    ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -12,7 +14,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##               - Added a command line option for passing the         ## */
+/* ##                 list of filesystem types to ignore when building    ## */
+/* ##                 the device list for Iometer).                       ## */
+/* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Addition command line option for passing an         ## */
 /* ##                 alternative network name to Iometer (which that     ## */
 /* ##                 one is using to communicate with this Dynamo).      ## */
@@ -86,7 +92,8 @@ static void ParseParam(	const char* pszParam,
                         BOOL bLast,
 			char iometer[MAX_NETWORK_NAME],
 			char manager_name[MAX_WORKER_NAME],
-			char manager_computer_name[MAX_NETWORK_NAME] );
+			char manager_computer_name[MAX_NETWORK_NAME],
+			char manager_exclude_fs[MAX_EXCLUDE_FILESYS] );
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -108,11 +115,19 @@ int main( int argc, char *argv[] )
 
 	iometer[0] = 0;
 	manager.manager_name[0] = 0;
+	manager.exclude_filesys[0] = 0;
 
 	//provide a temporary global ptr to the version string for Syntax() to use
 	g_pVersionStringWithDebug = manager.GetVersionString(TRUE);
 	for (int counter=1; counter<argc; counter++)
-		ParseParam(argv[counter], counter==argc-1, iometer, manager.manager_name, manager.prt->network_name);
+		ParseParam(argv[counter],
+	                               counter==argc-1,
+	                               iometer,
+	                               manager.manager_name,
+	                               manager.prt->network_name,
+	                               manager.exclude_filesys
+	                               );
+
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
 
 	// If there were command line parameters, indicate that they were recognized.
@@ -125,7 +140,15 @@ int main( int argc, char *argv[] )
 		if ( manager.manager_name[0] )
 			cout << "   New manager name is \"" << manager.manager_name << "\"" << endl;
 	}
-
+	if ( manager.exclude_filesys[0] )
+        {
+        cout << "\nExcluding the following filesystem types:" << endl;
+        cout << "   \"" << manager.exclude_filesys << "\"" << endl;
+        }
+        else
+        {
+        strcpy(manager.exclude_filesys, DEFAULT_EXCLUDE_FILESYS);
+         }
 	cout << endl;
 
 #ifdef UNIX
@@ -246,6 +269,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
 #endif
 	cout << "dynamo [iometer_computer_name [manager_name [manager_network_name]]]" << endl;
 	cout << "dynamo [/i iometer_computer_name] [/n manager_name] [/m manager_network_name]" << endl;
+	cout << "       [/x excluded_fs_type]" << endl;
 	cout << endl;
 	cout << "   ? - show Dynamo version number and command line syntax" << endl;
 	cout << endl;
@@ -263,6 +287,11 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "      with this manager. The default is the IP adress of the host's first" << endl;
 	cout << "      NIC." << endl;
 	cout << endl;
+	cout << "   excluded_fs_type - type of filesystems to exclude from device search" << endl;
+         cout << "      This string should contian the filesystem types that are not reported" << endl;
+         cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
+         cout << endl;
+
 	
 	exit( 0 );
 }
@@ -273,7 +302,9 @@ void ParseParam( const char* pszParam,
                  BOOL bLast,
 		 char iometer[MAX_NETWORK_NAME],
 		 char manager_name[MAX_WORKER_NAME],
-		 char manager_computer_name[MAX_NETWORK_NAME] )
+		 char manager_computer_name[MAX_NETWORK_NAME],
+                 char manager_exclude_fs[MAX_EXCLUDE_FILESYS] )
+
 {
 	static int param_count = 0;
 	static BOOL switches = FALSE;
@@ -340,6 +371,22 @@ void ParseParam( const char* pszParam,
 				strcpy(manager_computer_name, pszParam);
 			}
 			return;
+		case 'X':
+                        if ( pszParam[0] == '/' || pszParam[0] == '-' )
+                         {
+                              Syntax("Excluded filesystem type should follow the /X switch.");
+                         }
+                         else if ( strlen(pszParam) + strlen(manager_exclude_fs) >= MAX_EXCLUDE_FILESYS)
+                         {
+                                 Syntax("Excluded filesystem list too long.");
+                         }
+                         else
+                        {
+                                 strcat(manager_exclude_fs, pszParam);
+                                 strcat(manager_exclude_fs, " ");
+                         }
+                         return;
+
 		default:
 			{
 				char tmpary[2] = {last_switch, 0};

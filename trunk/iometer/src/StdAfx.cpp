@@ -38,7 +38,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    or disclosed except in accordance with the terms of that agreement.     
 // ==========================================================================
 //
-// StdAafx.cpp: source file that includes just the standard includes
+// StdAfx.cpp: source file that includes just the standard includes
 //	Galileo.pch will be the pre-compiled header
 //	stdafx.obj will contain the pre-compiled type information
 //

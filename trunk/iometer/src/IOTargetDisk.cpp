@@ -12,7 +12,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-02-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added output of major & minor number within         ## */
+/* ##                 the getSectorSizeOfPhysDisk() method.               ## */
+/* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Fixed the getSectorSizeOfPhysDisk() method to       ## */
 /* ##                 detect the sector size was on major and minor       ## */
 /* ##                 number (instead on major number only).              ## */ 
@@ -1586,16 +1589,17 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 
   if (!getDevNums(devName, &major, &minor)) {
     cerr << __FUNCTION__ << ": "
-      "Can't get device numbers to find block size of \"" <<
-      devName << "\".\n";
+      "Can't get device numbers to find block size of \"" << devName << "\"." << endl;
     return(0);
   }
   int fd = open("/dev/kmem", O_RDONLY);
   if (fd < 0) {
     cerr << __FUNCTION__ << ": "
-      "Can't open \"/dev/kmem\" to find block size.\n";
+      "Can't open \"/dev/kmem\" to find block size." << endl;
     return(0);
   }
+  
+  cout << "Major number is " << major << ", Minor number is " << minor << "." << endl;
 
   sectorTableLoc += major * sizeof(int *);
   seekResult = lseek(fd, sectorTableLoc, SEEK_SET);
@@ -1610,8 +1614,8 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
 		close(fd);
 		return(512);
 	}
-	cout << "Sector table loc is " << hex << sectorTableLoc << "\n";
-	cout << "Subtable loc is " << hex << (off_t)sectorSubtableLoc << "\n";
+	cout << "Sector table loc is " << hex << sectorTableLoc << endl;
+	cout << "Subtable loc is " << hex << (off_t)sectorSubtableLoc << endl;
 
   sectorSubtableLoc += minor * sizeof(int *);
   seekResult = lseek(fd, (off_t)sectorSubtableLoc, SEEK_SET);
@@ -1621,7 +1625,7 @@ static int getSectorSizeOfPhysDisk(const char *devName) {
   assert(readResult == sizeof(int));
 
   close(fd);
-	cout << "Block size is " << result << "\n";
+	cout << "Block size is " << result << endl;
 
   return(result);
 }
