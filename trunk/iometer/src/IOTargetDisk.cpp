@@ -8,11 +8,51 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-03-28 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-03-28 (joe@eiler.net)                            ## */
 /* ##               - changes so VC++ 7 (.NET) will compile correctly.    ## */
 /* ##               2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed LINUX_DEBUG, because it is redundant.       ## */
@@ -33,89 +73,50 @@
 /* ##                 to the flags field of the open() function calls).   ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-/*
-Intel Open Source License 
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
 
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOTargetDisk.cpp: Implementation of the Target class for disks.
-// TargetDisk includes all the code that actually accesses a disk target.
-//
-//////////////////////////////////////////////////////////////////////
-/* ######################################################################### */
 
 #include "IOTargetDisk.h"
 #include "IOAccess.h"
 
+
 #define _DISK_MSGS 0
 
-#ifdef UNIX
-#ifdef WORKAROUND_MOD_BUG
-#include <math.h>
-#endif // WORKAROUND_MOD_BUG
 
-#ifdef SOLARIS
-#if defined(__i386) || defined (_IA64)
-// highly specific to Solaris on Intel
-#include <sys/dktp/fdisk.h>
-#endif // __i386 || _IA64
-#include <sys/statvfs.h>
-#include <sys/stat.h>
-#include <sys/dkio.h>
-#include <sys/vtoc.h>
-#endif // SOLARIS
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #ifdef WORKAROUND_MOD_BUG
+  #include <math.h>
+ #endif // WORKAROUND_MOD_BUG
 
-#ifdef LINUX
-#include <assert.h>
-#include <sys/vfs.h>
+ #if defined(IOMTR_OS_SOLARIS)
+  #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
+   // highly specific to Solaris on Intel
+   #include <sys/dktp/fdisk.h>
+  #endif
+  #include <sys/statvfs.h>
+  #include <sys/stat.h>
+  #include <sys/dkio.h>
+  #include <sys/vtoc.h>
+ #endif
+
+ #if defined(IOMTR_OS_LINUX)
+  #include <assert.h>
+  #include <sys/vfs.h>
+ #endif
 #endif
 
-#endif // UNIX
+
 
 /**********************************************************************
  * Forward Declarations
  **********************************************************************/
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 static int getSectorSizeOfPhysDisk(const char *devName);
 static long long getSizeOfPhysDisk(const char *devName);
 static BOOL getDevNums(const char *devName, int *major, int *minor);
 static off_t getSectorTableLoc(void);
 #endif
+
 
 
 //
@@ -125,10 +126,12 @@ TargetDisk::TargetDisk()
 {
 	sector_align_mask = NOT_POWER_OF_TWO;
 
-#ifdef UNIX
-  disk_file = (HANDLE)&file_handle;
+#if defined(IOMTR_OSFAMILY_UNIX)
+	disk_file = (HANDLE)&file_handle;
 #endif
 }
+
+
 
 
 
@@ -143,17 +146,20 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 	memcpy( &spec, target_info, sizeof( Target_Spec ) );
 
 	// Initializing logical disks.
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( IsType( target_info->type, LogicalDiskType ) )
 		retval = Init_Logical( spec.name[0] );
 	else if ( IsType( target_info->type, PhysicalDiskType ) )
 		retval = Init_Physical( atoi( spec.name + 14 ) );
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 	if ( IsType( target_info->type, LogicalDiskType ) )
 		retval = Init_Logical( spec.name );
 	else if ( IsType( target_info->type, PhysicalDiskType ) )
 		retval = Init_Physical( spec.name );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
+
 	else
 	{
 		cout << "*** Invalid disk type in TargetDisk::Initialize()." << endl;
@@ -165,7 +171,12 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 		// Setting size of disk, if it was successfully initialized
 		Set_Size( spec.disk_info.maximum_size );
 
-#ifdef _sparc
+#if defined(IOMTR_CPU_SPARC)
+ // To tell the truth, I have no idear, if this is
+ // a.) Only specific to the Sparc systems (so Linux on Sparc has to do the same)
+ // b.) Only specific to the Solaris operating system (so Solaris on i386 has to do the same)
+ // c.) Specific to the Sparc system / Solaris operating system combination (current implementation)
+ #if defined(IOMTR_OS_SOLARIS)
 		if (spec.disk_info.starting_sector)
 			Set_Starting_Sector( spec.disk_info.starting_sector);
 		else
@@ -180,16 +191,24 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 				//
 				Set_Starting_Sector( 1 );
 			}
-#else // _sparc
+ #else    			
+  #error ===> ERROR: Broken port, advice needed!
+ #endif
+#elif defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
 		Set_Starting_Sector( spec.disk_info.starting_sector );
-#endif // _sparc
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 	}
 
 	return retval;
 } 
 
 
-#if defined (_WIN32) || defined (_WIN64)
+
+
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 //
 // Initialize a logical disk drive.  Logical drives are accessed through
 // a drive letter and may be local or remote.
@@ -209,7 +228,7 @@ BOOL TargetDisk::Init_Logical( char drive )
 	// Getting size information about the drive.
 	return( Set_Sizes() );
 }
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 // UNIX logical drives are accessed through path names.
 BOOL TargetDisk::Init_Logical( char *drive )
 {
@@ -242,10 +261,15 @@ BOOL TargetDisk::Init_Logical( char *drive )
 	// Getting size information about the drive.
 	return( Set_Sizes() );
 }
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 
-#if defined (_WIN32) || defined (_WIN64)
+
+
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 //
 // Initialize a physical disk drive.  Physical drives are accessed below
 // the file system layer for RAW access.  As a result, data corruption could
@@ -267,7 +291,7 @@ BOOL TargetDisk::Init_Physical( int drive )
 	// Getting information about the size of the drive.
 	return( Set_Sizes() );
 }
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 BOOL TargetDisk::Init_Physical( char *drive )
 {
 	// Setting the spec.name of the drive.
@@ -298,7 +322,13 @@ BOOL TargetDisk::Init_Physical( char *drive )
 	// Getting information about the size of the drive.
 	return( Set_Sizes() );
 }
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
+
+
+
+
 
 //
 // Setting the maximum amount of disk space to access during testing.
@@ -323,6 +353,8 @@ void TargetDisk::Set_Size( int maximum_size )
 		#endif
 	}
 }
+
+
 
 
 
@@ -362,13 +394,15 @@ void TargetDisk::Set_Starting_Sector( int starting_sector )
 
 
 
+
+
 //
 // Setting information about the physical size of the drive.  This is
 // used in order to guarantee that accesses to the drive are permitted,
 // that is align on the sector sizes, and to allow random accesses over
 // the entire drive.
 //
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 {
 	DWORD		i;
@@ -471,18 +505,114 @@ BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 		return FALSE;
 	}
 }
-#elif defined(SOLARIS)
+#elif defined(IOMTR_OS_LINUX)
+//
+// Performs same function as the win32 || _WIN64 version.
+//
+BOOL TargetDisk::Set_Sizes( BOOL open_disk )
+{
+	struct stat fileInfo;
+	struct statfs fsInfo;
+	int statResult;
+	int fd = -1;
+	char filesysName[MAX_NAME];
+
+	if (open_disk) {
+		if (!Open(NULL)) {
+#ifdef _DEBUG
+			cout << __FUNCTION__ << ": Open on \"" << file_name <<
+				"\" failed (error " << strerror(errno) << ").\n";
+#endif			
+			return(FALSE);
+		}
+		fd = ((struct File *)disk_file)->fd;
+	}
+	if (IsType(spec.type, LogicalDiskType)) {
+		/*
+		 * For logical disks, we use statfs and stat to find the size of the
+		 * file system, the size of the test file, the sector size for the
+		 * file system, etc. Pretty straightforward, standard Unix stuff.
+		 */
+		strcpy(filesysName, file_name);
+		filesysName[strlen(filesysName) - strlen(TEST_FILE)] = '\0';
+		if (open_disk) {
+			statResult = fstatfs(fd, &fsInfo);
+		} else {
+			statResult = statfs(filesysName, &fsInfo);
+		}
+		if (statResult < 0) {
+			cerr << __FUNCTION__ << ": Couldn't statfs logical disk file!\n";
+			if (open_disk) {
+				Close(NULL);
+			}
+			return(FALSE);
+		}
+		spec.disk_info.sector_size = fsInfo.f_bsize;
+		sector_align_mask = ~((DWORDLONG)fsInfo.f_bsize - 1);
+		/* Free blocks is "f_bfree". */
+		if (open_disk) {
+			statResult = fstat(fd, &fileInfo);
+		} else {
+			statResult = stat(file_name, &fileInfo);
+		}
+		if (statResult < 0) {
+			cerr << __FUNCTION__ << ": Error " << strerror(errno) <<
+				"statting file " << file_name << "\n";
+			if (open_disk) {
+				Close(NULL);
+			}
+			return(FALSE);
+		}
+		size = fileInfo.st_size;
+		if (size == 0) {
+			spec.disk_info.ready = FALSE;
+			if (open_disk) {
+				Close(NULL);
+			}
+			unlink(file_name);
+			return(TRUE);
+		}
+		ending_position = size;
+		spec.disk_info.ready = TRUE;
+		if (open_disk) {
+			Close(NULL);
+		}
+		return(TRUE);
+	} else {
+		spec.disk_info.sector_size = getSectorSizeOfPhysDisk(file_name);
+		if (spec.disk_info.sector_size == 0) {
+			cerr << __FUNCTION__ << ": Failed to get sector size. Aborting " <<
+				"target.\n";
+			if (open_disk) {
+				Close(NULL);
+			}
+			return(FALSE);
+		}
+		size = getSizeOfPhysDisk(file_name);
+		alignment = 0;
+		sector_align_mask = ~((DWORDLONG)spec.disk_info.sector_size - 1);
+		ending_position = size;
+		offset = 0;
+		bytes_transferred = 0;
+		spec.disk_info.ready = TRUE;
+		if (open_disk) {
+			Close(NULL);
+		}
+		return(TRUE);
+	}
+}
+#elif defined(IOMTR_OS_SOLARIS)
 int TargetDisk::Set_Sizes( BOOL open_disk )
 {
-	DWORD				fd;
-//  DWORD       i;
-//	DWORD				low_size, high_size;
-//	DWORD				sectors_per_cluster, free_clusters, total_clusters;
-//	BOOL				foundPartitions = FALSE;
-//	DWORD				disk_info_size;
+	DWORD			fd;
+// 	DWORD       		i;
+//	DWORD			low_size, high_size;
+//	DWORD			sectors_per_cluster, free_clusters, total_clusters;
+//	BOOL			foundPartitions = FALSE;
+//	DWORD			disk_info_size;
 	struct statvfs		st;
 	struct dk_geom		disk_geo_info;
-	struct vtoc			disk_vtoc;
+	struct vtoc		disk_vtoc;
 
 	// Logical and physical drives are treated differently.
 	if ( open_disk )
@@ -570,9 +700,9 @@ int TargetDisk::Set_Sizes( BOOL open_disk )
 					return(FALSE);
 				}
 			}
-#if defined (__i386) || defined (_IA64)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
 			else
-		{
+			{
 				// We are dealing with an fdisk partition.
 				size = Get_Partition_Size(part_name, part);
 #ifdef _DEBUG
@@ -643,114 +773,10 @@ int TargetDisk::Set_Sizes( BOOL open_disk )
 		return ( FALSE );
 	}		
 }
-#endif /* UNIX */
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 
-
-#ifdef UNIX
-#ifdef SOLARIS
-#if defined (__i386) || defined (_IA64)
-// highly specific to Solaris on Intel
-BOOL TargetDisk::Look_For_Partitions()
-{
-	char buffer[512];
-	int bytes_read, i;
-	struct mboot *mb;
-	struct ipart *ip;
-	struct File		*fp;
-
-	fp = (struct File *)disk_file;
-	if ((bytes_read = read(fp->fd, buffer, SECTOR_SIZE)) < SECTOR_SIZE)
-	{
-		// cannot read from the disk. So we should try to use it.
-		// simply return (TRUE) indicating that it has partitions.
-		return(TRUE);
-	}
-
-	//
-	// We have read 512 bytes of the first cylinder, first sector.
-	// It contains the master boot record, the partition table and mboot signature (viz 0xAA55)
-	//
-	mb = (struct mboot *)buffer;
-	if (mb->signature != MBB_MAGIC)
-		// Hmmm... This drive appears to be freshly formatted. guess we can report it.!
-		return(FALSE);
-	else
-	{
-		// well, we did have a valid signature in the mboot. Look for valid partitions.
-		for (i = 0; i < FD_NUMPART; i++)
-		{
-			ip = (struct ipart *) (buffer + BOOTSZ + (i * sizeof(struct ipart)));
-			if (ip->numsect || ip->relsect)
-				return(TRUE);
-		}
-	}
-	return(FALSE);
-}
-
-DWORDLONG TargetDisk::Get_Partition_Size(char *part_name, int part)
-{
-	char disk_name[MAX_NAME];
-	char buffer[512];
-	int bytes_read, fd;
-	struct ipart *ip;
-	int length;
-
-	length = strlen(part_name);
-	part_name[length-1] = '0'; 		// Converting cXtXdXpX to cXtXdXp0
-	sprintf(disk_name, "%s/%s", RAW_DEVICE_DIR, part_name);
-	fd = open(disk_name, O_RDONLY);
-	if (fd < 0)
-	{
-		return(0);
-	}
-
-	if ((bytes_read = read(fd, buffer, SECTOR_SIZE)) < SECTOR_SIZE)
-	{
-		close(fd);
-		return(0);
-	}
-
-	//
-	// We have read 512 bytes of the first cylinder, first sector.
-	// It contains the master boot record, the partition table and mboot signature (viz 0xAA55)
-	//
-	close(fd);
-	ip = (struct ipart *) (buffer + BOOTSZ + ((part-1) * sizeof(struct ipart)));
-	return((DWORDLONG)ip->numsect * SECTOR_SIZE);
-}
-#endif // __i386 || _IA64
-
-DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
-{
-	char disk_name[MAX_NAME];
-//	int bytes_read;
-  int fd;
-	struct vtoc this_vtoc;
-	int length;
-
-	length = strlen(part_name);
-	part_name[length-1] = '2'; 		// Converting cXtXdXsX to cXtXdXs2
-	sprintf(disk_name, "%s/%s", RAW_DEVICE_DIR, part_name);
-	fd = open(disk_name, O_RDONLY);
-	if (fd < 0)
-	{
-		return(0);
-	}
-
-	if (ioctl(fd, DKIOCGVTOC, &this_vtoc) < 0)
-	{
-		close(fd);
-		return(0);
-	}
-	//
-	// We have the vtoc.
-	// It contains the slice info (including size).
-	//
-	close(fd);
-	return((DWORDLONG)this_vtoc.v_part[part].p_size * this_vtoc.v_sectorsz);
-}
-#endif // SOLARIS
-#endif // UNIX
 
 
 
@@ -789,6 +815,9 @@ void TargetDisk::Set_Sector_Info()
 }
 
 
+
+
+
 #define PREPARE_QDEPTH	16
 
 //
@@ -825,7 +854,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 		// Create an event.
 		olap[i].hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 		SetQueueSize(olap[i].hEvent, 1);
 #endif
 
@@ -851,7 +880,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 		//     handle whose low-order bit is set keeps I/O completion from being 
 		//     queued to the completion port. 
 		//
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		olap[i].hEvent = (HANDLE) ( (UINT_PTR) olap[i].hEvent | 0x0000000000000001 );
 #else
 		olap[i].hEvent = (HANDLE) ( (unsigned long) olap[i].hEvent | 0x00000001 );
@@ -1027,7 +1056,7 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 	// Destroy the events.
 	for ( i = 0; i < PREPARE_QDEPTH; i++ )
 	{
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 		// Reset the handles.
 		olap[i].hEvent = (HANDLE)((unsigned int) olap[i].hEvent ^ 0x1);
 #endif
@@ -1042,6 +1071,8 @@ BOOL TargetDisk::Prepare( void* buffer, DWORDLONG *prepare_offset, DWORD bytes, 
 
 
 
+
+
 //
 // Opening a disk for low-level access.
 //
@@ -1052,24 +1083,22 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	{
 		// Ignore errors that occur if trying to open a floppy or CD-ROM with
 		// nothing in the drive.
-#ifdef SOLARIS
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|O_LARGEFILE|open_flag, S_IRUSR|S_IWUSR);
-#elif defined(LINUX)
-		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|O_LARGEFILE|open_flag, S_IRUSR|S_IWUSR);
-#else  // WIN32 || _WIN64
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile( file_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | 
 			FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED, NULL );
 		SetErrorMode( 0 );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	}
 	else if ( IsType( spec.type, PhysicalDiskType ) )
 	{
-#ifdef SOLARIS
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
-#elif defined(LINUX)
-		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
-#else // WIN32 || _WIN64
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		SetErrorMode( SEM_FAILCRITICALERRORS );
 		disk_file = CreateFile(file_name, GENERIC_READ | GENERIC_WRITE,
 													 FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -1077,6 +1106,8 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 													 FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED,
 													 NULL );
 		SetErrorMode( 0 );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	}
 	else
@@ -1088,10 +1119,12 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	#if _DISK_MSGS
 		cout << "Opening disk " << spec.name << endl;
 	#endif
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)	
 	if ( ((struct File *)disk_file)->fd == (int)INVALID_HANDLE_VALUE )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 		return FALSE;
 
@@ -1107,6 +1140,9 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 }
 
 
+
+
+
 //
 // Closing the disk handle.
 //
@@ -1115,10 +1151,12 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 	// Note that test_state is not used.  It IS used by network targets.
 
 	// If testing connection rate, the disk may already be closed.
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)disk_file)->fd == (int)INVALID_HANDLE_VALUE )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		#if _DISK_MSGS
@@ -1131,10 +1169,12 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 		cout << "Closing disk " << spec.name << endl;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( !CloseHandle( disk_file ) )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	if ( !CloseHandle( disk_file, FILE_ELEMENT) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	{
 		cout << "*** Error " << GetLastError() 
@@ -1142,178 +1182,17 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 		SetLastError( 0 );
 		return FALSE;
 	}
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	disk_file = INVALID_HANDLE_VALUE;
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	((struct File *)disk_file)->fd = (int)INVALID_HANDLE_VALUE;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 	return TRUE;
 }
 
 
-
-//
-// Reading a user specified amount of data from the drive and returning it.
-// This does not check the request size to be a multiple of the sector size 
-// (except in debug).  For performance reasons, Iometer ensures that the 
-// values are correct.
-//
-ReturnVal TargetDisk::Read( LPVOID buffer, Transaction *trans )
-{
-	DWORD	error_no;
-
-	#if _DEBUG
-		// Checking for the access to be a multiple of the sector size.
-		// Avoiding this check during actual testing for performance reasons.
-		if ( offset % spec.disk_info.sector_size )
-		{
-			cout << "Invalid offset.  Not aligned with disk sector size for : " << spec.name << endl;
-			return( ReturnError );
-		}
-		if ( trans->size % spec.disk_info.sector_size )
-		{
-			cout << "Invalid transfer size.  Not aligned with disk sector size for : " << spec.name << endl;
-			return( ReturnError );
-		}
-	#endif
-
-	#if _DETAILS
-		cout << "Reading " << trans->size << " bytes from disk : " 
-			<< spec.name << endl << "   Accessing : " << offset << endl;
-	#endif
-	
-	// Determining location of read to disk.
-	trans->asynchronous_io.Offset = (DWORD) offset;
-	trans->asynchronous_io.OffsetHigh = (DWORD) ( offset >> 32 );
-
-	// Reading information from the disk.
-	if ( ReadFile( disk_file, buffer, trans->size, &bytes_transferred, 
-		&trans->asynchronous_io ) )
-	{
-		// Read succeeded immediately, but completion is pending.  It will
-		// still go to the completion queue.
-#if defined(UNIX) && defined(IMMEDIATE_AIO_COMPLETION)
-		// This code blocks reading the completion Q for the immediately completed I/Os.
-		error_no = 0;
-		// this is for the next sequential I/O.
-		bytes_transferred = trans->size;
-		return ReturnSuccess;
-#else // All other cases UNIX, NT, etc.
-		error_no = ERROR_IO_PENDING;
-#endif
-	}
-	else
-	{
-		error_no = GetLastError();
-	}
-
-	// See if read failed.
-	if ( error_no != ERROR_IO_PENDING )
-	{
-		// Record that no bytes were read.
-		bytes_transferred = 0;
-		
-		// Return error.
-		cout << "*** Error " << error_no << " reading " << trans->size 
-			<< " bytes from disk " << spec.name << "." << endl;
-		return ReturnError;
-	}
-
-	// An asynchronous read was successfully initiated!
-
-	// Record number of bytes *to be* transferred (ReadFile() set this to 0).
-	// This value will be used to determine location of next sequential I/O.
-	bytes_transferred = trans->size;
-
-	#if _DETAILS
-		cout << "Queued read for " << trans->size << " bytes from disk " 
-			<< spec.name << "." << endl;
-	#endif
-	return ReturnPending;
-}
-
-
-
-//
-// Writing a user defined buffer to the drive.  This does not check the request size 
-// to be a multiple of the sector size (except in debug).  For performance reasons,
-// Iometer ensures that the values are correct.
-//
-ReturnVal TargetDisk::Write( LPVOID buffer, Transaction *trans )
-{
-	DWORD	error_no;
-
-	#if _DEBUG
-		// Verifying that the amount to be written is a multiple of the sector size.
-		// Avoiding this check during actual testing for performance reasons.
-		if ( offset % spec.disk_info.sector_size )
-		{
-			cout << "Invalid offset.  Not aligned with disk sector size for : " 
-				<< spec.name << endl;
-			return( ReturnError );
-		}
-		if ( trans->size % spec.disk_info.sector_size )
-		{
-			cout << "Invalid transfer size.  Not aligned with disk sector size for : " 
-				<< spec.name << endl;
-			return( ReturnError );
-		}
-	#endif
-
-	#if _DETAILS
-		cout << "Writing " << trans->size << " bytes to disk : " << spec.name 
-			<< endl << "   Accessing : " << offset << endl;
-	#endif
-
-	// Determining location of write to disk.
-	trans->asynchronous_io.Offset = (DWORD) offset;
-	trans->asynchronous_io.OffsetHigh = (DWORD) ( offset >> 32 );
-
-	// Writing information from the disk.
-	if ( WriteFile( disk_file, buffer, trans->size, &bytes_transferred, 
-		&trans->asynchronous_io ) )
-	{
-		// Write succeeded immediately, but completion is pending.  It will
-		// still go to the completion queue.
-#if defined(UNIX) && defined(IMMEDIATE_AIO_COMPLETION)
-		// This code blocks reading the completion Q for the immediately completed I/Os.
-		error_no = 0;
-		// this is for the next sequential I/O.
-		bytes_transferred = trans->size;
-		return ReturnSuccess;
-#else // All other cases UNIX, NT, etc.
-		error_no = ERROR_IO_PENDING;
-#endif
-	}
-	else
-	{
-		error_no = GetLastError();
-	}
-
-	// See if write failed.
-	if ( error_no != ERROR_IO_PENDING )
-	{
-		// Record that no bytes were written.
-		bytes_transferred = 0;
-		
-		// Return error code.
-		cout << "*** Error " << error_no << " writing " << trans->size 
-			<< " bytes to disk " << spec.name << "." << endl;
-		return ReturnError;
-	}
-
-	// An asynchronous write was successfully initiated!  
-	
-	// Record number of bytes *to be* transferred (WriteFile() set this to 0).
-	// This value will be used to determine location of next sequential I/O.
-	bytes_transferred = trans->size;
-
-	#if _DETAILS
-		cout << "Queued write for " << trans->size << " bytes to disk " 
-			<< spec.name << "." << endl;
-	#endif
-	return ReturnPending;
-}
 
 
 
@@ -1344,7 +1223,7 @@ void TargetDisk::Seek( BOOL random, DWORD request_size, DWORD user_alignment,
 	if ( random )
 	{
 		// Set the offset to a random location on the disk.
-#if defined(UNIX) && defined(WORKAROUND_MOD_BUG)
+#if defined(IOMTR_OSFAMILY_UNIX) && defined(WORKAROUND_MOD_BUG)
 		offset = starting_position + (DWORDLONG)fmod(Rand(), size);
 #else
 		offset = starting_position + Rand() % size;
@@ -1475,104 +1354,285 @@ void TargetDisk::Seek( BOOL random, DWORD request_size, DWORD user_alignment,
 	}
 }
 
-#ifdef LINUX
+
+
+
 
 //
-// Performs same function as the win32 || _WIN64 version.
+// Reading a user specified amount of data from the drive and returning it.
+// This does not check the request size to be a multiple of the sector size 
+// (except in debug).  For performance reasons, Iometer ensures that the 
+// values are correct.
 //
-BOOL TargetDisk::Set_Sizes(BOOL open_disk) {
-	struct stat fileInfo;
-	struct statfs fsInfo;
-	int statResult;
-	int fd = -1;
-	char filesysName[MAX_NAME];
+ReturnVal TargetDisk::Read( LPVOID buffer, Transaction *trans )
+{
+	DWORD	error_no;
 
-	if (open_disk) {
-		if (!Open(NULL)) {
-#ifdef _DEBUG
-			cout << __FUNCTION__ << ": Open on \"" << file_name <<
-				"\" failed (error " << strerror(errno) << ").\n";
-#endif			
-			return(FALSE);
+	#if _DEBUG
+		// Checking for the access to be a multiple of the sector size.
+		// Avoiding this check during actual testing for performance reasons.
+		if ( offset % spec.disk_info.sector_size )
+		{
+			cout << "Invalid offset.  Not aligned with disk sector size for : " << spec.name << endl;
+			return( ReturnError );
 		}
-		fd = ((struct File *)disk_file)->fd;
+		if ( trans->size % spec.disk_info.sector_size )
+		{
+			cout << "Invalid transfer size.  Not aligned with disk sector size for : " << spec.name << endl;
+			return( ReturnError );
+		}
+	#endif
+
+	#if _DETAILS
+		cout << "Reading " << trans->size << " bytes from disk : " 
+			<< spec.name << endl << "   Accessing : " << offset << endl;
+	#endif
+	
+	// Determining location of read to disk.
+	trans->asynchronous_io.Offset = (DWORD) offset;
+	trans->asynchronous_io.OffsetHigh = (DWORD) ( offset >> 32 );
+
+	// Reading information from the disk.
+	if ( ReadFile( disk_file, buffer, trans->size, &bytes_transferred, 
+		&trans->asynchronous_io ) )
+	{
+		// Read succeeded immediately, but completion is pending.  It will
+		// still go to the completion queue.
+#if defined(IOMTR_OSFAMILY_UNIX) && defined(IMMEDIATE_AIO_COMPLETION)
+		// This code blocks reading the completion Q for the immediately completed I/Os.
+		error_no = 0;
+		// this is for the next sequential I/O.
+		bytes_transferred = trans->size;
+		return ReturnSuccess;
+#else // All other cases UNIX, NT, etc.
+		error_no = ERROR_IO_PENDING;
+#endif
 	}
-	if (IsType(spec.type, LogicalDiskType)) {
-    /*
-		 * For logical disks, we use statfs and stat to find the size of the
-		 * file system, the size of the test file, the sector size for the
-		 * file system, etc. Pretty straightforward, standard Unix stuff.
-		 */
-		strcpy(filesysName, file_name);
-		filesysName[strlen(filesysName) - strlen(TEST_FILE)] = '\0';
-		if (open_disk) {
-			statResult = fstatfs(fd, &fsInfo);
-		} else {
-			statResult = statfs(filesysName, &fsInfo);
-		}
-		if (statResult < 0) {
-			cerr << __FUNCTION__ << ": Couldn't statfs logical disk file!\n";
-			if (open_disk) {
-				Close(NULL);
-			}
-			return(FALSE);
-		}
-		spec.disk_info.sector_size = fsInfo.f_bsize;
-		sector_align_mask = ~((DWORDLONG)fsInfo.f_bsize - 1);
-		/* Free blocks is "f_bfree". */
-		if (open_disk) {
-			statResult = fstat(fd, &fileInfo);
-		} else {
-			statResult = stat(file_name, &fileInfo);
-		}
-		if (statResult < 0) {
-			cerr << __FUNCTION__ << ": Error " << strerror(errno) <<
-				"statting file " << file_name << "\n";
-			if (open_disk) {
-				Close(NULL);
-			}
-			return(FALSE);
-		}
-		size = fileInfo.st_size;
-		if (size == 0) {
-			spec.disk_info.ready = FALSE;
-			if (open_disk) {
-				Close(NULL);
-			}
-			unlink(file_name);
-			return(TRUE);
-		}
-		ending_position = size;
-		spec.disk_info.ready = TRUE;
-		if (open_disk) {
-			Close(NULL);
-		}
-		return(TRUE);
-	} else {
-		spec.disk_info.sector_size = getSectorSizeOfPhysDisk(file_name);
-		if (spec.disk_info.sector_size == 0) {
-			cerr << __FUNCTION__ << ": Failed to get sector size. Aborting " <<
-				"target.\n";
-			if (open_disk) {
-				Close(NULL);
-			}
-			return(FALSE);
-		}
-		size = getSizeOfPhysDisk(file_name);
-		alignment = 0;
-		sector_align_mask = ~((DWORDLONG)spec.disk_info.sector_size - 1);
-		ending_position = size;
-		offset = 0;
+	else
+	{
+		error_no = GetLastError();
+	}
+
+	// See if read failed.
+	if ( error_no != ERROR_IO_PENDING )
+	{
+		// Record that no bytes were read.
 		bytes_transferred = 0;
-		spec.disk_info.ready = TRUE;
-		if (open_disk) {
-			Close(NULL);
-		}
-		return(TRUE);
+		
+		// Return error.
+		cout << "*** Error " << error_no << " reading " << trans->size 
+			<< " bytes from disk " << spec.name << "." << endl;
+		return ReturnError;
 	}
+
+	// An asynchronous read was successfully initiated!
+
+	// Record number of bytes *to be* transferred (ReadFile() set this to 0).
+	// This value will be used to determine location of next sequential I/O.
+	bytes_transferred = trans->size;
+
+	#if _DETAILS
+		cout << "Queued read for " << trans->size << " bytes from disk " 
+			<< spec.name << "." << endl;
+	#endif
+	return ReturnPending;
 }
 
 
+
+
+
+//
+// Writing a user defined buffer to the drive.  This does not check the request size 
+// to be a multiple of the sector size (except in debug).  For performance reasons,
+// Iometer ensures that the values are correct.
+//
+ReturnVal TargetDisk::Write( LPVOID buffer, Transaction *trans )
+{
+	DWORD	error_no;
+
+	#if _DEBUG
+		// Verifying that the amount to be written is a multiple of the sector size.
+		// Avoiding this check during actual testing for performance reasons.
+		if ( offset % spec.disk_info.sector_size )
+		{
+			cout << "Invalid offset.  Not aligned with disk sector size for : " 
+				<< spec.name << endl;
+			return( ReturnError );
+		}
+		if ( trans->size % spec.disk_info.sector_size )
+		{
+			cout << "Invalid transfer size.  Not aligned with disk sector size for : " 
+				<< spec.name << endl;
+			return( ReturnError );
+		}
+	#endif
+
+	#if _DETAILS
+		cout << "Writing " << trans->size << " bytes to disk : " << spec.name 
+			<< endl << "   Accessing : " << offset << endl;
+	#endif
+
+	// Determining location of write to disk.
+	trans->asynchronous_io.Offset = (DWORD) offset;
+	trans->asynchronous_io.OffsetHigh = (DWORD) ( offset >> 32 );
+
+	// Writing information from the disk.
+	if ( WriteFile( disk_file, buffer, trans->size, &bytes_transferred, 
+		&trans->asynchronous_io ) )
+	{
+		// Write succeeded immediately, but completion is pending.  It will
+		// still go to the completion queue.
+#if defined(IOMTR_OSFAMILY_UNIX) && defined(IMMEDIATE_AIO_COMPLETION)
+		// This code blocks reading the completion Q for the immediately completed I/Os.
+		error_no = 0;
+		// this is for the next sequential I/O.
+		bytes_transferred = trans->size;
+		return ReturnSuccess;
+#else // All other cases UNIX, NT, etc.
+		error_no = ERROR_IO_PENDING;
+#endif
+	}
+	else
+	{
+		error_no = GetLastError();
+	}
+
+	// See if write failed.
+	if ( error_no != ERROR_IO_PENDING )
+	{
+		// Record that no bytes were written.
+		bytes_transferred = 0;
+		
+		// Return error code.
+		cout << "*** Error " << error_no << " writing " << trans->size 
+			<< " bytes to disk " << spec.name << "." << endl;
+		return ReturnError;
+	}
+
+	// An asynchronous write was successfully initiated!  
+	
+	// Record number of bytes *to be* transferred (WriteFile() set this to 0).
+	// This value will be used to determine location of next sequential I/O.
+	bytes_transferred = trans->size;
+
+	#if _DETAILS
+		cout << "Queued write for " << trans->size << " bytes to disk " 
+			<< spec.name << "." << endl;
+	#endif
+	return ReturnPending;
+}
+
+
+
+
+
+#if defined(IOMTR_OSFAMILY_UNIX)
+#if defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
+// highly specific to Solaris on Intel
+BOOL TargetDisk::Look_For_Partitions()
+{
+	char buffer[512];
+	int bytes_read, i;
+	struct mboot *mb;
+	struct ipart *ip;
+	struct File		*fp;
+
+	fp = (struct File *)disk_file;
+	if ((bytes_read = read(fp->fd, buffer, SECTOR_SIZE)) < SECTOR_SIZE)
+	{
+		// cannot read from the disk. So we should try to use it.
+		// simply return (TRUE) indicating that it has partitions.
+		return(TRUE);
+	}
+
+	//
+	// We have read 512 bytes of the first cylinder, first sector.
+	// It contains the master boot record, the partition table and mboot signature (viz 0xAA55)
+	//
+	mb = (struct mboot *)buffer;
+	if (mb->signature != MBB_MAGIC)
+		// Hmmm... This drive appears to be freshly formatted. guess we can report it.!
+		return(FALSE);
+	else
+	{
+		// well, we did have a valid signature in the mboot. Look for valid partitions.
+		for (i = 0; i < FD_NUMPART; i++)
+		{
+			ip = (struct ipart *) (buffer + BOOTSZ + (i * sizeof(struct ipart)));
+			if (ip->numsect || ip->relsect)
+				return(TRUE);
+		}
+	}
+	return(FALSE);
+}
+
+DWORDLONG TargetDisk::Get_Partition_Size(char *part_name, int part)
+{
+	char disk_name[MAX_NAME];
+	char buffer[512];
+	int bytes_read, fd;
+	struct ipart *ip;
+	int length;
+
+	length = strlen(part_name);
+	part_name[length-1] = '0'; 		// Converting cXtXdXpX to cXtXdXp0
+	sprintf(disk_name, "%s/%s", RAW_DEVICE_DIR, part_name);
+	fd = open(disk_name, O_RDONLY);
+	if (fd < 0)
+	{
+		return(0);
+	}
+
+	if ((bytes_read = read(fd, buffer, SECTOR_SIZE)) < SECTOR_SIZE)
+	{
+		close(fd);
+		return(0);
+	}
+
+	//
+	// We have read 512 bytes of the first cylinder, first sector.
+	// It contains the master boot record, the partition table and mboot signature (viz 0xAA55)
+	//
+	close(fd);
+	ip = (struct ipart *) (buffer + BOOTSZ + ((part-1) * sizeof(struct ipart)));
+	return((DWORDLONG)ip->numsect * SECTOR_SIZE);
+}
+#endif // __i386 || _IA64
+
+DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
+{
+	char disk_name[MAX_NAME];
+//	int bytes_read;
+  int fd;
+	struct vtoc this_vtoc;
+	int length;
+
+	length = strlen(part_name);
+	part_name[length-1] = '2'; 		// Converting cXtXdXsX to cXtXdXs2
+	sprintf(disk_name, "%s/%s", RAW_DEVICE_DIR, part_name);
+	fd = open(disk_name, O_RDONLY);
+	if (fd < 0)
+	{
+		return(0);
+	}
+
+	if (ioctl(fd, DKIOCGVTOC, &this_vtoc) < 0)
+	{
+		close(fd);
+		return(0);
+	}
+	//
+	// We have the vtoc.
+	// It contains the slice info (including size).
+	//
+	close(fd);
+	return((DWORDLONG)this_vtoc.v_part[part].p_size * this_vtoc.v_sectorsz);
+}
+#endif // SOLARIS
+
+#if defined(IOMTR_OS_LINUX)
 //
 // Get the sector size of a device. We do this by getting the address of the
 // kernel's device sector size table, then reading "/dev/kmem" to examine this
@@ -1781,3 +1841,8 @@ static long long getSizeOfPhysDisk(const char *devName) {
 }
 
 #endif
+#endif // UNIX
+
+
+
+

@@ -53,7 +53,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed IOTime.h inclusion (now in IOCommon.h)      ## */
 /* ##               - Integrated the License Statement into this header.  ## */
 /* ##               - Added new header holding the changelog.             ## */
@@ -66,31 +69,31 @@
 #include "IOCommon.h"
 
 
-#ifdef UNIX
-#include <stdio.h>
-#ifdef SOLARIS
-#include <kstat.h>
-#endif
-#include <sys/sysinfo.h>
-#include <sys/socket.h>
-#ifdef SOLARIS
-#include <sys/sockio.h>
-#endif
-#include <netinet/in.h>
-#include <net/if.h>
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #include <stdio.h>
+ #if defined(IOMTR_OS_SOLARIS)
+  #include <kstat.h>
+ #endif
+ #include <sys/sysinfo.h>
+ #include <sys/socket.h>
+ #if defined(IOMTR_OS_SOLARIS)
+  #include <sys/sockio.h>
+ #endif
+ #include <netinet/in.h>
+ #include <net/if.h>
 
-#include <stropts.h>
-#ifdef SOLARIS
-#include <sys/stream.h>
-#include <sys/tihdr.h>
-#include <inet/mib2.h>
-#endif
+ #include <stropts.h>
+ #if defined(IOMTR_OS_SOLARIS)
+  #include <sys/stream.h>
+  #include <sys/tihdr.h>
+  #include <inet/mib2.h>
+ #endif
 #endif
 
 #define MAX_PERF_SIZE	4096	// Initial memory size allocated to NT performance data.
 
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 // Bit masks to expose information about performance counter types.
 // See winperf.h for additional details about counter definitions.
 #define PERF_SIZE_MASK		0x00000300
@@ -155,24 +158,26 @@ public:
 
 	__int64		time_counter[MAX_SNAPSHOTS];	// Time that NT performance snapshots were taken.
 	int			clock_tick;
-#ifdef SOLARIS
+#if defined(IOMTR_OS_SOLARIS)
 	double		timediff;
 	kstat_ctl_t	*kc;
 	char		nic_names[MAX_NUM_INTERFACES][IFNAMSIZ]; // array of pointers to hold network interface names.
 	struct strbuf	strbuf_ctl, strbuf_data;
 	int			streamfd;						// File descriptor to the stream.
 	char		*ctlbuf, *databuf;
-#elif defined(LINUX)
+#elif defined(IOMTR_OS_LINUX)
 	long long timediff;
-#else
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORDLONG timediff;
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 private:
-	int			Get_Processor_Count();
+	int		Get_Processor_Count();
 	double		Get_Processor_Speed();
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	void		Extract_Counters( DWORD perf_data_type, int snapshot );
 	void		Extract_CPU_Counters( int snapshot );
 	void		Extract_TCP_Counters( int snapshot );
@@ -186,7 +191,7 @@ private:
 	double		Calculate_Stat( __int64 start_value, __int64 end_value, DWORD counter_type );
 #endif
 
-#ifdef UNIX
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	void		Get_CPU_Counters(int snapshot);
 	void		Get_NI_Counters(int snapshot);
 	void		Get_TCP_Counters(int snapshot);
@@ -194,10 +199,10 @@ private:
 
 	LPBYTE		perf_data;				// Pointer to performance data.
 	DWORD		perf_size;				// Size of performance data buffer.
-#if defined (_WIN32) || defined (_WIN64)
-	PERF_OBJECT_TYPE	*perf_object;	// pointer to NT performance data for a specific object
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	PERF_OBJECT_TYPE		*perf_object;	// pointer to NT performance data for a specific object
 	PERF_INSTANCE_DEFINITION	*perf_instance; // pointer to an instance of a specific object
-	PERF_COUNTER_BLOCK	*perf_counters;	// pointer to NT performance counters for a specific instance of an object
+	PERF_COUNTER_BLOCK		*perf_counters;	// pointer to NT performance counters for a specific instance of an object
 #endif
 	//
 	// raw CPU performance counters for Windows NT

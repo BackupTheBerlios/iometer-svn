@@ -1,53 +1,75 @@
-/*
-Intel Open Source License 
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOCompletionQ.cpp                                         ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: UNIX implementations of several key Windows NT        ## */
+/* ##               functions for asynchronous I/O (such as ReadFile(),   ## */
+/* ##               WriteFile(), and GetQueuedCompletionStatus()),        ## */
+/* ##               making it easier to change the Windows code without   ## */
+/* ##               breaking the UNIX versions.                           ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ // nop
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
 
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1998-2000 Intel Corporation
-//                          All rights reserved
-//                INTEL CORPORATION PROPRIETARY INFORMATION
-//    This software is supplied under the terms of a license agreement or
-//    nondisclosure agreement with Intel Corporation and may not be copied
-//    or disclosed except in accordance with the terms of that agreement.
-// ==========================================================================
-//
-// IOCompletionQ.cpp: UNIX implementations of several key Windows NT 
-// functions for asynchronous I/O (such as ReadFile(), WriteFile(), and 
-// GetQueuedCompletionStatus()), making it easier to change the Windows
-// code without breaking the UNIX versions.
-//
-//////////////////////////////////////////////////////////////////////
-
-#ifdef UNIX
 #include "IOCommon.h"
 #include <assert.h>
+
+
+
+
 
 BOOL SetQueueSize(HANDLE cqid, int size)
 {
@@ -78,6 +100,10 @@ BOOL SetQueueSize(HANDLE cqid, int size)
 #endif
 	return(TRUE);
 }
+
+
+
+
 
 //
 // This function is the UNIX equivalent of the NT call to create a IO Completion Port.
@@ -125,6 +151,9 @@ HANDLE CreateIoCompletionPort(HANDLE file_handle, HANDLE cq, DWORD completion_ke
 }
 
 
+
+
+
 //
 // This is the UNIX equivalent of the NT call CreateEvent() which creates an Event Queue.
 // It is similar to a Completion Queue and works in the same way. The only difference is
@@ -154,6 +183,9 @@ HANDLE CreateEvent(void *, BOOL, BOOL, LPCTSTR)
 
 	return((HANDLE)eventqid);
 }
+
+
+
 
 
 //
@@ -266,7 +298,7 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 		*bytes_transferred = 0;
 		*completion_key = 0;
 		if ( (errno == EAGAIN) || (errno == EINVAL) ) {
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 			assert(errno == EAGAIN);
 #endif
 			SetLastError(WAIT_TIMEOUT);
@@ -307,6 +339,9 @@ BOOL GetQueuedCompletionStatus(HANDLE cq, LPDWORD bytes_transferred, LPDWORD com
 	SetLastError(WAIT_TIMEOUT);
 	return(FALSE);
 }
+
+
+
 
 
 //
@@ -421,6 +456,8 @@ BOOL GetOverlappedResult(HANDLE file_handle, LPOVERLAPPED lpOverlapped, LPDWORD 
 	SetLastError(WAIT_TIMEOUT);
 	return(FALSE);
 }
+
+
 
 
 
@@ -540,6 +577,8 @@ BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD byt
 
 
 
+
+
 //
 // WriteFile() writes "bytes_to_write" bytes from the buffer into the file pointed to by
 // the file handle.
@@ -654,6 +693,9 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 }
 
 
+
+
+
 //
 // CloseHandle() has a slightly different interface from the NT call. It takes an
 // additional input parameter to determine the object type. The object can be either
@@ -712,7 +754,7 @@ BOOL CloseHandle(HANDLE object, int object_type)
 			if (!cqid->aiocb_list[i])
 				continue;
 
-#ifdef LINUX
+#if defined(IOMTR_OS_LINUX)
 			/*
 			 * In Linux, you crash (!) if the aiocpb isn't in your queue. :-(
 			 * This code seems to occasionally do this...so I just cancel all
@@ -749,6 +791,8 @@ BOOL CloseHandle(HANDLE object, int object_type)
 	}
 	return(TRUE);
 }
+
+
 
 
 
@@ -808,6 +852,9 @@ char *_itoa(int value, char *string, int radix)
 }
 
 
+
+
+
 unsigned int SetErrorMode(unsigned int umode)
 {
 	// This function does nothing. Just a dummy equivalent of NT calls.
@@ -815,4 +862,14 @@ unsigned int SetErrorMode(unsigned int umode)
 	return(0);
 }
 
-#endif	// UNIX
+
+
+
+
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
+
+
+
+

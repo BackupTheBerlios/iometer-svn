@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed the [BIG|LITTLE]_ENDIAN_ARCH defines.       ## */
 /* ##               - Cleanup the formatting.                             ## */
 /* ##               - Integrated the License Statement into this header.  ## */

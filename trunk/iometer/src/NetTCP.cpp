@@ -559,7 +559,7 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	socklen_t addr_len = sizeof( address );
 
 	fd_set		readfds;
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	struct File    *fp = (struct File *)client_socket;
 #endif
 

@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-05 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Massive cleanup of this file (grouping the          ## */
+/* ##                 different blocks together).                         ## */
+/* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Replaced the [BIG|LITTLE]_ENDIAN_ARCH defines by    ## */
 /* ##                 IsBigEndian() function calls.                       ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -70,14 +73,18 @@
 /* ######################################################################### */
 
 
+
 #include "IOCommon.h"
 #include "IOManager.h"
-#if defined (_WIN32) || defined (_WIN64)
-#include "winsock2.h"
-#else // UNIX
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include "winsock2.h"
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
+ #include <netdb.h>
+ #include <arpa/inet.h>
+ #include <sys/types.h> 
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 #include "IOPortTCP.h"
@@ -126,12 +133,16 @@ Manager::~Manager()
 
 	prt->Close();
 	delete prt;
-#if defined (_WIN32) || defined (_WIN64)
+	
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	VirtualFree( data, 0, MEM_RELEASE );
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 	free(data);
 	free(swap_devices);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
+
 	for ( g = 0; g < grunt_count; g++ )
 		delete grunts[g];
 }
@@ -190,7 +201,7 @@ BOOL Manager::Login( char* port_name )
 	}
 	else
 	{
-#ifdef UNIX
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 		// This will not work correctly if hostname length > MAX_NETWORK_NAME
 		if (gethostname(manager_name, name_size) < 0)
 		{
@@ -198,8 +209,10 @@ BOOL Manager::Login( char* port_name )
 			exit(1);
 		}
 		name_size = strlen(data_msg.data.manager_info.names[0]);
-#else /* WIN_NT */
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		GetComputerName( manager_name, (LPDWORD)&name_size );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 		strcpy(data_msg.data.manager_info.names[0], manager_name);
 	}
@@ -208,11 +221,15 @@ BOOL Manager::Login( char* port_name )
 	data_msg.data.manager_info.processor_speed = perf_data[WHOLE_TEST_PERF].processor_speed;
 	data_msg.data.manager_info.processors      = perf_data[WHOLE_TEST_PERF].processor_count;
 
-#ifdef __sparc
+#if defined(IOMTR_CPU_SPARC)
+ #if defined(IOMTR_OS_SOLARIS)
 	// Calculate processor_speed_to_nsecs for use in rdtsc.c
 	// Note that this works only for MHz CPUs. For GHz CPUs the divisor will change.
-	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].processor_speed / 1000000000;
-#endif // __sparc
+	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].processor_speed / 1000000000; 
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
+#endif
 
 	// Sending login request message.
 	cout << "Sending login request..." << endl;
@@ -279,7 +296,8 @@ BOOL Manager::Login( char* port_name )
 }
 
 
-#ifndef UNIX
+
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 //
 // Checking for all accessible drives.  Storing them, and returning the number
 // of disks found.  Drives are reported in order so that Iometer does not
@@ -354,7 +372,9 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	cout << "   done." << endl << flush;
 	return count;
 }
-#endif // !UNIX
+#endif
+
+
 
 //
 // Checking for all TCP network interfaces.  Storing them, and returning the number
@@ -362,19 +382,19 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 //
 int Manager::Report_TCP( Target_Spec *tcp_spec )
 {
-#if defined (_WIN32) || defined (_WIN64)
-	int 				retval;
-	WSADATA 			wd;
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	int 			 retval;
+	WSADATA 		 wd;
 #endif
 	struct hostent		*hostinfo;
-	struct sockaddr_in	sin;
-	char				hostname[128];
-	int					count = 0;
-	int 				i;
+	struct sockaddr_in	 sin;
+	char			 hostname[128];
+	int			 count = 0;
+	int 			 i;
 
 	cout << "Reporting TCP network information..." << endl;
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// initialize WinSock version 2.0
 	retval = WSAStartup( MAKEWORD(2, 0), &wd ); 
 	if ( retval != 0 )
@@ -438,7 +458,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		count++;
 	#endif
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// clean up WinSock
 	if ( WSACleanup() != 0 )
 	{
@@ -512,19 +532,21 @@ int Manager::Report_VIs( Target_Spec *vi_spec )
 				// Nic does not exist.  See if there is an environment variable
 				// mapping to another NIC name.
 				strcpy( env_var_name, vi_spec[count].name );
-	#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 				if ( !GetEnvironmentVariable( env_var_name, vi_spec[count].name,
 					MAX_NAME ) )
 				{
 					break;
 				}
-	#else//UNIX
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 				if ( getenv( env_var_name ) == NULL )
 					break;
 
 				strncpy( vi_spec[count].name, getenv( env_var_name ), 
 					MAX_NAME - 1 );
-	#endif
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 				// A mapping exists.  Try to open the VI NIC using the 
 				// environment variable setting.
 				if ( !nic.Open( vi_spec[count].name ) )
@@ -1284,14 +1306,16 @@ BOOL Manager::Set_Access( int target, const Test_Spec *spec )
 	// Align all data transfers on a page boundary.  This will work for all disks
 	// with sector sizes that divide evenly into the page size - which is always
 	// the case.
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	VirtualFree( data, 0, MEM_RELEASE );
 	if ( !(data = VirtualAlloc( NULL, grunts[target]->access_spec.max_transfer, 
 		MEM_COMMIT, PAGE_READWRITE )) )
-#else // UNIX
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 	free(data);
 	errno = 0;
 	if ( !(data = valloc(grunts[target]->access_spec.max_transfer) ))
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
 		// Could not allocate a larger buffer.  Signal failure.

@@ -9,11 +9,51 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-05-10 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-05-10 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */
 /* ##               2003-03-05 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Dropped not used defines like IOVER_FILE,           ## */
@@ -23,61 +63,15 @@
 /* ##               - Changed the version to current date.                ## */
 /* ##               2003-02-08 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */
+/* ##               - Added new header holding the changelog.             ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-/*
-Intel Open Source License 
-
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1999-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOVersion.h: Iometer VersionInfo resource value definition file
-// (included in .RC2 file).
-//
-// This file is used by both Iometer and Dynamo.
-//
-//////////////////////////////////////////////////////////////////////
-/* ######################################################################### */
-
 #ifndef _IOVERSION
 #define _IOVERSION
 
-#ifndef UNIX
-#include <winver.h>
+
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #include <winver.h>
 #endif /* !UNIX */
 
 
@@ -113,25 +107,28 @@ extern "C"
 
 
 
-#ifndef UNIX
+#if defined(IOMTR_OSFAMILY_WINDOWS)
 
-#define IOVER_LEGALCOPYRIGHT				"Copyright © 1996-2001 Intel Corporation\0"
-//#define IOVER_LEGALTRADEMARKS			"??? Iometer is a Trademark of Intel Corporation\0"
-#define IOVER_LEGALTRADEMARKS				"\0"
-#define IOVER_COMPANYNAME					"Intel Corporation\0"
+#define IOVER_LEGALCOPYRIGHT			"Copyright © 1996-2001 Intel Corporation\0"
+#define IOVER_LEGALTRADEMARKS			"\0"
+#define IOVER_COMPANYNAME			"Intel Corporation\0"
 
 #ifdef _DEBUG
-#if defined (_WIN64)
-#define IOVER_PRODUCT_NAME			"Iometer 64-bit (DEBUG)\0"
+ #if defined(IOMTR_OS_WIN64)
+  #define IOVER_PRODUCT_NAME			"Iometer 64-bit (DEBUG)\0"
+ #elif defined(IOMTR_OS_WIN32)
+  #define IOVER_PRODUCT_NAME			"Iometer (DEBUG)\0"
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
+ #endif
 #else
-#define IOVER_PRODUCT_NAME			"Iometer (DEBUG)\0"
-#endif // _WIN64
-#else
-#if defined (_WIN64)
-#define IOVER_PRODUCT_NAME			"Iometer 64-bit\0"
-#else
-#define IOVER_PRODUCT_NAME			"Iometer\0"
-#endif // _WIN64
+ #if defined(IOMTR_OS_WIN64)
+  #define IOVER_PRODUCT_NAME			"Iometer 64-bit\0"
+ #elif defined(IOMTR_OS_WIN32)
+  #define IOVER_PRODUCT_NAME			"Iometer\0"
+ #else
+  #warning ===> WARNING: You have to do some coding here to get the port done! 
+ #endif
 #endif // _DEBUG
 
 ////////
@@ -140,34 +137,41 @@ extern "C"
 ////////
 
 #if defined(_GALILEO_)
-#define IOVER_FILETYPE				VFT_APP
-#define IOVER_INTERNAL_NAME			"Galileo\0"
+#define IOVER_FILETYPE			VFT_APP
+#define IOVER_INTERNAL_NAME		"Galileo\0"
 #define IOVER_ORIGINAL_FILE_NAME	"Iometer.exe\0"
-#if defined (_WIN64)
-#define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI (64-bit)\0"
+#if defined(IOMTR_OS_WIN64)
+ #define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI (64-bit)\0"
+#elif defined(IOMTR_OS_WIN32)
+ #define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI\0"
 #else
-#define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI\0"
-#endif // _WIN64
-#define IOVER_COMMENTS				"\0"
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
+#define IOVER_COMMENTS			"\0"
 #endif
 
 #if defined(_PULSAR_)
-#define IOVER_FILETYPE				VFT_APP
-#define IOVER_INTERNAL_NAME			"Pulsar\0"
+#define IOVER_FILETYPE			VFT_APP
+#define IOVER_INTERNAL_NAME		"Pulsar\0"
 #define IOVER_ORIGINAL_FILE_NAME	"Dynamo.exe\0"
-#if defined (_WIN64)
-#define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator (64-bit)\0"
+#if defined(IOMTR_OS_WIN64)
+ #define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator (64-bit)\0"
+#elif defined(IOMTR_OS_WIN32)
+ #define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator\0"
 #else
-#define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator\0"
-#endif // _WIN64
-#define IOVER_COMMENTS				"\0"
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
+#define IOVER_COMMENTS			"\0"
 #endif
 
-#endif /* !UNIX */
+#endif
 
 
 #if defined (__cplusplus)
 }
 #endif
 
+
 #endif // _IOVERSION
+
+

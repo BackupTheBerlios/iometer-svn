@@ -1,59 +1,76 @@
-/*
-Intel Open Source License 
-
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOVIPL.cpp: Implementation of the VIPL class, which provides an interface
-// to the Virtual Interface Programmer's Library (hiding the dynamic linking
-// to vipl.dll).  All members of this class are static, so in effect there
-// is at most one VIPL object in a copy of Dynamo, even though there may be
-// multiple instantiations of it.
-//
-//////////////////////////////////////////////////////////////////////
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOVIPL.cpp                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Implementation of the VIPL class, which provides an   ## */
+/* ##               interface to the Virtual Interface Programmer's       ## */
+/* ##               Library (hiding the dynamic linking to vipl.dll). All ## */
+/* ##               members of this class are static, so in effect there  ## */
+/* ##               is at most one VIPL object in a copy of Dynamo, even  ## */
+/* ##               though there may be multiple instantiations of it.    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 
 
 #include "IOVIPL.h"
 
-#if defined (_WIN32) || defined (_WIN64)
-#include <iostream>
-using namespace std;
-#else /* !WIN32 || _WIN64 */
-#include <iostream.h>
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+ #include <iostream>
+ using namespace std;
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #include <iostream.h>
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 
@@ -152,7 +169,7 @@ fVipNSShutdown VIPL::VipNSShutdown = NULL;
 //
 VIPL::VIPL()
 {
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Load vipl.dll.
 	if ( !(vipl_dll = LoadLibrary( "vipl.dll" )) )
 	{
@@ -238,9 +255,8 @@ VIPL::VIPL()
 		GetProcAddress( vipl_dll, "VipNSGetHostByAddr" );
 	VipNSShutdown = (fVipNSShutdown)
 		GetProcAddress( vipl_dll, "VipNSShutdown" );
-#else // It's UNIX
+#elif defined(IOMTR_OS_SOLARIS)
 	// When VI library becomes available on Solaris, this should work
-#ifdef SOLARIS
 	if ( (vipl_dll = dlopen( "vipl.so", RTLD_NOW|RTLD_GLOBAL|RTLD_PARENT )) == NULL )
 	{
 		#ifdef _DEBUG
@@ -324,12 +340,11 @@ VIPL::VIPL()
 		dlsym( vipl_dll, "VipNSGetHostByAddr" );
 	VipNSShutdown = (fVipNSShutdown)
 		dlsym( vipl_dll, "VipNSShutdown" );
-
-#else // ! SOLARIS (different UNIX)
-	THE COMPILER SHOULD NOT HAVE COME HERE (VI code).
-#endif // SOLARIS
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-
 }
 
 
@@ -339,18 +354,18 @@ VIPL::VIPL()
 //
 VIPL::~VIPL()
 {
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// If library had previously been loaded, free it.
 	if ( vipl_dll )
 		FreeLibrary( vipl_dll );
-#else // UNIX
-#ifdef SOLARIS
+#elif defined(IOMTR_OS_SOLARIS)
 	if ( vipl_dll )
 		dlclose( vipl_dll );
 	return;
-#else // !SOLARIS (different UNIX)
-	THE COMPILER SHOULD NOT HAVE COME HERE (VI code).
-#endif // SOLARIS
+#elif defined(IOMTR_OS_LINUX)
+ // nop
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 }
 

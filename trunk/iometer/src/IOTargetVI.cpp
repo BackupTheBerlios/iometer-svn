@@ -1,47 +1,62 @@
-/*
-Intel Open Source License 
+/* ######################################################################### */
+/* ##                                                                     ## */
+/* ##  Dynamo / IOTargetVI.cpp                                            ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Job .......: Implementation of the Target class for Virtual        ## */
+/* ##               Interface Architecture (VI) targets.                  ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Remarks ...: <none>                                                ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
+/* ##                 global defines.                                     ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               - Added new header holding the changelog.             ## */
+/* ##                                                                     ## */
+/* ######################################################################### */
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOTargetVI.cpp: Implementation of the Target class for Virtual Interface
-// Architecture (VI) targets.
-//
-//////////////////////////////////////////////////////////////////////
 
 #include "IOTargetVI.h"
 
@@ -86,10 +101,12 @@ TargetVI::~TargetVI()
 
 	// Release descriptor memory.
 	if ( descriptors )
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		VirtualFree( descriptors, 0, MEM_RELEASE );
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 		free(descriptors);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	// Close the VI NIC.
@@ -120,10 +137,12 @@ BOOL TargetVI::Initialize( Target_Spec *target_info, CQ *completion_queue )
 
 	// First free the descriptors.
 	if ( descriptors )
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		VirtualFree( descriptors, 0, MEM_RELEASE );
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 		free(descriptors);
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	// Allocate enough descriptors to meet requested queue depth setting.
@@ -131,12 +150,14 @@ BOOL TargetVI::Initialize( Target_Spec *target_info, CQ *completion_queue )
 	// control for each queue depth specified
 	descriptor_count = (target_info->vi_info.outstanding_ios + 1) * 
 		target_info->queue_depth + 2;
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( !(descriptors = (VIP_DESCRIPTOR*) VirtualAlloc( NULL, descriptor_count * 
 		sizeof( VIP_DESCRIPTOR ), MEM_COMMIT, PAGE_READWRITE )) )
-#else
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
 	if ( !(descriptors = (VIP_DESCRIPTOR*) valloc( descriptor_count * 
 		sizeof( VIP_DESCRIPTOR ) )) )
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
 		// Could not allocate descriptors.  Signal failure.

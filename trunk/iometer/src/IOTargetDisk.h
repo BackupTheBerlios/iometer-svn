@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Replaced the [BIG|LITTLE]_ENDIAN_ARCH defines by    ## */
+/* ##                 IsBigEndian() function calls.                       ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed IOTime.h inclusion (now in IOCommon.h)      ## */
 /* ##               - Integrated the License Statement into this header.  ## */
 /* ##               - Added new header holding the changelog.             ## */
@@ -65,18 +68,21 @@
 #include "IOCQAIO.h"
 
 
-#ifdef UNIX
-#ifndef _LP64
-#define _LP64 /* to get at the 64 bit max long. */
-#define _LP64_DEFINED
-#endif /* _LP64 */
-#define MAX_DISK_SIZE	LONG_MAX
-#ifdef _LP64_DEFINED
-#undef _LP64
-#endif /* _LP64_DEFINED */
-#else /* WIN_NT default */
-#define MAX_DISK_SIZE	_I64_MAX
-#endif /* UNIX */
+#if defined(IOMTR_OSFAMILY_UNIX)
+ #ifndef _LP64
+ #define _LP64 /* to get at the 64 bit max long. */
+ #define _LP64_DEFINED
+ #endif /* _LP64 */
+ #define MAX_DISK_SIZE	LONG_MAX
+ #ifdef _LP64_DEFINED
+ #undef _LP64
+ #endif /* _LP64_DEFINED */
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+ #define MAX_DISK_SIZE	_I64_MAX
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
 #define MAX_PARTITIONS	26
 
 // File names used to access a given drive.
@@ -84,14 +90,16 @@
 #define PHYSICAL_DISK	"\\\\.\\PHYSICALDRIVE"
 #define TEST_FILE		"iobw.tst"
 
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 #define ERROR_DISK_FULL					ENOSPC
 #define SECTOR_SIZE						512
 
-#ifdef SOLARIS
-#define RAW_DEVICE_DIR					"/dev/rdsk"
-#elif defined(LINUX)
-#define RAW_DEVICE_DIR					"/dev"
+#if defined(IOMTR_OS_SOLARIS)
+ #define RAW_DEVICE_DIR					"/dev/rdsk"
+#elif defined(IOMTR_OS_LINUX)
+ #define RAW_DEVICE_DIR					"/dev"
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 #endif
@@ -109,14 +117,16 @@ public:
 
 	BOOL		Initialize( Target_Spec *target_info, CQ *cq );
 
-#if defined (_WIN32) || defined (_WIN64)
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Initialize logical disks (e.g. C:, D:, E:, etc.).
 	BOOL		Init_Logical( char drive );
 	// Initialize physical (system) disks (e.g. physicaldisk0, physicaldisk1, etc.).
 	BOOL		Init_Physical( int drive );
-#else // UNIX
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	BOOL		Init_Logical( char *drive );
 	BOOL		Init_Physical( char *drive );
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
 	void		Set_Size( int maximum_size = 0 );
@@ -145,7 +155,7 @@ private:
 	CQAIO		*io_cq;
 
 	HANDLE		disk_file;
-#ifdef UNIX
+#if defined(IOMTR_OSFAMILY_UNIX)
 	struct File		file_handle;
 #endif
 	DWORDLONG	size;					// Size of the disk in bytes.
@@ -157,7 +167,7 @@ private:
 	DWORDLONG	ending_position;		// Last byte where transfers can occur.
 	DWORDLONG	offset;
 	DWORD		bytes_transferred;		// Number of bytes successfully transferred to the disk.
-#ifdef SOLARIS
+#if defined(IOMTR_OS_SOLARIS)
 	BOOL		Look_For_Partitions();	// private member function to look for partitions on disk.
 	DWORDLONG	Get_Partition_Size(char *, int);	// private member function to get the partition size.
 	DWORDLONG	Get_Slice_Size(char *, int);	// private member function to get the slice size.
