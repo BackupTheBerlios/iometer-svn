@@ -1,0 +1,43 @@
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+         1         2         3         4         5         6         7         8
+----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|
+
+
+
+ToDo:
+=====
+
+ - IOManager.cpp: As a code remark says, GHz SPARC CPU's has to be recognised
+   in the Login() method (processor_speed_to_nsecs variable).
+ - IOMessage.h / IOTest.h: Merge the files into a common one.
+ - IOPerformance.cpp / IOPerformanceLinux.cpp: Consolidate the Get_*_Counters()
+   and Extract_*_Counters() methods for all operating systems (only one name
+   schema).
+ - <All>: Check if it is possible to move the reorder() function calls into the
+   Send() / Receive() methods (eases code and makes it more solid).
+ - <All>: Move all Includes out of the codefiles into the central headerfile
+   (IOCommon.h).
+ - <All>: Move all Defines out of the codefiles into the central headerfile
+   and/or its Makefiles.
+ - <All>: Include "IOCommon.h" into all files.
+ - <All>: Decouple the code in that way, that it is possible to seperate
+   the files into a common, dynamo and iometer subdirectory.
+ - <Docu>: Finding the documentation "sources" which was used to generate the
+   Iometer User's Guide (PDF from October 20, 1999).
+ - <Docu>: Diagram showing the message flow between Iometer and Dynamo as well
+   as a analyses of the exchanged data structures.
+ - ...
+
+
+ 
+Wishlist:
+=========
+
+ - IOMeter: Command-line version.
+ - <All>: uDAFS support.
+ - <All>: Object-Based Storage Devices support.
+ - ...
+
+
+ 
+ 
