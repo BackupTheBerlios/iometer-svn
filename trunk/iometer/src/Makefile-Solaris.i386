@@ -45,7 +45,9 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: <none>                                                      ##
+##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)                   ##
+##               - Removed the [BIG|LITTLE]_ENDIAN_ARCH defines, because     ##
+##                 they have been replaced by IsBigEndian() function calls.  ##
 ##                                                                           ##
 ###############################################################################
 .MAKE_VERSION: VERSION-1.0
@@ -79,7 +81,7 @@ CFLAGS= -O \
         -Wall \
         -DUNIX -DSOLARIS \
 	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_SOLARIS \
-	-DIOMTR_CPU_I386 -DLITTLE_ENDIAN_ARCH \
+	-DIOMTR_CPU_I386 \
         -D_LARGEFILE64_SOURCE \
         -DDYNAMO_DESTRUCTIVE \
         -DNO_DYNAMO_VI \

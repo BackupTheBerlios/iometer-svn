@@ -47,12 +47,16 @@
 /* ##                                                                     ## */
 /* ##  Remarks ...: - All Defines, Includes etc. should be moved to       ## */
 /* ##                 this file to cleanup the code.                      ## */
-/* ##               - Functions like Strip() should be moved to a new     ## */
-/* ##                 code file named IOCommon.cpp                        ## */
+/* ##               - Functions like Strip() and IsBigEndian() should     ## */
+/* ##                 be moved to a new code file named IOCommon.cpp      ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Removed the [BIG|LITTLE]_ENDIAN_ARCH defines.       ## */
+/* ##               - Added the implementation of the IsBigEndian()       ## */
+/* ##                 function which detects the endian type of the CPU.  ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Merged IOTime.h stuff into (parts of)               ## */
 /* ##               2003-07-13 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Massive cleanup of this file (grouping the          ## */
@@ -95,9 +99,8 @@
 
 
 
-// Check and map the different global defines
-// for Operating System family, Operating System,
-// CPU and endian type (see README).
+// Check and map the different global defines for Operating
+// System family, Operating System and CPU (see README).
 // ----------------------------------------------------------------------------
 // Check Operating System family mapping
 #if ( defined(IOMTR_OSFAMILY_UNIX) && !defined(IOMTR_OSFAMILY_WINDOWS)) || \
@@ -124,14 +127,6 @@
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
-#endif
-// ----------------------------------------------------------------------------
-// Check Endian type mapping
-#if ( defined(LITTLE_ENDIAN_ARCH) && !defined(BIG_ENDIAN_ARCH)) || \
-    (!defined(LITTLE_ENDIAN_ARCH) &&  defined(BIG_ENDIAN_ARCH))
- // nop
-#else
- #error ===> ERROR: Check the Processor to Endian type mapping!
 #endif
 // ----------------------------------------------------------------------------
 
@@ -304,6 +299,9 @@ using namespace std;
 #define WHOLE_TEST_PERF	   0
 #define LAST_UPDATE_PERF   1
 #define MAX_PERF	   2
+
+#define SEND   1
+#define RECV   2
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX)
  //param does not contain a valid internet address
@@ -326,11 +324,6 @@ using namespace std;
 
  #define FILE_ELEMENT		1
  #define CQ_ELEMENT		0
-#endif
-// ----------------------------------------------------------------------------
-#if defined(BIG_ENDIAN_ARCH)
- #define SEND   1
- #define RECV   2
 #endif
 // ----------------------------------------------------------------------------
 
@@ -516,11 +509,18 @@ const char NEW_WORKER_EXECUTABLE[] = "dynamo";
 
 
 
-// Define the different function prototypes and macros
-// for global functions - including the Strip() function
-// (both, OS family based and common)
+// Define the different function prototypes and macros for
+// global functions - including the Strip() and IsBigEndian()
+// function (both, OS family based and common)
 // ----------------------------------------------------------------------------
 extern void GetAppFileVersionString( char **ppStrStandard, char **ppStrWithDebug );
+
+inline void rotate(char *ptr, int size);
+template <class T> inline void reorder(T&);
+inline void reorder(CPU_Results&, int);
+inline void reorder(Net_Results&, int);
+inline void reorder(Raw_Result&);
+
 inline char *Strip( char *pcString )
 {
  unsigned int uiLength = strlen(pcString);
@@ -542,6 +542,46 @@ inline char *Strip( char *pcString )
  }
  
  return(pcString);
+}
+
+inline int IsBigEndian( void )
+{
+ union EndianUnion
+ {
+  struct EndianStruct
+  {
+   unsigned ubBit1 :1;
+   unsigned ubBit2 :1;
+   unsigned ubBit3 :1;
+   unsigned ubBit4 :1;
+   unsigned ubBit5 :1;
+   unsigned ubBit6 :1;
+   unsigned ubBit7 :1;
+   unsigned ubBit8 :1;
+   unsigned ubBitN :8;
+  } sStruct;
+  unsigned char ucNumber;
+ } sUnion;
+ sUnion.sStruct.ubBit1 = 0;
+ sUnion.sStruct.ubBit2 = 0;
+ sUnion.sStruct.ubBit3 = 0;
+ sUnion.sStruct.ubBit4 = 0;
+ sUnion.sStruct.ubBit5 = 0;
+ sUnion.sStruct.ubBit6 = 0;
+ sUnion.sStruct.ubBit7 = 0;
+ sUnion.sStruct.ubBit8 = 0;
+ sUnion.sStruct.ubBitN = 0;
+ sUnion.ucNumber       = 5;
+
+ if( (sUnion.sStruct.ubBit1 == 1) && (sUnion.sStruct.ubBit3 == 1) )
+ { return(0); }      /* ##### Little Endian */
+ else
+ {
+  if( (sUnion.sStruct.ubBit6 == 1) && (sUnion.sStruct.ubBit8 == 1) )
+  { return(1); }     /* ##### Big Endian    */
+  else
+  { return(-42); }   /* ##### Unknown       */
+ }
 }
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX)
@@ -617,14 +657,6 @@ inline char *Strip( char *pcString )
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  extern DWORDLONG rdtsc();
-#endif
-// ----------------------------------------------------------------------------
-#if defined(BIG_ENDIAN_ARCH)
- inline void rotate(char *ptr, int size);
- template <class T> inline void reorder(T&);
- inline void reorder(CPU_Results&, int);
- inline void reorder(Net_Results&, int);
- inline void reorder(Raw_Result&);
 #endif
 // ----------------------------------------------------------------------------
 

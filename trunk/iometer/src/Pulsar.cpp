@@ -10,11 +10,52 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Implemented a test call of the IsBigEndian()        ## */
+/* ##                 function to ensure, that we are able to detect      ## */
+/* ##                 the endian type of the CPU.                         ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - Added a command line option for passing the         ## */
 /* ##                 list of filesystem types to ignore when building    ## */
 /* ##                 the device list for Iometer).                       ## */
@@ -27,50 +68,6 @@
 /* ##                 (changing the datatype of the "temp" variable in    ## */
 /* ##                 the GetStatus(int*, int*, int) method).             ## */
 /* ##                                                                     ## */
-/* ######################################################################### */
-/*
-Intel Open Source License 
-
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// Pulsar.cpp: Main file for Dynamo.
-//
-//////////////////////////////////////////////////////////////////////
 /* ######################################################################### */
 
 #include "IOCommon.h"
@@ -160,10 +157,10 @@ int main( int argc, char *argv[] )
 
 	// Initialize the lock on UNIX platforms.
 	if (pthread_mutex_init(&lock_mt, NULL))
-		{
-			cout <<"unable to init the lock" << endl;
-			exit(1);
-		}
+	{
+		cout <<"unable to init the lock" << endl;
+		exit(1);
+	}
 
 	// Block SIGPIPE signal. Needed to ensure that Network worker
 	// threads don't exit due to a broken pipe signal.
@@ -219,12 +216,20 @@ int main( int argc, char *argv[] )
 	// are any environment variables specifying the same. We need to warn the user.
 	if (getenv("DYNAMO_DESTRUCTIVE") != NULL)
 	{
-		cout << "        ************ WARNING ************" << endl;
+		cout << "       ************ WARNING **************" << endl;
 		cout << "       dynamo running in Destructive mode." << endl;
-		cout << "        ************ WARNING ************" << endl;
+		cout << "       ************ WARNING **************" << endl;
 	}
 #endif // DYNAMO_DESTRUCTIVE
 #endif // UNIX
+
+	// Ensure, that the endian type of the CPU is detectable
+	if ( (IsBigEndian() != 0) && (IsBigEndian() != 1) )
+	{
+		cout << "===> ERROR: Endian type of the CPU couldn't be detected."    << endl;
+		cout << "     [main() in " << __FILE__ << " line " << __LINE__ << "]" << endl;
+		exit(1);
+	}
 
 	// Entering infinite loop to allow Dynamo to run multiple tests.  Outer while loop allows
 	// Dynamo to be reset from Iometer.  If everything works smoothly, resets should be rare.

@@ -45,7 +45,10 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2003-07-18 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)                   ##
+##               - Removed the [BIG|LITTLE]_ENDIAN_ARCH defines, because     ##
+##                 they have been replaced by IsBigEndian() function calls.  ##
+##               2003-07-18 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Minor cleanup of this file.                               ##
 ##               - Implemented the IOMTR_[OSFAMILY|OS|CPU]_* global define   ##
 ##                 as well as their integrity checks.                        ##
@@ -89,7 +92,7 @@ CFLAGS= -O \
         -Wall \
         -DUNIX -DSOLARIS \
 	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_SOLARIS \
-	-DIOMTR_CPU_SPARC -DBIG_ENDIAN_ARCH \
+	-DIOMTR_CPU_SPARC \
         -D_LARGEFILE64_SOURCE \
         -DDYNAMO_DESTRUCTIVE \
         -DNO_DYNAMO_VI \

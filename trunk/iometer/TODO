@@ -7,8 +7,6 @@
 ToDo:
 =====
 
- - IOCommon.h: Ensure, that there is only one "Operation System", "Operating
-   System Platform" ,"Endian Type" and "Processor Type" define while make.
  - IOManager.cpp: As a code remark says, GHz SPARC CPU's has to be recognised
    in the Login() method (processor_speed_to_nsecs variable).
  - IOMessage.h / IOTest.h: Merge the files into a common one.
@@ -21,11 +19,7 @@ ToDo:
    (IOCommon.h).
  - <All>: Move all Defines out of the codefiles into the central headerfile
    and/or its Makefiles.
- - <All>: Include "IOCommon.h" into all files. As a next step it would be
-   possible to detect OS family and CPU endian type within this file (no
-   longer passing it into - using the Makefile).
- - <All>: Endian Type could be detected during runtime. This can be done with a
-   new Performance::Get_Endian_Type() method.
+ - <All>: Include "IOCommon.h" into all files.
  - <All>: Decouple the code in that way, that it is possible to seperate
    the files into a common, dynamo and iometer subdirectory.
  - <Docu>: Finding the documentation "sources" which was used to generate the

@@ -9,11 +9,51 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
+/* ##  Intel Open Source License                                          ## */
+/* ##                                                                     ## */
+/* ##  Copyright (c) 2001 Intel Corporation                               ## */
+/* ##  All rights reserved.                                               ## */
+/* ##  Redistribution and use in source and binary forms, with or         ## */
+/* ##  without modification, are permitted provided that the following    ## */
+/* ##  conditions are met:                                                ## */
+/* ##                                                                     ## */
+/* ##  Redistributions of source code must retain the above copyright     ## */
+/* ##  notice, this list of conditions and the following disclaimer.      ## */
+/* ##                                                                     ## */
+/* ##  Redistributions in binary form must reproduce the above copyright  ## */
+/* ##  notice, this list of conditions and the following disclaimer in    ## */
+/* ##  the documentation and/or other materials provided with the         ## */
+/* ##  distribution.                                                      ## */
+/* ##                                                                     ## */
+/* ##  Neither the name of the Intel Corporation nor the names of its     ## */
+/* ##  contributors may be used to endorse or promote products derived    ## */
+/* ##  from this software without specific prior written permission.      ## */
+/* ##                                                                     ## */
+/* ##  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             ## */
+/* ##  CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,      ## */
+/* ##  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           ## */
+/* ##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           ## */
+/* ##  DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE    ## */
+/* ##  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,   ## */
+/* ##  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,           ## */
+/* ##  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,    ## */
+/* ##  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    ## */
+/* ##  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR     ## */
+/* ##  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT    ## */
+/* ##  OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY    ## */
+/* ##  OF SUCH DAMAGE.                                                    ## */
+/* ##                                                                     ## */
+/* ## ------------------------------------------------------------------- ## */
+/* ##                                                                     ## */
 /* ##  Remarks ...: <none>                                                ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-05-07 (yakker@aparity.com)                       ## */
+/* ##  Changes ...: 2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Replaced the [BIG|LITTLE]_ENDIAN_ARCH defines by    ## */
+/* ##                 IsBigEndian() function calls.                       ## */
+/* ##               - Integrated the License Statement into this header.  ## */
+/* ##               2003-05-07 (yakker@aparity.com)                       ## */
 /* ##               - Applied the iometerCIOB5.2003.05.02.patch file      ## */
 /* ##                 (avoiding cache line collisions and performance     ## */
 /* ##                 lock-ups for some chipsets).                        ## */
@@ -28,60 +68,7 @@
 /* ##                 (dropping a type cast in the Login() method).       ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-/*
-Intel Open Source License 
 
-Copyright (c) 2001 Intel Corporation 
-All rights reserved. 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
-
-   Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
-
-   Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
-
-   Neither the name of the Intel Corporation nor the names of its contributors
-   may be used to endorse or promote products derived from this software
-   without specific prior written permission.
- 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE INTEL OR ITS  CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
-/// ==========================================================================
-//                Copyright (C) 1997-2000 Intel Corporation
-//                          All rights reserved                               
-//                INTEL CORPORATION PROPRIETARY INFORMATION                   
-//    This software is supplied under the terms of a license agreement or     
-//    nondisclosure agreement with Intel Corporation and may not be copied    
-//    or disclosed except in accordance with the terms of that agreement.     
-// ==========================================================================
-//
-// IOManager.cpp: Implementation of the Manager class for Dynamo.  
-// This is Dynamo's main class; it manages communication with Iometer,
-// creates and destroys worker threads, starts and stops tests, records
-// system-level results (CPU and network), etc.  There is always exactly
-// one Manager object in an instance of Dynamo (local variable "manager"
-// in function main() in Pulsar.cpp).
-//
-// Note that the function Manager::Report_Disks() is OS-dependent.  
-// The implementation of this function in this file is for Windows NT;
-// the Solaris and Linux implementations can be found in the files
-// IOManagerSolaris.cpp and IOManagerLinux.cpp respectively.
-//
-//////////////////////////////////////////////////////////////////////
-/* ######################################################################### */
 
 #include "IOCommon.h"
 #include "IOManager.h"
@@ -98,6 +85,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IOTargetVI.h"
 
 #define	KNOWN_VI_NIC_NAMES	3
+
+
 
 //
 // Initializing manager variables before their first use.
@@ -247,10 +236,11 @@ BOOL Manager::Login( char* port_name )
 		return FALSE;
 	}
 
-#ifdef BIG_ENDIAN_ARCH
-	(void)reorder(msg);
-	(void)reorder(data_msg, DATA_MESSAGE_MANAGER_INFO, SEND);
-#endif
+	if( IsBigEndian() )
+	{
+		(void)reorder(msg);
+		(void)reorder(data_msg, DATA_MESSAGE_MANAGER_INFO, SEND);
+	}
 	login_port->Send( &msg );
 	login_port->Send( &data_msg, DATA_MESSAGE_SIZE );
 
@@ -261,9 +251,10 @@ BOOL Manager::Login( char* port_name )
 		return FALSE;
 	}
 
-#ifdef BIG_ENDIAN_ARCH
-	(void)reorder(reply);
-#endif
+	if( IsBigEndian() )
+	{
+		(void)reorder(reply);
+	}
 
 	// Delete login port because we don't need it anymore.
 	delete  login_port;
@@ -620,9 +611,10 @@ void Manager::Prepare_Disks( int target )
 			{
 				// Send failure message back to Iometer.
 				msg.data = 0;
-#ifdef BIG_ENDIAN_ARCH
-				(void)reorder(msg);
-#endif
+				if( IsBigEndian() )
+				{
+					(void)reorder(msg);
+				}
 				prt->Send( &msg );
 				return;
 			}
@@ -637,9 +629,10 @@ void Manager::Prepare_Disks( int target )
 		{
 			// Send failure message back to Iometer.
 			msg.data = 0;
-#ifdef BIG_ENDIAN_ARCH
-			(void) reorder(msg);
-#endif
+			if( IsBigEndian() )
+			{
+				(void) reorder(msg);
+			}
 			prt->Send( &msg );
 			return;
 		}
@@ -656,9 +649,10 @@ void Manager::Prepare_Disks( int target )
 			if ( prt->Peek() )
 			{
 				prt->Receive( &msg );
-#ifdef BIG_ENDIAN_ARCH
-				(void) reorder(msg);
-#endif
+				if( IsBigEndian() )
+				{
+					(void) reorder(msg);
+				}
 				Process_Message();
 			}
 			else
@@ -670,9 +664,10 @@ void Manager::Prepare_Disks( int target )
 	}
 	// Send a message back to Iometer to indicate that we're done preparing.
 	msg.data = 1;	// indicates success
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(msg);
-#endif
+	if( IsBigEndian() )
+	{
+		(void) reorder(msg);
+	}
 	prt->Send( &msg );
 }
 
@@ -727,9 +722,10 @@ void Manager::Report_Results( int which_perf )
 	// Copy the current system results into a message.
 	memcpy( (void*) &data_msg.data.manager_results, (void*) 
 		&(manager_performance[which_perf]), sizeof( Manager_Results ) );
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(data_msg, DATA_MESSAGE_MANAGER_RESULTS, SEND);
-#endif
+	if( IsBigEndian() )
+	{
+		(void) reorder(data_msg, DATA_MESSAGE_MANAGER_RESULTS, SEND);
+	}
 	prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 
 	// Sending back a result message for each worker thread.  Using multiple
@@ -832,9 +828,10 @@ void Manager::Report_Results( int which_perf )
 			}
 
 			// Sending results to Iometer.
-#ifdef BIG_ENDIAN_ARCH
-			(void) reorder(data_msg, DATA_MESSAGE_WORKER_RESULTS, SEND);
-#endif
+			if( IsBigEndian() )
+			{
+				(void) reorder(data_msg, DATA_MESSAGE_WORKER_RESULTS, SEND);
+			}
 			prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 			#if _DEBUG
 				cout << "sent." << endl;
@@ -874,9 +871,10 @@ BOOL Manager::Run()
 		}
 		else
 		{
-#ifdef BIG_ENDIAN_ARCH
-			(void) reorder(msg);
-#endif
+			if( IsBigEndian() )
+			{
+				(void) reorder(msg);
+			}
 			// Continue to process messages until manager indicates stopping.
 			if ( !Process_Message() )
 				return FALSE;
@@ -943,21 +941,24 @@ BOOL Manager::Process_Message()
 		cout << "in Process_Message() : REPORT_TARGETS" << endl;
 #endif
 		data_msg.count = Report_Disks( data_msg.data.targets );
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
+		}
 		prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 
 		data_msg.count = Report_TCP( data_msg.data.targets );
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
+		}
 		prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 
 		data_msg.count = Report_VIs( data_msg.data.targets );
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
+		}
 		prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 		break;
 	// Setting targets for a given grunt and reporting back.
@@ -966,20 +967,23 @@ BOOL Manager::Process_Message()
 		cout << "in Process_Message() : SET_TARGETS" << endl;
 #endif
 		prt->Receive( &data_msg, DATA_MESSAGE_SIZE );
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, RECV);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, RECV);
+		}
 		msg.data = Set_Targets( msg.data, data_msg.count, 
 			data_msg.data.targets );
 		// Send back success/failure indication along with additional error
 		// information or target settings (such as TCP port).
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(msg);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(msg);
+		}
 		prt->Send( &msg );
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(data_msg, DATA_MESSAGE_TARGET_SPEC, SEND);
+		}
 		prt->Send( &data_msg, DATA_MESSAGE_SIZE );
 		break;
 
@@ -989,13 +993,15 @@ BOOL Manager::Process_Message()
 		cout << "in Process_Message() : SET_ACCESS" << endl;
 #endif
 		prt->Receive( &data_msg, DATA_MESSAGE_SIZE );
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(data_msg, DATA_MESSAGE_TEST_SPEC, RECV);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(data_msg, DATA_MESSAGE_TEST_SPEC, RECV);
+		}
 		msg.data = (int)Set_Access( msg.data, &(data_msg.data.spec) );
-#ifdef BIG_ENDIAN_ARCH
-		(void) reorder(msg);
-#endif
+		if( IsBigEndian() )
+		{
+			(void) reorder(msg);
+		}
 		prt->Send( &msg );	// notify Iometer of success
 		break;
 
@@ -1118,9 +1124,10 @@ void Manager::Begin_IO( int target )
 	#endif
 
 	// Reply that I/O has started.
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(msg);
-#endif
+	if( IsBigEndian() )
+	{
+		(void) reorder(msg);
+	}
 	prt->Send( &msg );
 }
 
@@ -1159,9 +1166,10 @@ void Manager::Stop_Test( int target )
 	cout << "   Stopped." << endl << flush;
 
 	// Reply that test has stopped.
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(msg);
-#endif
+	if( IsBigEndian() )
+	{
+		(void) reorder(msg);
+	}
 	prt->Send( &msg );
 }
 
@@ -1364,9 +1372,10 @@ void Manager::Record_Off( int target )
 	#if _DEBUG
 		cout << "Recording stopped." << endl << flush;
 	#endif
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(msg);
-#endif
+	if( IsBigEndian() )
+	{
+		(void) reorder(msg);
+	}
 	prt->Send( &msg );
 }
 
@@ -1408,8 +1417,9 @@ void Manager::Add_Workers( int count )
 		}
 	}
 
-#ifdef BIG_ENDIAN_ARCH
-	(void) reorder(msg);
-#endif
+	if( IsBigEndian() )
+	{
+		(void) reorder(msg);
+	}
 	prt->Send( &msg );
 }
