@@ -16,6 +16,8 @@ ChangeLog (IOMETER2 - 2004.mm.mm):
    - iometer2.Lamont001ConstructorCleanup.patch by Daniel Scheibli
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
+- Cleanup:
+   - Corrected the macro definition for BLKGETSIZE64 in IOCommon.h
 
 
 
