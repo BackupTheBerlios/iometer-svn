@@ -49,6 +49,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -74,8 +77,8 @@
 
 
 // Wrappers for Grunt member functions, used by _beginthread()
-void Prepare_Disk_Wrapper( void *disk_thread_info );
-void Grunt_Thread_Wrapper( void *grunt );
+void CDECL Prepare_Disk_Wrapper( void *disk_thread_info );
+void CDECL Grunt_Thread_Wrapper( void *grunt );
 
 #define TIMEOUT_TIME	1000	// max time to wait for an asynch
 				// I/O to complete, in milliseconds

@@ -51,6 +51,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -110,7 +113,7 @@ static void ParseParam(	const char* pszParam,
 // Temporary global data for Syntax() to use
 const char *g_pVersionStringWithDebug = NULL;
 
-int main( int argc, char *argv[] )
+int CDECL main( int argc, char *argv[] )
 {
 	Manager	manager;
 	char	iometer[MAX_NETWORK_NAME];

@@ -8,6 +8,10 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - iometer-2003.05.10-UsingDdkAndWin64.patch by Daniel Scheibli
+    (Integrates the changes contributed by Vedran Degoricija to
+    ensure, that the executables can be build using the MS DDK
+    on i386 and IA64 as well).
   - iometer-2003.05.10-IoMtrGlobalDefines2.patch by Daniel Scheibli
     (introduces the IOMTR_* global defines to consolidate the different
     global defines coming with the different platforms - ease future

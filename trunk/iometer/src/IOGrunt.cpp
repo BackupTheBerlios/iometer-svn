@@ -47,7 +47,11 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
+/* ##               2003-07-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Implemented the IOMTR_[OSFAMILY|OS|CPU]_* global    ## */
 /* ##                 define as well as their integrity checks.           ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -613,7 +617,7 @@ BOOL Grunt::Prepare_Disks()
 //
 // Wrapper for Grunt::Prepare_Disk(), used by _beginthread().
 //
-void Prepare_Disk_Wrapper( void* disk_thread_info )
+void CDECL Prepare_Disk_Wrapper( void* disk_thread_info )
 {
 	Grunt *grunt = (Grunt *)(((Thread_Info *)disk_thread_info)->parent);
 	int    disk_id = ((Thread_Info*)disk_thread_info)->id;
@@ -885,7 +889,7 @@ void Grunt::Asynchronous_Delay( int transfer_delay )
 //
 // Wrapper for Grunt::DoIOs(), used by _beginthread().
 //
-void Grunt_Thread_Wrapper( void* grunt )
+void CDECL Grunt_Thread_Wrapper( void* grunt )
 {
 	// open targets
 	((Grunt*)grunt)->Open_Targets();

@@ -52,7 +52,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-03 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
+/* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added the currently not supported CPU types         ## */
 /* ##                 (see README under IOMTR_CPU_*) as well.             ## */
 /* ##               2003-07-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -182,8 +186,11 @@ using namespace std;
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
- #if _MSC_VER < 1300
- #include "ostream64.h"
+ #if defined(USING_DDK)
+  #pragma warning (disable: 4242)   // disable some of the type conversion warnings
+ #endif
+ #if (_MSC_VER < 1300) || defined(USING_DDK)   // apparently, the DDK needs this
+  #include "ostream64.h"
  #endif
 #endif 
 // ----------------------------------------------------------------------------
@@ -206,7 +213,7 @@ using namespace std;
  typedef unsigned long long    DWORDLONG;
  typedef long		       LONG;
  typedef unsigned long	       DWORD;
-
+ 
  typedef int		       INT;
  typedef int		       BOOL;
  typedef int		       BOOLEAN;
@@ -228,11 +235,17 @@ using namespace std;
  typedef DWORD		      *LPDWORD;
  typedef BYTE		      *LPBYTE;
  typedef LPCSTR		       LPCTSTR;
+
+ typedef unsigned long         ULONG_PTR;
+ typedef ULONG_PTR             DWORD_PTR;
 #endif 
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
- typedef unsigned long   ULONG_PTR;
- typedef ULONG_PTR       DWORD_PTR;
+ #if !defined(USING_DDK)
+  //vld: note, these are ok for 32bit, but incorrect for 64!
+  typedef unsigned long   ULONG_PTR;
+  typedef ULONG_PTR       DWORD_PTR;
+ #endif
 #endif 
 // ----------------------------------------------------------------------------
 
@@ -315,6 +328,9 @@ using namespace std;
  #ifndef INADDR_NONE
   #define INADDR_NONE   (in_addr_t)-1
  #endif
+
+ // Needed to get the CDECL stuff thru (under non Windows platforms)
+ #define CDECL
 
  #define FALSE			0
  #define TRUE			1

@@ -54,6 +54,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Massive cleanup of this file (grouping the          ## */
@@ -333,7 +336,7 @@ double Performance::Get_Processor_Speed()
 	BOOL rdtsc_or_itc_supported = TRUE;
 	HKEY processor_speed_key;
 
-#if defined(IOMTR_OS_WIN32)
+#if defined(IOMTR_CPU_I386)
 	// Try RDTSC and see if it causes an exception.  (This code is NT-specific 
 	// because Solaris does not support __try/__except.)
 	__try
@@ -348,7 +351,7 @@ double Performance::Get_Processor_Speed()
 	{
 		rdtsc_or_itc_supported = FALSE;
 	}
-#elif defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_CPU_IA64)
 	//*** Trying to read ITC instead of using GetTickCount.  See IOTime.h.
 
 	// Try ITC and see if it causes an exception.  (This code is NT-specific 
@@ -365,10 +368,10 @@ double Performance::Get_Processor_Speed()
 
 	if ( !rdtsc_or_itc_supported )
 	{
-#if defined(IOMTR_OS_WIN32)
+#if defined(IOMTR_CPU_I386)
 		cout << "*** Processor does not support RDTSC instruction!"    << endl <<
 			"    Dynamo requires this for high-resolution timing." << endl;
-#elif defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_CPU_IA64)
 		cout << "*** Processor does not support ITC instruction!"      << endl <<
 			"    Dynamo requires this for high-resolution timing." << endl;
 #endif

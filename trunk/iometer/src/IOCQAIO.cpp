@@ -49,6 +49,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -84,7 +87,7 @@ CQAIO::CQAIO()
 ReturnVal CQAIO::GetStatus( int *bytes, int *data, int delay )
 {
 	Transaction	*transaction = NULL;
-	DWORD		temp;
+	ULONG_PTR	temp; // vld
 	BOOL		result;
 	DWORD		error_no;
 

@@ -49,6 +49,9 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -85,7 +88,7 @@
 
 
 
-UINT MessageBoxThread(LPVOID pErrorMessage);
+UINT CDECL MessageBoxThread(LPVOID pErrorMessage);
 
 //
 // Reports error messages appropriately.
@@ -117,7 +120,7 @@ void ErrorMessage( LPCTSTR errmsg )
 
 
 //Called to display error message box in a separate thread (see ErrorMessage(), above).
-UINT MessageBoxThread(LPVOID pErrorMessage)
+UINT _cdecl MessageBoxThread(LPVOID pErrorMessage)
 {
 	AfxMessageBox(*(CString *)pErrorMessage);
 	delete (CString *)pErrorMessage;

@@ -48,7 +48,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Integrated the modification contributed by          ## */
+/* ##                 Vedran Degoricija, to get the code compile with     ## */
+/* ##                 the MS DDK on IA64.                                 ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Merged IOTime.h stuff into (parts of)               ## */
 /* ##               - Implemented the IOMTR_[OSFAMILY|OS|CPU]_* global    ## */
 /* ##                 define as well as their integrity checks.           ## */
@@ -135,6 +139,9 @@
  // are not using the DDK to build a driver.
  //
  //#define USING_DDK
+
+ // vld: I don't think we want to be including the kmode include files from here.
+ // Just hardcode the itc here as per itanium specs
  
  #ifdef USING_DDK	// Driver
  #include <ia64reg.h>	// from IA64 DDK
