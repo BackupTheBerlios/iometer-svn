@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2004-03-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the "truly batch oriented" patch behaviour. ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               2003-08-03 (daniel.scheibli@edelbyte.org)             ## */
@@ -289,13 +291,14 @@ void CWaitingForManagers::OnTimer(UINT nIDEvent)
 		{
 			// theApp.OverrideBatchMode();
 
+			if(theApp.IsBatchMode()) {
+				exit(1);
+			}
+
 			(void) Close();
 
 			ErrorMessage("Time expired.  Not all managers specified in the config file "
 				"were available in Iometer, so loading was aborted.");
-		}
-		if(theApp.IsBatchMode()) {
-			exit(1);
 		}
 		break;
 	default:

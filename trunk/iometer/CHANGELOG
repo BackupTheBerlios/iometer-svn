@@ -4,7 +4,7 @@
 
 
 
-ChangeLog (2003.nn.nn):
+ChangeLog (2004.nn.nn):
 =======================
 
 - Applied patches:
@@ -41,6 +41,8 @@ ChangeLog (2003.nn.nn):
      (code cleanup of the dynamo parameter handling; switches are no
      longer option but required now)
 - Cleanup:
+   - Changed the "truly batch oriented" patch behaviour (basically rolled
+     back the changes due to the bug report of Kris Strecker).
    - Removed an old left over _DETAIL define depended code (for debugging)
      in IOGrunt.cpp.
 - Documentation:
