@@ -52,6 +52,8 @@ ChangeLog (2004.nn.nn):
      Guide.
    - Added first comments about the coding style to the Developers Guide.
 - Others:
+   - Added an installer for Iometer on Windows (based on the Nullsoft
+     Scriptable Install System - NSIS).
    - Changed the Registry Key for the Windows GUI to "iometer.org".
    - Modified the About dialog to reflect the Open Source status of Iometer.
    - Changed the license of the iomtr_kstat module to the GPL.
