@@ -24,11 +24,13 @@ ChangeLog (2003.nn.nn):
     new processor speed values as well as improvements for the GHz CPU
     detection).
 - Cleanup:
+   - Dropped clean_ctlm.c, because we can use the recode tool instead.
    - Merged rdtsc.c into IOTime.cpp
    - Cleaned up some compiler warnings on Solaris
    - Changes NO_LINUX_VI to NO_DYNAMO_VI so Solaris build can use it also
    - Dropped the IOCq.cpp file, because it was empty.
 - Others:
+   - Added the Wizard.mdb file from the old days (version 1999.10.20).
    - rewrote the Solaris Makefile to match the Linux stuff
    - Added the output of the major and minor number during the detection
      of the sector size (of physical disks).
