@@ -36,7 +36,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-04-08 (daniel@scheibli.com)                      ## */
+/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##               - Fix 2.4 build                                       ## */
+/* ##               2004-04-08 (daniel@scheibli.com)                      ## */
 /* ##               - Changed K24 and K26 to IOMTR_OSVERSION_LINUX24      ## */
 /* ##                 and IOMTR_OSVERSION_LINUX246.                       ## */
 /* ##               - Changed the license to GPL (after consulting Ming). ## */
@@ -90,7 +92,7 @@ int imkstat_major = 0;
 int imkstat_ioctl(struct inode *inode, struct file *filp,
                  unsigned int cmd, unsigned long arg)
 {
-	int err = 0, tmp, i, x;
+	int err = 0, tmp, i;
 	unsigned long khz;
 	unsigned long sum = 0;
 	unsigned long long jf;
@@ -101,6 +103,7 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 	struct net_device_stats *stats;
 #ifdef IOMTR_OSVERSION_LINUX26
 	unsigned long seq;
+	int x;
 #endif
 
 	if (_IOC_TYPE(cmd) != IMKSTAT_IOC_MAGIC) {

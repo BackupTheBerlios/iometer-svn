@@ -8,6 +8,8 @@ ChangeLog (IOMETER 1 - 2004.nn.nn):
 ===================================
 
 - Applied patches:
+   - linux_kstat_build_fix.patch by Lamont Cranston (Fixes a minor
+     bug in the build of the linux_kstat version for Linux 2.4).
    - IOTargetDisk_cpp.patch by Lamont Cranston (Closes the files in
      getSizeOfPhysDisk() and getSectorSizeOfPhysDisk() under Linux
      and explain the use of the BLKBSZGET define.
