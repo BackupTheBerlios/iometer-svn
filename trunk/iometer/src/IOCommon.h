@@ -245,9 +245,12 @@ using namespace std;
 #if defined(IOMTR_OSFAMILY_WINDOWS)
  #ifndef USING_DDK
   #if defined(IOMTR_OS_WIN32)
-   typedef __int32 LONG_PTR, *PLONG_PTR;
-   typedef unsigned __int32 ULONG_PTR, *PULONG_PTR;
-   typedef ULONG_PTR        DWORD_PTR;
+   // dps: Was __int32 in before, but conflicts while conversion
+   //      from unsigned __int32 to unsigned long for instance
+   //      (using Microsoft Visual C++).
+   typedef long LONG_PTR, *PLONG_PTR;
+   typedef unsigned long  ULONG_PTR, *PULONG_PTR;
+   typedef ULONG_PTR      DWORD_PTR;
   #endif
   #if defined(IOMTR_OS_WIN64)
    typedef __int64 LONG_PTR, *PLONG_PTR;

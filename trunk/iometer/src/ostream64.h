@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the #ifdef behaviore to reflect the         ## */
+/* ##                 original algorithm (using much easier code).        ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Tried to cleanup the realy confusing #ifdef's at    ## */
 /* ##                 the beginning of the file.                          ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
@@ -68,44 +71,37 @@
 // - is needed as of latest Win32 SDK
 #if defined(IOMTR_OS_WIN32)
  //#define WORKAROUND_FOR_INT64_OFSTREAM
-#endif
-#if defined(IOMTR_OS_WIN64)
- //#define WORKAROUND_FOR_INT64_OFSTREAM
-#endif
-// I tried to reproduce what the compiler did with the old
-// code. It still doesn't make sense to me, but for the moment
-// we stay with the logic we got from the original developer.
-#if ( defined(IOMTR_OS_WIN32) &&  defined(WORKAROUND_FOR_INT64_OFSTREAM) ) || \
-    ( defined(IOMTR_OS_WIN64) && !defined(WORKAROUND_FOR_INT64_OFSTREAM) ) || \
-    ( defined(IOMTR_OS_WIN64) &&  defined(WORKAROUND_FOR_INT64_OFSTREAM) )
 
-#include <stdio.h>
-#include <ostream>
-using namespace std;
+ #include <stdio.h>
+ #include <ostream>
+ using namespace std;
 
-#define INT64_DIGITS	21
+ #define INT64_DIGITS	21
 
-//
-// Extension to ostream to permit int64.
-//
-inline ostream& operator << ( ostream& s, _int64 i )
-{
-    char buf[INT64_DIGITS];
-    sprintf( buf, "%I64i", i );  
-    return( s << buf );
-}
+ //
+ // Extension to ostream to permit int64.
+ //
+ inline ostream& operator << ( ostream& s, _int64 i )
+ {
+     char buf[INT64_DIGITS];
+     sprintf( buf, "%I64i", i );  
+     return( s << buf );
+ }
 
-
-//
-// Extension to ostream to permit unsigned int64.
-//
-inline ostream& operator << ( ostream& s, unsigned _int64 i )
-{
+ //
+ // Extension to ostream to permit unsigned int64.
+ //
+ inline ostream& operator << ( ostream& s, unsigned _int64 i )
+ {
     char buf[INT64_DIGITS];
     sprintf( buf, "%I64i", i );
     return( s << buf );
-}
+ }
 
+#elif defined(IOMTR_OS_WIN64)
+ //#define WORKAROUND_FOR_INT64_OFSTREAM
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 

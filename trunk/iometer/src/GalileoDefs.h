@@ -91,4 +91,9 @@ extern void ErrorMessage( LPCTSTR errmsg );
 //that needs to be created.
 #define HOSTNAME_LOCAL			"(Local)"
 
-#endif GALILEODEFS_DEFINED
+
+#endif // GALILEODEFS_DEFINED
+
+
+
+

@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added a CDECL for the ErrorMessage() function.      ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               2003-10-05 (daniel.scheibli@edelbyte.org)             ## */
@@ -101,7 +103,7 @@ UINT CDECL MessageBoxThread(LPVOID pErrorMessage);
 // Reports error messages appropriately.
 // Make sure this is not called while the result file is open!
 //
-void ErrorMessage( LPCTSTR errmsg )
+void CDECL ErrorMessage( LPCTSTR errmsg )
 {
 	// If in batch mode, don't pop up error dialogs that require user intervention.
 

@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Changed the CS/_CS destinction so that Solaris on   ## */
+/* ##                 x86 (i386) is the only exception.                   ## */
+/* ##               2003-07-19 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Assimilated the patch from Robert Jones which is    ## */
 /* ##                 needed to build under Solaris 9 on x86 (i386).      ## */
 /* ##               2003-07-18 (daniel.scheibli@edelbyte.org)             ## */
@@ -248,14 +251,12 @@ typedef struct _VIP_DESCRIPTOR {
 // NOTE: This might be to generic, maybe we need an seperate global define for
 //       this stuff. Current knowledge is Sparc build without underscore and i386
 //       build with it (otherwise it conflicts with /usr/include/ia32/sys/reg.h).
-#if defined(IOMTR_CPU_I386)
+#if defined(IOMTR_OS_SOLARIS) && defined(IOMTR_CPU_I386)
       VIP_CONTROL_SEGMENT     _CS;
       VIP_DESCRIPTOR_SEGMENT  _DS[2];
-#elif defined(IOMTR_CPU_SPARC)
+#else
       VIP_CONTROL_SEGMENT     CS;
       VIP_DESCRIPTOR_SEGMENT  DS[2];
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 } VIP_DESCRIPTOR;
 

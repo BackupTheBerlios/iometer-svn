@@ -57,7 +57,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-10-19 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Modified error message output destinction (Window   ## */
+/* ##                 vs. Console) using _GALILEO_ define.                ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -104,19 +107,13 @@ void Network::OutputErrMsg()
 		*errmsg << "Port::OutputErrMsg() called with invalid errmsg value!" << ends;
 	}
 
-// TODO: Totally wrong distinction - decission about Message Box
-//       vs. Output on the console is sometyhing based on ability
-//       (so running on Windows) AND mode (dialog vs. batch).
-#if defined(IOMTR_OSFAMILY_WINDOWS)
+#if defined(_GALILEO_)
 	// Iometer
 	ErrorMessage( errmsg->str().c_str() );
-#elif defined(IOMTR_OSFAMILY_UNIX)
+#else
 	// Dynamo
 	cout << errmsg->str() << endl;
-#else
- #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-
 
 	// str() returns pointer to buffer and freezes it, we must call freeze(FALSE) to 
 	// unfreeze the buffer before we can delete the object
