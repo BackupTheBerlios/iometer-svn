@@ -1294,7 +1294,10 @@ BOOL Manager::Set_Access( int target, const Test_Spec *spec )
 	for ( g = 0; g < grunt_count; g++ )
 	{
 		if ( !grunts[g]->data_size )
-			grunts[g]->data = data;
+		{
+			grunts[g]->read_data = data;
+			grunts[g]->write_data = data;
+		}
 	}
 	return TRUE;
 }
@@ -1384,7 +1387,8 @@ void Manager::Add_Workers( int count )
 			break;
 
 		// Assign grunt to manager's data buffer by default.
-		grunts[grunt_count]->data = data;
+		grunts[grunt_count]->read_data = data;
+		grunts[grunt_count]->write_data = data;
 		grunt_count++;
 		msg.data++;
 	}

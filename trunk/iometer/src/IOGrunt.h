@@ -124,8 +124,9 @@ public:
 
 	int			target_count;			// Number of disks/networks.
 	Access		access_spec;			// Access specs for a test.
-	void*		data;					// Pointer to general data memory area for reading and writing.
-	int			data_size;				// Size of currently allocated data buffer.
+	void*		read_data;				// Pointer to general data memory area for reading and writing.
+	void*		write_data;
+	int			data_size;				// Size of currently allocated data buffers.
 										// This is 0 when the grunt is using the manager's buffer.
 
 	BOOL		critical_error;

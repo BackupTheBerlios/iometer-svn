@@ -108,7 +108,8 @@ Grunt::Grunt()
 
 	idle = TRUE;
 	data_size = 0;
-	data = NULL;
+	read_data = NULL;
+	write_data = NULL;
 	prepare_thread = NULL;
 	targets = NULL;
 }
@@ -126,12 +127,14 @@ Grunt::~Grunt()
 
 	Size_Target_Array( 0 );
 
-	// Release grunt's I/O data buffer if it is in use.
+	// Release grunt's I/O data buffers if they are in use.
 	if ( data_size )
 #if defined (_WIN32) || defined (_WIN64)
-		VirtualFree( data, 0, MEM_RELEASE );
+		VirtualFree( read_data, 0, MEM_RELEASE );
+		VirtualFree( write_data, 0, MEM_RELEASE );
 #else // UNIX
-		free( data );
+		free( read_data );
+		free( write_data );
 #endif
 
 	Free_Transaction_Arrays();
@@ -369,7 +372,7 @@ BOOL Grunt::Set_Targets( int count, Target_Spec *target_specs )
 	{
 		// VI targets must know where the data buffer is and its size before
 		// being initialized.
-		((TargetVI*)targets[0])->data_buffer = (char*) data;
+		((TargetVI*)targets[0])->data_buffer = (char*) read_data;
 		((TargetVI*)targets[0])->data_buffer_size = access_spec.max_transfer;
 		io_cq = &((TargetVI*)targets[0])->vi.vi_cq;
 	}
@@ -500,29 +503,49 @@ BOOL Grunt::Set_Access( const Test_Spec* spec )
 
 	// Allocating a larger buffer.
 	#if _DEBUG
-		cout << "Growing grunt data buffer from " << data_size << " to " 
+		cout << "Growing grunt data buffers from " << data_size << " to " 
 			 << access_spec.max_transfer << endl;
 	#endif
 
 #if defined (_WIN32) || defined (_WIN64)
-	if ( data ) {
-		VirtualFree( data, 0, MEM_RELEASE );
+	if ( read_data ) {
+		VirtualFree( read_data, 0, MEM_RELEASE );
 	}
-	if ( !(data = VirtualAlloc( NULL, access_spec.max_transfer,
-		MEM_COMMIT, PAGE_READWRITE )) )
+	if ( !(read_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
 #else // UNIX
-	if ( data ) {
-		free( data );
+	if ( read_data ) {
+		free( read_data );
 	}
 	errno = 0;
-	if ( !(data = valloc(access_spec.max_transfer) ))
+	if ( !(read_data = valloc(access_spec.max_transfer) ))
 #endif
 	{
 		// Could not allocate a larger buffer.  Signal failure.
-		cout << "*** Grunt could not allocate data buffer for I/O transfers." << endl;
+		cout << "*** Grunt could not allocate read data buffer for I/O transfers." << endl;
 		data_size = 0;
 		return FALSE;
 	}
+
+#if defined (_WIN32) || defined (_WIN64)
+	if ( write_data ) {
+		VirtualFree( write_data, 0, MEM_RELEASE );
+	}
+	if ( !(write_data = VirtualAlloc(NULL, access_spec.max_transfer, MEM_COMMIT, PAGE_READWRITE)))
+#else // UNIX
+	if ( write_data ) {
+		free( write_data );
+	}
+	errno = 0;
+	if ( !(write_data = valloc(access_spec.max_transfer) ))
+#endif
+	{
+		// Could not allocate a larger buffer.  Signal failure.
+		cout << "*** Grunt could not allocate write data buffer for I/O transfers." << endl;
+		data_size = 0;
+		return FALSE;
+	}
+
+
 	data_size = access_spec.max_transfer;
 	return TRUE;
 }
@@ -1124,11 +1147,11 @@ void Grunt::Do_IOs()
 		{
 			if ( transaction->is_read )
 			{
-				transfer_result = target->Read( data, transaction );
+				transfer_result = target->Read( read_data, transaction );
 			}
 			else
 			{
-				transfer_result = target->Write( data, transaction );
+				transfer_result = target->Write( write_data, transaction );
 			}
 
 			// Continue to process completions.  This may free up the resource
@@ -1252,11 +1275,11 @@ void Grunt::Do_Partial_IO( Transaction *transaction, int bytes_done )
 
 	if ( transaction->is_read )
 	{
-		result = targets[transaction->target_id]->Read( data, transaction );
+		result = targets[transaction->target_id]->Read( read_data, transaction );
 	}
 	else
 	{
-		result = targets[transaction->target_id]->Write( data, transaction );
+		result = targets[transaction->target_id]->Write( write_data, transaction );
 	}
 
 	if ( (result != ReturnSuccess) && (result != ReturnPending) && (grunt_state == TestRecording) )
