@@ -13,7 +13,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-05-01 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-05-07 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Modified output of the current timestamp to         ## */
+/* ##                 contain milliseconds as well.                       ## */
+/* ##               2003-05-01 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Added output of current timestamp after each list   ## */
 /* ##                 of results (in the result file - CSV format).       ## */
 /* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
@@ -454,7 +457,9 @@ void ManagerList::SaveResults( ostream* file, int access_index, int result_type 
 {
 	char specname[MAX_WORKER_NAME];
 	int stat = 0;
-	time_t		current_time;
+	struct _timeb  tb;
+	struct tm     *ptm;
+	char acDummy[64];
 
 	// Writing result header information.
 	(*file) << "'Results" << endl
@@ -552,15 +557,16 @@ void ManagerList::SaveResults( ostream* file, int access_index, int result_type 
 
 	// Write current timestamp into the result file
 	(*file) << "'Time Stamp" << endl;
-	time( &current_time );
-	if ( current_time >= 0 )
-	{
-		(*file) << ctime( &current_time );
-	}
-	else
-	{
-		(*file) << "Time not available." << endl;
-	}
+	_ftime( &tb );
+	ptm = localtime( &tb.time );
+	sprintf( acDummy, "%04d-%02d-%02d %02d:%02d:%02d:%003d", ptm->tm_year + 1900,
+	                                                         ptm->tm_mon + 1,
+								 ptm->tm_mday,
+								 ptm->tm_hour,
+								 ptm->tm_min,
+								 ptm->tm_sec,
+								 tb.millitm );
+	(*file) << acDummy << endl;
 }
 
 

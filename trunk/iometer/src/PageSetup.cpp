@@ -12,7 +12,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2003-05-07 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Modified output of the current timestamp to         ## */
+/* ##                 contain milliseconds as well.                       ## */
+/* ##               2003-04-25 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Updated the global debug flag (_DEBUG) handling     ## */
 /* ##                 of the source file (check for platform etc.).       ## */
 /* ##               - Added new header holding the changelog.             ## */
@@ -300,7 +303,9 @@ void CPageSetup::SetCyclingInfo(Cycling_Info *cycle_info, BOOL selected,
 //
 void CPageSetup::SaveResults( ostream* file )
 {
-	time_t		current_time;
+	struct _timeb  tb;
+	struct tm     *ptm;
+	char acDummy[64];
 
 	(*file) << "'Test Type,Test Description" << endl
 		<< m_CTestType.GetCurSel() << "," << (LPCTSTR) test_name << endl;
@@ -308,16 +313,18 @@ void CPageSetup::SaveResults( ostream* file )
 	(*file) << "'Version" << endl
 		<< theApp.GetVersionString (TRUE) << endl;
 	
+	// Write current timestamp into the result file
 	(*file) << "'Time Stamp" << endl;
-	time( &current_time );
-	if ( current_time >= 0 )
-	{
-		(*file) << ctime( &current_time );
-	}
-	else
-	{
-		(*file) << "Time not available." << endl;
-	}
+	_ftime( &tb );
+	ptm = localtime( &tb.time );
+	sprintf( acDummy, "%04d-%02d-%02d %02d:%02d:%02d:%003d", ptm->tm_year + 1900,
+	                                                         ptm->tm_mon + 1,
+								 ptm->tm_mday,
+								 ptm->tm_hour,
+								 ptm->tm_min,
+								 ptm->tm_sec,
+								 tb.millitm );
+	(*file) << acDummy << endl;
 }
 
 
