@@ -20,6 +20,45 @@
 
   <table border="0" cellpadding="5" cellspacing="0">
     <tr>
+      <td class="tdh">2003.12.16</td>
+    </tr>
+    <tr>
+      <td class="block">
+      <!-- ---------------------------------------------------------------- -->
+      <table class="inner" border="1" cellpadding="2" cellspacing="3">
+        <tr>
+	  <td class="block"><b>OS / platform</td>
+	  <td class="block"><b>issue / workaround</b></td>
+	  <td class="block"><b>scope</b></td>
+	</tr>
+        <tr>
+	  <td class="block" valign="top">Linux / IA32</td>
+          <td class="block"><i>Segmentation fault with Red Hat 9</i><BR>
+	                    <font size="-3">&#160;</font><BR>
+	                    <i>Issue:</i> Running Dynamo on a Linux machine
+			    with a glibc (GNU libc) version 2.3 or higher
+			    (having NPTL support) - Red Hat 9 for instance - it
+			    comes to a segmentation fault after ending a test.
+			    This hapens due to the shift from LinuxThreads to
+			    NPTL (Native POSIX Thread Library) and the
+			    incompatibilities coming with that.<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <i>Workaround:</i> Before starting the Dynamo you
+			    have to run the following command:<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <tt>export LD_ASSUME_KERNEL=2.4.1</tt></td>
+	  <td class="block" valign="top">2003.12.16 and older</td>
+	</tr>
+      </table>
+      <!-- ---------------------------------------------------------------- -->      
+      </td>
+    </tr>
+  </table>
+
+  <p class="desc">List of known issues for version 2003.12.16.</p>
+
+  <table border="0" cellpadding="5" cellspacing="0">
+    <tr>
       <td class="tdh">2003.05.10</td>
     </tr>
     <tr>

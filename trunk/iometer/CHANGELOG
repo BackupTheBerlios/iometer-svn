@@ -14,6 +14,9 @@ ChangeLog (2003.nn.nn):
    - iometer-2003.12.16-SwitchesNowRequired.patch by Daniel Scheibli
      (code cleanup of the dynamo parameter handling; switches are no
      longer option but required now)
+- Others:
+   - Added md5sum's for each package to the project homepage.
+   - Extended the build environment with capabilities to handle Java.
 
 
 
