@@ -1,0 +1,21 @@
+
+* Decide which kernel you are using. 2.4.x or 2.6.x, then
+	cp Makefile-Linux2x Makefile (x = 4 or 6)
+Note: make sure to do this for 2.6.x kernel. a "make -f Makefile-26" doesnot work
+
+* Build kernel module (use root if compile for 2.6.x)
+	make
+* Load kernel module as root
+	./load
+* Build user space test program
+	make -f Makefile-user
+* Run test program
+	./test
+* run "dmesg" to check if reported data are same.
+* Unload kernel module
+	./unload
+
+Notes:
+Currently it only support IA32, I will try to add ARM support later.
+Any comment, suggestion, error, please contact mingz at ele dot uri dot edu
+

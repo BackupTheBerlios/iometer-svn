@@ -1,0 +1,15 @@
+CC = gcc
+
+CFLAGS:= -O2 -Wall -D__KERNEL__ -DMODULE
+INCLUDEDIR = /lib/modules/`uname -r`/build/include
+
+CFLAGS += -I$(INCLUDEDIR)
+
+TARGET = iomtr_kstat
+OBJS = $(TARGET).o
+SRC = $(TARGET).c
+
+all: $(TARGET).o
+
+clean:
+	rm -f *.o *~ core

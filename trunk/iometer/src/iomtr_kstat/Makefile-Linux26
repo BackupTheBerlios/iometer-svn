@@ -1,0 +1,25 @@
+EXTRA_LDFLAGS += -t
+
+MNAME = iomtr_kstat
+
+obj-m += $(MNAME).o
+
+CLEAN_OBJS := built-in.o $(MNAME).ko $(MNAME).o $(MNAME).mod.c $(MNAME).mod.o
+CLEAN_OBJS += .iomtr_kstat.ko.cmd .iomtr_kstat.mod.o.cmd .iomtr_kstat.o.cmd
+
+standalone:
+	make -C /lib/modules/`uname -r`/build/ SUBDIRS=`pwd` modules 
+
+.PHONY: clean
+
+clean:
+	@for i in $(CLEAN_OBJS); do \
+	(if [ -f $$i ] ; \
+		then \
+			echo $$i; \
+			rm -f $$i ; \
+			else \
+		: ;\
+	fi); \
+done
+
