@@ -8,6 +8,9 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - iometer-2003.02.15-HandleDummy0.patch by Daniel Scheibli (modifies
+    the Get_NI_Counter function to handle interfaces without leading
+    blanks (like dummy0) as well).
   - iometer-2003.02.15-NoPipe.patch by Daniel Scheibli (removes the 
     Windows Pipes support for communication which simplifies the code).
   - iometer-2003.02.15_Get_NI_Counter.patch by Joe Eiler (brings the

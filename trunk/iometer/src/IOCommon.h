@@ -11,10 +11,15 @@
 /* ##                                                                     ## */
 /* ##  Remarks ...: - All Defines, Includes etc. should be moved to this  ## */
 /* ##                 file to cleanup the code.                           ## */
+/* ##               - Functions like Strip() should be moved to a new     ## */
+/* ##                 code file named IOCommon.cpp                        ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Added the implementation of the Strip() function    ## */
+/* ##                 which removes leading and trailing blanks.          ## */
+/* ##               2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - Added MAX_EXCLUDE_FILESYS so excluded filesystem    ## */
 /* ##                 types are no longer hard coded.                     ## */
 /* ##               2003-02-15 (daniel.scheibli@edelbyte.org)             ## */
@@ -589,6 +594,31 @@ inline void reorder(Raw_Result&);
 #endif // BIG_ENDIAN_ARCH
 
 #endif // UNIX
+
+
+
+extern inline char *Strip( char *pcString )
+{
+ unsigned int uiLength = strlen(pcString);
+ int          I;
+ int          iIndex = 0;
+ int          iPos1, iPos2; 
+ 
+ for( iPos1 = 0;            ( (iPos1<(int)uiLength) && (pcString[iPos1]==(int)' ') ); iPos1++ ) { /* NOP */ }
+ for( iPos2 = uiLength - 1; ( (iPos2>=0)            && (pcString[iPos2]==(int)' ') ); iPos2-- ) { /* NOP */ }
+ 
+ if( (iPos1 != 0) || (iPos2 != ((int)uiLength - 1)) )
+ {    
+  for( I = iPos1; I <= iPos2; I++ )
+  {
+   pcString[iIndex] = pcString[I];
+   iIndex++;
+  }
+  pcString[iIndex] = '\0';
+ }
+ 
+ return(pcString);
+}
 
 
 

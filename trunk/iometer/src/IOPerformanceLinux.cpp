@@ -18,7 +18,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-02-26 (joe@eiler.net)                            ## */
+/* ##  Changes ...: 2003-03-02 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               - Bugfix for Get_NI_Counters to ensure, that          ## */
+/* ##                 interface names with no leading blanks (for         ## */
+/* ##                 example dummy0) are handled as well.                ## */
+/* ##               2003-02-26 (joe@eiler.net)                            ## */
 /* ##               - Added some more GHz processor stuff.                ## */
 /* ##               - Changed Get_NI_Counters so interfaces that do not   ## */
 /* ##                 contain statistics in /proc/net/dev do not cause    ## */
@@ -791,9 +795,9 @@ void Performance::Get_NI_Counters(int snapshot) {
 	for (network_interfaces = 0;
 			 network_interfaces < MAX_NUM_INTERFACES;
 			 ++network_interfaces) {
-		// Take out the leading white space.
-		// then grab the interface name
-		scanCount = fscanf(netInfo, "%*[ ] %[^:]: %*d %d %lld %*d %*d %*d %*d %d %lld",ifname,
+		// grab the interface names (if there are leading blanks,
+		// then they are removed using the Strip() function)
+		scanCount = fscanf(netInfo, "%[^:]: %*d %d %lld %*d %*d %*d %*d %d %lld",ifname,
 											 &packetIn,
 											 &raw_ni_data[network_interfaces]
 											             [NI_IN_ERRORS][snapshot],
@@ -804,6 +808,7 @@ void Performance::Get_NI_Counters(int snapshot) {
 			fclose(netInfo);
 			return;
 		}
+		Strip(ifname);
 		if(strstr(NET_IF_TO_IGNORE,ifname) != NULL) {
 			#ifdef _DEBUG
 				cout << "Ignoring network interface: " << ifname << endl;
