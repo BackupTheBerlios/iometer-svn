@@ -8,6 +8,8 @@ ChangeLog (2003.nn.nn):
 =======================
 
 - Applied patches:
+  - Patch provided by Sander Pool to get the Iometer "truly batch
+    oriented".
   - iometer-2003.05.10-UsingDdkAndWin64.patch by Daniel Scheibli
     (Integrates the changes contributed by Vedran Degoricija to
     ensure, that the executables can be build using the MS DDK
