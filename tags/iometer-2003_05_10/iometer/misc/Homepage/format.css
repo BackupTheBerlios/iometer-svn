@@ -1,0 +1,32 @@
+// Style sheet for the DbtuTools project
+
+.block { text-align: justify; }
+.mdiv { margin-left: 15px; }
+.tdh {
+  background-color: #125899;
+  color: #FFFFFF;
+  font-weight: bold;
+  vertical-align: bottom;
+}
+
+.vtp { vertical-align: top; }
+a, a:visited { color: #0040FF; }
+body { background-color: #FFFFFF; }
+
+table {
+  background-color: #FFFFCD;
+  border: 1px solid #000000;
+  margin-bottom: 0px;
+  width: 95%;
+}
+
+table.inner {
+  background-color: #FFFF80;
+  width: 100%;
+}
+
+p.desc {
+  font-size: 8pt;
+  margin-top: 5px;
+}
+
