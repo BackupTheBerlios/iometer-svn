@@ -64,8 +64,8 @@ NOTE: If you are running Dynamo on a Linux machine with a glibc (GNU
       after ending a test.
       This happens due to the shift from LinuxThreads to NPTL (Native
       POSIX Thread Library) and the incompatibilities coming with that.
-      To get around that issue the following command before starting
-      Dynamo:
+      To get around that issue you have run the following command before
+      starting Dynamo:
       
       export LD_ASSUME_KERNEL=2.4.1
 

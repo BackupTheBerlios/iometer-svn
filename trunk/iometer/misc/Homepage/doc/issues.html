@@ -1,0 +1,81 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Author" content="Daniel Scheibli">
+<title>Iometer project - Documentation - Known Issues</title>
+<link rel="stylesheet" type="text/css" href="../format.css">
+<link rel="SHORTCUT ICON" href="../graphics/iometer.ico">
+</head>
+
+<body>
+
+<p><img src="../graphics/logosmall.png" width=199 height=85 border=0 /></p>
+
+<div class="mdiv">
+  <h3>Known Issues</h3>
+
+  <p class="block">This document lists know issues about the
+  latest stable version of Iometer and provides you with
+  suggestions to bypass them.</p>
+
+  <table border="0" cellpadding="5" cellspacing="0">
+    <tr>
+      <td class="tdh">2003.05.10</td>
+    </tr>
+    <tr>
+      <td class="block">
+      <!-- ---------------------------------------------------------------- -->
+      <table class="inner" border="1" cellpadding="2" cellspacing="3">
+        <tr>
+	  <td class="block"><b>OS / platform</td>
+	  <td class="block"><b>issue / workaround</b></td>
+	  <td class="block"><b>scope</b></td>
+	</tr>
+        <tr>
+	  <td class="block" valign="top">Linux / IA32</td>
+          <td class="block"><i>Segmentation fault with Red Hat 9</i><BR>
+	                    <font size="-3">&#160;</font><BR>
+	                    <i>Issue:</i> Running Dynamo on a Linux machine
+			    with a glibc (GNU libc) version 2.3 or higher
+			    (having NPTL support) - Red Hat 9 for instance - it
+			    comes to a segmentation fault after ending a test.
+			    This hapens due to the shift from LinuxThreads to
+			    NPTL (Native POSIX Thread Library) and the
+			    incompatibilities coming with that.<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <i>Workaround:</i> Before starting the Dynamo you
+			    have to run the following command:<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <tt>export LD_ASSUME_KERNEL=2.4.1</tt></td>
+	  <td class="block" valign="top">2003.05.10 and older</td>
+	</tr>
+        <tr>
+	  <td class="block" valign="top">Solaris / SPARC</td>
+          <td class="block"><i>Segmentation fault when having multiple swap devices</i><BR>
+	                    <font size="-3">&#160;</font><BR>
+	                    <i>Issue:</i> Running Dynamo on a Solaris machine,
+			    a detection of the swap devices is done. If you
+			    have multiple swap devices configured, the Dynamo
+			    crashes with a segmentation fault.<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    <i>Workaround:</i>
+			    a.) Configure only one swap device<BR>
+			    b.) Apply the needed changes on source code
+			    level (file IOManagerSolaris.cpp line 1219):<BR>
+	                    <font size="-3">&#160;</font><BR>
+			    wrong: <tt>strs = (char *)malloc(num+1 * MAX_NAME);</tt><BR>
+			    correct: <tt>strs = (char *)malloc((num+1) * MAX_NAME);</tt></td>
+	  <td class="block" valign="top">2003.05.10 and older</td>
+	</tr>
+      </table>
+      <!-- ---------------------------------------------------------------- -->      
+      </td>
+    </tr>
+  </table>
+
+  <p class="desc">List of known issues for version 2003.05.10.</p>
+
+</div>
+<br><br><br>
+</body>
+</html>
