@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-01-12 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Added code for Linux on Intel Itanium (ia64).       ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - The x86_64 architecture can use rdtsc.              ## */
 /* ##               - Switched to the more generic IOMTR_CPU_X86_64.      ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -206,6 +208,14 @@
 			ccnt = 0;
 		}
 		return(ccnt);
+	}
+ #elif defined(IOMTR_CPU_IA64)
+	DWORDLONG rdtsc(void) {
+		unsigned long temp;
+		/* TODO: If you are going to use the Intel compiler */
+		/*       you need a different line of code. */
+		__asm__ __volatile__("mov %0=ar.itc" : "=r"(temp) :: "memory");
+		return temp;
 	}
  #else
   // Was the following 2 lines in before, but for which CPU (nevertheless it is useless!)?

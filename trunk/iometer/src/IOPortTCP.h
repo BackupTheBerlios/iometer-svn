@@ -54,7 +54,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-01-19 (mingz@ele.uri.edu)                        ## */
+/* ##               - Removed socketlen_t define.                         ## */
+/* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
+/* ##               - prototype of AcceptEx() defined.                    ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -98,9 +102,9 @@
  #define SOCKET	int
 #endif
 
-#if defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
  // nop
-#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #define socklen_t int  
 #elif defined(IOMTR_OS_NETWARE)
  #define socklen_t unsigned int
@@ -162,6 +166,38 @@ protected:
 	DWORDLONG			AsynchSend( LPVOID data, DWORD size = MESSAGE_SIZE );
 };
 
+#if defined(USING_DDK)
 
+// TODO: This section is for recent beta Windows DDK releases. Recent
+//       DDK versions have had changes made in their network include
+//       files. Because of the interaction between winsock.h and
+//       winsock2.h the only reasonable place to make a prototype for
+//       AcceptEx() is here. At some future date this issue may be
+//       resolved and this prototype may be removed.
+//
+//       This change was made for DDK 3790.1247 and DDK 3790.1260.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+BOOL
+PASCAL FAR
+AcceptEx (
+    IN SOCKET sListenSocket,
+    IN SOCKET sAcceptSocket,
+    IN PVOID lpOutputBuffer,
+    IN DWORD dwReceiveDataLength,
+    IN DWORD dwLocalAddressLength,
+    IN DWORD dwRemoteAddressLength,
+    OUT LPDWORD lpdwBytesReceived,
+    IN LPOVERLAPPED lpOverlapped
+    );
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 
 #endif // PORTTCP_DEFINED

@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-01-19 (mingz@ele.uri.edu)                        ## */
+/* ##               - Removed socketlen_t define.                         ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Changed SOCKET to CONNECTION for improved clarity,  ## */
 /* ##                 because SOCKET has a standard meaning outside       ## */
 /* ##                 Iometer.                                            ## */
@@ -90,9 +92,9 @@
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
-#if defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
  // nop
-#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #define socklen_t int  
 #elif defined(IOMTR_OS_NETWARE)
  #define socklen_t unsigned int

@@ -55,6 +55,8 @@
 /* ##                                                                     ## */
 /* ##  Changes ...: 2005-04-01 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added space in binding error msg print out          ## */
+/* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
+/* ##               - fixed include file differences for Windows DDK.     ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Cleanup some warnings with type casts.              ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
@@ -100,7 +102,11 @@
 #endif
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include "mswsock.h"
+ #if defined(USING_DDK)
+  #include "winsock.h"
+ #else
+  #include "mswsock.h"
+ #endif
 #endif
 
 

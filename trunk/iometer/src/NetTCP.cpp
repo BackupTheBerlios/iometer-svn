@@ -52,6 +52,8 @@
 /* ##                                                                     ## */
 /* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - Cast from SOCKET to CONNECTION in NetAsyncTCP()     ## */
+/* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
+/* ##               - Changed include files for Windows DDK.              ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Changed SOCKET to CONNECTION for greater clarity,   ## */
 /* ##                 because SOCKET has a standard meaning outside       ## */
@@ -78,7 +80,11 @@
 
 #include "NetTCP.h"
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include "mswsock.h"
+ #if defined(USING_DDK)
+  #include "winsock.h"
+ #else
+  #include "mswsock.h"
+ #endif
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_NETWARE)
  #include <sys/socket.h>
 
