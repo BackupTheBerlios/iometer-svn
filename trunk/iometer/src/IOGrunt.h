@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-05-13 (lamontcranston41@yahoo.com)               ## */
+/* ##  Changes ...: 2005-04-05 (ACurrid@nvidia.com)                       ## */
+/* ##               - Added a class member outstanding_io.                ## */
+/* ##               2004-05-13 (lamontcranston41@yahoo.com)               ## */
 /* ##               - conditionalize vinic.h include; Add cur_trans_slots ## */
 /* ##               2003-08-02 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Integrated the modification contributed by          ## */
@@ -200,6 +202,7 @@ private:
 	int		*available_trans_queue;
 	int		available_head;
 	int		available_tail;
+	int		outstanding_ios;
 	//
 	// Operations on related I/O transaction arrays.
 	void	Initialize_Transaction_Arrays();

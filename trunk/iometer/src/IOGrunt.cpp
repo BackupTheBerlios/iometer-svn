@@ -47,7 +47,9 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-05 (ACurrid@nvidia.com)                       ## */
+/* ##               - Fixed bug #1088486. Wait outstanding IO complete.   ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - The Interlocked functions take different parameters ## */
 /* ##                 in some of the different environments. The x86_64   ## */
 /* ##                 DDK compiler and x86_64 GCC are the two most at     ## */
@@ -137,6 +139,7 @@ Grunt::Grunt()
 	cur_trans_slots = 0;
 	trans_slots = NULL;
 	available_trans_queue = NULL;
+	outstanding_ios = 0;
 
 	io_cq = NULL;
 
@@ -829,6 +832,9 @@ void Grunt::Record_IO( Transaction *transaction, DWORDLONG end_IO )
 
 	// Update the target's number of outstanding I/Os.
 	targets[transaction->target_id]->outstanding_ios--;
+	
+	// Update the grunt's number of outstanding I/Os
+	outstanding_ios--;
 
 	// See if it's okay to record the completed I/O.
 	if ( transaction->start_IO && (ramp_up_ios_pending <= 0) && (grunt_state == TestRecording) )
@@ -1305,6 +1311,9 @@ void Grunt::Do_IOs()
 			// Increment the number of outstanding I/Os to the target.
 			target->outstanding_ios++;
 
+			// Increment the number of outstanding I/Os on this grunt
+			outstanding_ios++;
+
 			// See if the I/O occurred during the ramp up period.
 			if ( !transaction->start_IO )
 				++ramp_up_ios_pending;
@@ -1317,6 +1326,9 @@ void Grunt::Do_IOs()
 
 			// Increment the number of outstanding I/Os to the target.
 			target->outstanding_ios++;
+
+			// Increment the number of outstanding I/Os on this grunt
+			outstanding_ios++;
 
 			// See if the I/O occurred during the ramp up period.
 			if ( !transaction->start_IO )
@@ -1353,9 +1365,26 @@ void Grunt::Do_IOs()
 			available_head = 0;
 		}
 	} // while grunt_state is not TestIdle
+	
+	// Drain any outstanding I/Os from the completion queue
+	while (outstanding_ios > 0) {
+#if defined(IOMTR_OSFAMILY_NETWARE)
+		pthread_yield();	// NetWare is non-preemptive
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_WINDOWS)
+		// nop
+#else
+#warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+	
+		switch (Complete_IO(TIMEOUT_TIME)) {
+		case ReturnTimeout:
+			cout << "*** Grunt thread exiting with " << outstanding_ios << " still active" << endl;
+			break;		
+		default:
+			break;
+		}
+	}	
 }
-
-
 
 //
 // Checking for a completed I/O and processing the completion.
