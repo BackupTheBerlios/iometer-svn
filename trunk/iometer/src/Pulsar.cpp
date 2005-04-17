@@ -53,6 +53,8 @@
 /* ##  Changes ...: 2005-04-06 (mingz@ele.uri.edu)                        ## */
 /* ##               - Introduced a dynamo_param structure to simplify     ## */
 /* ##                 the ParseParam() interface.                         ## */
+/* ##               2004-09-28 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added warning for the common login fail error.      ## */
 /* ##               2004-08-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Added some OS checks to make the block device       ## */
@@ -496,6 +498,8 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "      This name or IP address is the one Iometer will use to communicate" << endl;
 	cout << "      with this manager. The default is the IP adress of the host's first" << endl;
 	cout << "      NIC." << endl;
+        cout << "      Make sure iometer box can ping this name successfully, otherwise dynamo" << endl;
+        cout << "      and iometer will hang a long time during login." << endl;
 	cout << endl;
 
  #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)

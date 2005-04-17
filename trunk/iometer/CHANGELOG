@@ -8,6 +8,9 @@ ChangeLog (IOMETER2 - 2004.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1184691 : iometer-2004.07.30-post.Ming008LoginWarning.patch
+     by Ming Zhang (Minor patch that adds an additional warning during
+     the login process).
    - #1088711 : iometer-2004.07.30-post.Andy001BugFixFor1088486.patch
      by Andy Currid (Implements a bug fix in regards to IO completions -
      see bug report #1088486).

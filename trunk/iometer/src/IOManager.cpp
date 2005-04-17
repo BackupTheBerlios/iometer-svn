@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-07-26 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2004-09-28 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added warning for the common login fail error.      ## */
+/* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added initialization of blkdevlist.                 ## */
 /* ##               2004-04-15 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Moved Report_Disks() over to IOManagerWin.cpp.      ## */
@@ -327,6 +329,11 @@ BOOL Manager::Login( char* port_name )
 		case LOGIN_OK:
 			//
 			// Waiting for login to be accepted.
+			cout << endl;
+			cout << "*** If dynamo and iometer hangs here, please make sure" << endl;
+			cout << "*** you use a correct -m <manager_computer_name> that" << endl;
+			cout << "*** can ping from iometer machine. use IP if need." << endl;
+
 			if ( prt->Accept() )
 				cout << "   Login accepted." << endl << flush;
 			return TRUE;
