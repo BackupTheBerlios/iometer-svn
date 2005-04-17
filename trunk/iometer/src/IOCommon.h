@@ -55,6 +55,8 @@
 /* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - Correct a typo of IOMTR_OSFAMILY_NETWARE            ## */
 /* ##               - Added a declaration for SSGetLANCommonCounters()    ## */
+/* ##               2004-09-28 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added the syslog.h header for linux.                ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Added ifdef's to get Iometer to compile in x86_64   ## */
 /* ##                 environment. See IOMTR_SETTING_GCC_M64.             ## */
@@ -246,6 +248,9 @@ using namespace std;
  #include <netinet/in.h>   // in_addr_t
  #if defined(IOMTR_OS_LINUX)
   #include <sys/ioctl.h>
+ #endif
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+  #include <syslog.h>
  #endif
 #endif
 // ----------------------------------------------------------------------------

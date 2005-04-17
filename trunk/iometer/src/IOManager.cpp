@@ -50,6 +50,7 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2004-09-28 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added call to syslog.                               ## */
 /* ##               - Added warning for the common login fail error.      ## */
 /* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added initialization of blkdevlist.                 ## */
@@ -122,7 +123,9 @@
 
 #define	KNOWN_VI_NIC_NAMES	3
 
-
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+extern int do_syslog;
+#endif
 
 //
 // Initializing manager variables before their first use.
@@ -1106,6 +1109,12 @@ void Manager::Begin_IO( int target )
 	msg.data = TRUE;
 	cout << "Beginning to perform I/O..." << endl << flush;
 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+	if (do_syslog) {
+		syslog(LOG_INFO, "Beginning to perform I/O...");
+	}
+#endif
+
 	if ( target == ALL_WORKERS )
 	{
 		for ( int i = 0; i < grunt_count; i++ )
@@ -1173,6 +1182,12 @@ void Manager::Stop_Test( int target )
 		(void) reorder(msg);
 	}
 	prt->Send( &msg );
+
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+	if (do_syslog) {
+		syslog(LOG_INFO, "I/O Stopped");
+	}
+#endif
 }
 
 

@@ -53,7 +53,10 @@
 /* ##  Changes ...: 2005-04-06 (mingz@ele.uri.edu)                        ## */
 /* ##               - Introduced a dynamo_param structure to simplify     ## */
 /* ##                 the ParseParam() interface.                         ## */
+/* ##               2005-04-05 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added set CPU affinity support.                     ## */
 /* ##               2004-09-28 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added syslog support.                               ## */
 /* ##               - Added warning for the common login fail error.      ## */
 /* ##               2004-08-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -139,12 +142,17 @@
  #include <ctype.h>
 #endif
 
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+int do_syslog = FALSE;
+#endif
+
 struct dynamo_param {
 	char *iometer;
 	char *manager_name;
 	char *manager_computer_name;
 	char *manager_exclude_fs;
 	char (*blkdevlist)[MAX_TARGETS][MAX_NAME];
+	unsigned long cpu_affinity;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -247,8 +255,71 @@ int check_blk_dev(char *devname)
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
+// FIXME: should put into makefile.
+#define IOMTR_SET_AFFINITY
 
+#ifdef IOMTR_SET_AFFINITY
+int iomtr_set_cpu_affinity(unsigned long affinity_mask)
+{
+	int res = -1;
+	
+#if defined(IOMTR_OS_LINUX)
+	cpu_set_t s;
+	int i, j;
+	unsigned long t = 1;
+	
+	if (!affinity_mask)
+		affinity_mask = 1;
+	i = sizeof(unsigned long) * 8;
+	if (i > CPU_SETSIZE)
+		i = CPU_SETSIZE;
+	CPU_ZERO (&s);
+	for (j = 0; j < i; j++)
+		if ((t << j) & affinity_mask) {
+			CPU_SET(j, &s);
+			break;
+		}
+	/* Developer Note:
+	 *
+	 * If meet compiling error about following line in a relatively old Linux system,
+	 * please try "sched_setaffinity(getpid(), &s)" instead.
+	 */
+	if (sched_setaffinity(getpid(), CPU_SETSIZE, &s) < 0) {
+		cout << "Set CPU affinity fail." << errno << endl;
+		if (errno == ENOSYS)
+			cout << "Warning: System does not support set CPU affinity." << endl;
+			cout << "Be sure to check if measured results are reasonable." << endl;
+	} else {
+#ifdef _DEBUG
+		cout << "Set CPU affinity sucessfully." << endl;
+#endif
+	}
 
+#elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	if (!affinity_mask)
+		affinity_mask = 1;
+
+	// not &affinity_mask, MSDN API Doc error.
+	res = SetProcessAffinityMask(GetCurrentProcess(), affinity_mask);
+	if (!res) {
+		res = GetLastError();
+		cout << "Set cpu affinity fail with" << res << endl;
+		// default to CPU 1
+		res = SetProcessAffinityMask(GetCurrentProcess(), 1);
+	}
+#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+	// nop	
+#else
+ #warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+	return res;
+}
+#else
+int iomtr_set_cpu_affinity(unsigned long affinity_mask)
+{
+	return 0;
+}
+#endif
 
 /* ######################################################################### */
 /* ##                                                                     ## */
@@ -295,7 +366,10 @@ int CDECL main( int argc, char *argv[] )
 	param.blkdevlist = &manager.blkdevlist;
 	
 	ParseParam(argc, argv, &param);
+
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
+
+	iomtr_set_cpu_affinity(param.cpu_affinity);
 
 	// If there were command line parameters, indicate that they were recognized.
 	if ( iometer[0] || manager.manager_name[0] )
@@ -473,11 +547,13 @@ void Syntax( const char* errmsg /*=NULL*/ )
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type] [-b extra_device] [-f extra_device_file]" << endl;
+	cout << "       [-c cpu_affinity] [-l]" << endl;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
+	cout << "       [-c cpu_affinity]" << endl;
 #elif defined(IOMTR_OS_NETWARE)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
-	cout << "       [/x excluded_volumes]" << endl;
+	cout << "       [/x excluded_volumes] [-c cpu_affinity]" << endl;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -514,6 +590,8 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "   extra_device_file - a file store extra device names with each name in one line" << endl;
 	cout << "      use this in case you have lots of extra device need to be claimed." << endl;
 	cout << "      You MUST use absolute path for device name here." << endl;
+	cout << endl;
+	cout << "   -l - to record events in syslog, default is /var/log/messages." << endl;
  #elif defined(IOMTR_OSFAMILY_NETWARE)
 	cout << "   excluded_volumes - volumes to exclude from volume or device search" << endl;
 	cout << "      The default is \"" << "none" << "\"." << endl;
@@ -523,7 +601,12 @@ void Syntax( const char* errmsg /*=NULL*/ )
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
 
-    cout << endl;
+	cout << "   cpu_affinity - cpu affinity is used to bind dynamo to certain processor(s)." << endl;
+	cout << "      This is used for getting a more consistent timing value. For example, if" << endl;
+	cout << "      you want to bind to the third cpu, you should have value 4(00000100) here." << endl;
+	cout << "      If this parameter is not specified, dynamo will bind to the first CPU" << endl;
+	cout << "      in system by default." << endl;
+	cout << endl;
 
 	exit( 0 );
 }
@@ -624,7 +707,15 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				strcat( param->manager_exclude_fs, argv[I] );
         			strcat( param->manager_exclude_fs, " " );
 				break;
+			case 'C':
+				if (argv[I])
+					param->cpu_affinity = (unsigned long)atol(argv[I]);
+				break;
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+			case 'L':
+				do_syslog = TRUE;
+				openlog(NEW_WORKER_EXECUTABLE, 0, LOG_USER);
+				break;
 			case 'B':
 				if (check_blk_dev(argv[I])) {
 					Syntax("Not a valid block device.");
