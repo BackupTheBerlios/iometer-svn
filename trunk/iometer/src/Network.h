@@ -55,7 +55,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-02-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added null definition for namespace std for old     ## */
+/* ##                 version MS VC++.                                    ## */
+/* ##               - Corrected pure virtual function definition.         ## */
+/* ##               2003-10-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -68,9 +72,11 @@
 #ifndef NETWORK_DEFINED
 #define NETWORK_DEFINED
 
-
-#include <sstream>
+#ifdef IOMTR_OSFAMILY_WINDOWS
+namespace std {}
+#endif
 using namespace std;
+#include <sstream>
 
 #include "IOCommon.h"
 
@@ -103,17 +109,17 @@ public:
 	virtual	~Network();
 
 	// public functions common to all Networks (pure virtual, not implemented by Network)
-	virtual ReturnVal	Create( BOOL create_server ) = NULL;
+	virtual ReturnVal	Create( BOOL create_server ) = 0;
 	virtual ReturnVal	Connect( const char* ip_address, 
-							unsigned short port_number ) = NULL;
-	virtual ReturnVal	Accept() = NULL;
-	virtual ReturnVal	Destroy() = NULL;
+							unsigned short port_number ) = 0;
+	virtual ReturnVal	Accept() = 0;
+	virtual ReturnVal	Destroy() = 0;
 	virtual ReturnVal	Receive( LPVOID buffer, DWORD bytes, LPDWORD return_value,
-							LPOVERLAPPED asynchronous_io, DWORD flags = 0 ) = NULL;
+							LPOVERLAPPED asynchronous_io, DWORD flags = 0 ) = 0;
 	virtual ReturnVal	Send( LPVOID buffer, DWORD bytes, LPDWORD return_value,
-							LPOVERLAPPED asynchronous_io, DWORD flags = 0 ) = NULL;
-	virtual DWORD		Peek() = NULL;
-	virtual ReturnVal	Close( BOOL close_server ) = NULL;
+							LPOVERLAPPED asynchronous_io, DWORD flags = 0 ) = 0;
+	virtual DWORD		Peek() = 0;
+	virtual ReturnVal	Close( BOOL close_server ) = 0;
 
 protected:
 	virtual void OutputErrMsg();

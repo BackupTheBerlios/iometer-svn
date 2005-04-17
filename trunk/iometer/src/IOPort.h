@@ -54,7 +54,11 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-02-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added null definition for namespace std for old     ## */
+/* ##                 version MS VC++.                                    ## */
+/* ##               - Corrected pure virtual function definition.         ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -70,9 +74,11 @@
 #ifndef PORT_DEFINED
 #define PORT_DEFINED
 
-
-#include <sstream>
+#ifdef IOMTR_OSFAMILY_WINDOWS
+namespace std {}
+#endif
 using namespace std;
+#include <sstream>
 
 #include "IOCommon.h"
 #include "IOMessage.h"
@@ -101,15 +107,15 @@ public:
 
 	// public functions common to all Ports (pure virtual, not implemented by Port)
 	virtual	BOOL		Create( char* port_name = NULL, char* remote_name = NULL, 
-							DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0 ) = NULL;
+					DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0 ) = 0;
 	virtual BOOL		Connect( char* port_name = NULL, 
-							unsigned short port_number = WELL_KNOWN_TCP_PORT ) = NULL;
-	virtual BOOL		Accept() = NULL;
-	virtual BOOL		Disconnect() = NULL;
-	virtual BOOL		Close() = NULL;
-	virtual DWORDLONG	Receive( LPVOID data, DWORD size = MESSAGE_SIZE ) = NULL;
-	virtual DWORDLONG	Send( LPVOID data, DWORD size = MESSAGE_SIZE ) = NULL;
-	virtual DWORD		Peek() = NULL;
+							unsigned short port_number = WELL_KNOWN_TCP_PORT ) = 0;
+	virtual BOOL		Accept() = 0;
+	virtual BOOL		Disconnect() = 0;
+	virtual BOOL		Close() = 0;
+	virtual DWORDLONG	Receive( LPVOID data, DWORD size = MESSAGE_SIZE ) = 0;
+	virtual DWORDLONG	Send( LPVOID data, DWORD size = MESSAGE_SIZE ) = 0;
+	virtual DWORD		Peek() = 0;
 
 	// public functions common to all asynchronous Ports
 	//     (implemented by Port)
@@ -117,9 +123,9 @@ public:
 	virtual BOOL		IsReceiveComplete();
 	virtual BOOL		IsSendComplete();
 	//     (pure virtual, not implemented by Port)
-	virtual BOOL		GetAcceptResult() = NULL;
-	virtual DWORDLONG	GetReceiveResult() = NULL;
-	virtual DWORDLONG	GetSendResult() = NULL;
+	virtual BOOL		GetAcceptResult() = 0;
+	virtual DWORDLONG	GetReceiveResult() = 0;
+	virtual DWORDLONG	GetSendResult() = 0;
 
 	// public data members common to all Ports
 	char				network_name[MAX_NETWORK_NAME];

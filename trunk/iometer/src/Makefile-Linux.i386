@@ -45,7 +45,9 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-08-21 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2005-02-26 (mingz@ele.uri.edu)                              ##
+##               - Added NOMINMAX definition.                                ##
+##               2004-08-21 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Removed old global defines that are no longer used /      ##
 ##                 named different, like IOMTR_SETTING_OVERRIDE_FS           ##
 ##               - Removed IOPerformance.o from the list of objects to       ##
@@ -111,7 +113,7 @@ CFLAGS=	-O3 \
 	-DIOMTR_OSFAMILY_UNIX -DIOMTR_OS_LINUX \
 	-DIOMTR_CPU_I386 \
 	-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
-	-D_REENTRANT
+	-D_REENTRANT -DNOMINMAX
 #	-ggdb
 
 
@@ -171,5 +173,3 @@ iometer:
 
 .c.o:
 	$(CXX) $(CFLAGS) -c $<
-
-

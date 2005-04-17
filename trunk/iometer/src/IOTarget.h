@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-02-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Corrected pure virtual function definition.         ## */
+/* ##               2003-10-15 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Moved to the use of the IOMTR_[OSFAMILY|OS|CPU]_*   ## */
 /* ##                 global defines.                                     ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -87,12 +89,12 @@ public:
 	Target();
 	virtual ~Target();
 
-	virtual	BOOL	Initialize( Target_Spec *target_info, CQ *cq ) = NULL;
-	virtual BOOL	Open( volatile TestState *test_state, int open_flag = 0 ) = NULL;
-	virtual BOOL	Close( volatile TestState *test_state ) = NULL;
+	virtual	BOOL	Initialize( Target_Spec *target_info, CQ *cq ) = 0;
+	virtual BOOL	Open( volatile TestState *test_state, int open_flag = 0 ) = 0;
+	virtual BOOL	Close( volatile TestState *test_state ) = 0;
 
-	virtual ReturnVal	Read( LPVOID buffer, Transaction *trans ) = NULL;
-	virtual ReturnVal	Write( LPVOID buffer, Transaction *trans ) = NULL;
+	virtual ReturnVal	Read( LPVOID buffer, Transaction *trans ) = 0;
+	virtual ReturnVal	Write( LPVOID buffer, Transaction *trans ) = 0;
 
 	virtual DWORDLONG	Rand();
 

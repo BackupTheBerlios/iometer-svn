@@ -51,7 +51,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-02-26 (mingz@ele.uri.edu)                        ## */
+/* ##               - Corrected pure virtual function definition.         ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -79,7 +81,7 @@ class CQ
 {
 public:
 
-	virtual	ReturnVal	GetStatus( int *bytes, int *data, int delay ) = NULL;
+	virtual	ReturnVal	GetStatus( int *bytes, int *data, int delay ) = 0;
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	virtual BOOL		SetQueueSize(int size) { return FALSE; };
 #endif
