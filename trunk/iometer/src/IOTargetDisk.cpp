@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-02 (moozart@gmx.de)                           ## */
+/* ##               - Corrected a overflow bug in getSizeOfPhysDisk().    ## */
+/* ##               2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed a note about the Reported_As_Logical()      ## */
 /* ##                 function as this one was removed.                   ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
@@ -1952,8 +1954,10 @@ static unsigned long long getSizeOfPhysDisk(const char *devName) {
 				close( fd );
 			return 0; 
 		}
-		else
-			sz64 = sz32 << 9;
+		else {
+			sz64 = sz32;
+			sz64 <<= 9;
+		}
 	}
 
 	#ifdef _DEBUG

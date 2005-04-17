@@ -8,6 +8,11 @@ ChangeLog (IOMETER2 - 2004.mm.dd):
 ==================================
 
 - Applied patches:
+   - iometer-2004.07.30-post.Ming005TargetDiskOverflow.patch by Ming
+     Zhang (Patch applying the fix submitted by moozart@gmx.de which
+     resolves a serious overflow in the IOTargetDisk.cpp file).
+   - iometer-2004.07.30-post.Ming004AdjustPrintMessage.patch by Ming
+     Zhang (Tiny patch that corrects a message printed).
    - iometer-2004.07.30-post.Ming003Gcc34Support.patch by Ming Zhang
      (Adds support for the gcc 3.4 compiler).   
    - iometer-2004.07.30-post.Ming002AbsolutePathForDevices.patch by

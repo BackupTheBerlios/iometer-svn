@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-01 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added space in binding error msg print out          ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Cleanup some warnings with type casts.              ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -296,7 +298,7 @@ BOOL PortTCP::Create( char* port_name, char* remote_name, DWORD size, unsigned s
 
 	if ( bind ( server_socket, (struct sockaddr *) &sin, sizeof(sin) ) != 0 )
 	{
-		*errmsg << "===> ERROR: Binding to socket " << name << "failed." << endl
+		*errmsg << "===> ERROR: Binding to socket " << name << " failed." << endl
 			<< "     [PortTCP::Create() in " << __FILE__ << " line " << __LINE__ << "]" << endl
 			<< "     errno = " << WSAGetLastError() << ends;
 		OutputErrMsg();
