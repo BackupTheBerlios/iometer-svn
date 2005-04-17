@@ -53,7 +53,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-mm-dd (thayneharmon@users.sourceforge.net)       ## */
+/* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
+/* ##               - Added code for doing LAN performance stuff for      ## */
+/* ##                 an intel request.                                   ## */
+/* ##               2004-mm-dd (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - Initial code.                                       ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
@@ -135,7 +138,8 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 	cout << "   Getting system performance data." << endl << flush;
 #endif
 
-	NXGetTime(NX_SINCE_BOOT, NX_MSECONDS, &NXTime); //NX_TICKS
+//	NXGetTime(NX_SINCE_BOOT, NX_MSECONDS, &NXTime); //NX_TICKS
+	NXGetTime(NX_SINCE_BOOT, NX_NSECONDS, &NXTime); //NX_NSECONDS
 	time_counter[snapshot] = (__int64)NXTime;
 	if (snapshot == LAST_SNAPSHOT) 
 	{
@@ -174,7 +178,89 @@ void Performance::Get_CPU_Counters(int snapshot)
 	}
 }
 
-void Performance::Get_TCP_Counters(int snapshot) {}
+void Performance::Get_TCP_Counters(int snapshot) 
+{
+	long rc=0;
+	LONG blkNumber = 0;
+	typedef struct CommonLANStructure
+	{
+	   LONG  notSupportedMask;
+	   LONG  TotalTxPacketCount;
+	   LONG  TotalRxPacketCount;
+	   LONG  NoECBAvailableCount;
+	   LONG  PacketTxTooBigCount;
+	   LONG  PacketTxTooSmallCount;
+	   LONG  PacketRxOverflowCount;
+	   LONG  PacketRxTooBigCount;
+	   LONG  PacketRxTooSmallCount;
+	   LONG  PacketTxMiscErrorCount;
+	   LONG  PacketRxMiscErrorCount;
+	   LONG  RetryTxCount;
+	   LONG  ChecksumErrorCount;
+	   LONG  HardwareRxMismatchCount;
+	   /* to here */
+	   LONG  TotalTxOKByteCountLow;
+	   LONG  TotalTxOKByteCountHigh;
+	   LONG  TotalRxOKByteCountLow;
+	   LONG  TotalRxOKByteCountHigh;
+	   LONG  TotalGroupAddrTxCount;
+	   LONG  TotalGroupAddrRxCount;
+	   LONG  AdapterResetCount;
+	   LONG  AdapterOprTimeStamp;
+	   LONG  AdapterQueDepth;
+	   LONG  MediaSpecificCounter1;
+	   LONG  MediaSpecificCounter2;
+	   LONG  MediaSpecificCounter3;
+	   LONG  MediaSpecificCounter4;
+	   LONG  MediaSpecificCounter5;
+	   LONG  MediaSpecificCounter6;
+	   LONG  MediaSpecificCounter7;
+	   LONG  MediaSpecificCounter8;
+	   LONG  MediaSpecificCounter9;
+	   LONG  MediaSpecificCounter10;
+	   LONG  ValidMask1;
+	   LONG  MediaSpecificCounter11;
+	   LONG  MediaSpecificCounter12;
+	   LONG  MediaSpecificCounter13;
+	   LONG  MediaSpecificCounter14;
+	}CommonLANStructure;
+
+	typedef struct GetLANCommonCountersStructure
+	{
+		LONG currentServerTime;
+		BYTE vConsoleVersion;
+		BYTE vConsoleRevision;
+		BYTE statMajorVersion;
+		BYTE statMinorVersion;
+		LONG totalCommonCnts;
+		LONG totalCntBlocks;
+		LONG customCounters;
+		LONG nextCntBlock;
+		CommonLANStructure info;
+	} GetLANCommonCountersStructure;
+	GetLANCommonCountersStructure lanInfo;
+
+	for (network_interfaces = 1; network_interfaces < MAX_NUM_INTERFACES; network_interfaces++) 
+	{
+		blkNumber = 0;
+//		while(1)
+		if ((rc=SSGetLANCommonCounters((LONG)network_interfaces, blkNumber, (BYTE *)&lanInfo, sizeof(GetLANCommonCountersStructure))) == 0)
+		{
+			raw_tcp_data[TCP_SEGMENTS_RESENT][snapshot] = lanInfo.info.RetryTxCount;
+
+//			if (lanInfo.nextCntBlock == 0)
+//				break;
+//			else
+//				blkNumber = lanInfo.nextCntBlock;
+		}
+		else
+		{
+  //			cout << "Performance::Get_TCP_Counters: Error (" << rc << ") in getting stats on board " << network_interfaces << endl;
+			break;
+		}
+//		if (rc != 0) break;
+	}
+}
 
 
 
@@ -204,32 +290,12 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 				// but we are more fortunate here.
 				// See the corresponding Notes at the end of this file for a description.
 				//
-//				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT] - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * clock_tick / timediff;
 				result = (double) ((raw_cpu_data[cpu][stat][LAST_SNAPSHOT] + raw_cpu_data[cpu][stat][FIRST_SNAPSHOT])/2.0);
 				cpu_results->CPU_utilization[cpu][stat] = result;
 			}
 			else
 			{
 				// All other CPU statistics.
-//				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT] - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
-//
-//				if (result < 0.0) 
-//				{
-//					result = 0.0;
-//					//
-//					// CPU Utilization figures are outside valid range far too often.
-//					// Ok, not in every cycle but frequent still.
-//					// So, it is better to comment it out rather than have the message
-//					// pop up on the screen at regular intervals.
-//					//
-//					// cout << "***** Error : CPU utilization outside valid timerange 0% - 100% *****" << endl;
-//				}
-//				if  (result > 1.0)
-//				{
-//					result = 1.0;
-//				}
-
-//				cpu_results->CPU_utilization[cpu][stat] = (result * 100);
 				cpu_results->CPU_utilization[cpu][stat] = (double) ((raw_cpu_data[cpu][stat][LAST_SNAPSHOT] + raw_cpu_data[cpu][stat][FIRST_SNAPSHOT])/2);
 			}
 
@@ -248,7 +314,6 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 //
 void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 {
-#ifdef NW_BLOCK_COMMENT
 	int		stat;		// Loop control variable.
 
 	// Loop through the counters and calculate performance.
@@ -258,16 +323,17 @@ void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 		// the performance data.  Set all of the values to 0.
 		double result;
 		result = ((double) raw_tcp_data[stat][LAST_SNAPSHOT] - 
-			raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
-		result *= clock_tick;		// note that timediff is in CLK_TCKs and not seconds
+				raw_tcp_data[stat][FIRST_SNAPSHOT]) * 1000000000.0 / 
+				((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
+
+//		result = ((double) raw_tcp_data[stat][LAST_SNAPSHOT] - raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
+//		result *= clock_tick;		// note that timediff is in CLK_TCKs and not seconds
 		net_results->tcp_stats[stat] = result;
 
 		#if PERFORMANCE_DETAILS || _DETAILS
-			cout << "TCP recorded stat " << stat << " = " 
-				<< net_results->tcp_stats[stat] << endl;
+			cout << "TCP recorded stat " << stat << " = " << net_results->tcp_stats[stat] << endl;
 		#endif
 	}
-#endif	
 }
 
 
@@ -278,34 +344,94 @@ void Performance::Calculate_TCP_Stats( Net_Results *net_results )
 
 void Performance::Get_NI_Counters(int snapshot) 
 {
-#ifdef NW_BLOCK_COMMENT
-	int c, scanCount, packetIn, packetOut;
-	char ifname[32];
+	typedef struct CommonLANStructure
+	{
+	   LONG  notSupportedMask;
+	   LONG  TotalTxPacketCount;
+	   LONG  TotalRxPacketCount;
+	   LONG  NoECBAvailableCount;
+	   LONG  PacketTxTooBigCount;
+	   LONG  PacketTxTooSmallCount;
+	   LONG  PacketRxOverflowCount;
+	   LONG  PacketRxTooBigCount;
+	   LONG  PacketRxTooSmallCount;
+	   LONG  PacketTxMiscErrorCount;
+	   LONG  PacketRxMiscErrorCount;
+	   LONG  RetryTxCount;
+	   LONG  ChecksumErrorCount;
+	   LONG  HardwareRxMismatchCount;
+	   /* to here*/
+	   LONG  TotalTxOKByteCountLow;
+	   LONG  TotalTxOKByteCountHigh;
+	   LONG  TotalRxOKByteCountLow;
+	   LONG  TotalRxOKByteCountHigh;
+	   LONG  TotalGroupAddrTxCount;
+	   LONG  TotalGroupAddrRxCount;
+	   LONG  AdapterResetCount;
+	   LONG  AdapterOprTimeStamp;
+	   LONG  AdapterQueDepth;
+	   LONG  MediaSpecificCounter1;
+	   LONG  MediaSpecificCounter2;
+	   LONG  MediaSpecificCounter3;
+	   LONG  MediaSpecificCounter4;
+	   LONG  MediaSpecificCounter5;
+	   LONG  MediaSpecificCounter6;
+	   LONG  MediaSpecificCounter7;
+	   LONG  MediaSpecificCounter8;
+	   LONG  MediaSpecificCounter9;
+	   LONG  MediaSpecificCounter10;
+	   LONG  ValidMask1;
+	   LONG  MediaSpecificCounter11;
+	   LONG  MediaSpecificCounter12;
+	   LONG  MediaSpecificCounter13;
+	   LONG  MediaSpecificCounter14;
+	}CommonLANStructure;
+
+	typedef struct GetLANCommonCountersStructure
+	{
+		LONG currentServerTime;
+		BYTE vConsoleVersion;
+		BYTE vConsoleRevision;
+		BYTE statMajorVersion;
+		BYTE statMinorVersion;
+		LONG totalCommonCnts;
+		LONG totalCntBlocks;
+		LONG customCounters;
+		LONG nextCntBlock;
+		CommonLANStructure info;
+	} GetLANCommonCountersStructure;
+
 	LONG blkNumber = 0;
+	long rc;
 	GetLANCommonCountersStructure lanInfo;
 
-	for (network_interfaces = 0; network_interfaces < MAX_NUM_INTERFACES; network_interfaces++) 
+	for (network_interfaces = 1; network_interfaces < MAX_NUM_INTERFACES; network_interfaces++) 
 	{
 		blkNumber = 0;
-		while(1)
-		if (SSGetLANCommonCounters((LONG)network_interfaces, blkNumber, (BYTE *)&lanInfo, sizeof(GetLANCommonCountersStructure)) == 0)
+//		while(1)
+		if ((rc=SSGetLANCommonCounters((LONG)network_interfaces, blkNumber, (BYTE *)&lanInfo, sizeof(GetLANCommonCountersStructure))) == 0)
 		{
-			raw_ni_data[network_interfaces][NI_IN_ERRORS][snapshot] += lanInfo.info.PacketRxMiscErrorCount;
-			raw_ni_data[network_interfaces][NI_OUT_ERRORS][snapshot] += lanInfo.info.PacketTxMiscErrorCount;
-			raw_ni_data[network_interfaces][NI_PACKETS][snapshot] += (lanInfo.info.TotalRxPacketCount + lanInfo.info.TotalTxPacketCount);
+			raw_ni_data[network_interfaces][NI_IN_ERRORS][snapshot] = lanInfo.info.PacketRxMiscErrorCount;
+			raw_ni_data[network_interfaces][NI_OUT_ERRORS][snapshot] = lanInfo.info.PacketTxMiscErrorCount;
+			raw_ni_data[network_interfaces][NI_PACKETS][snapshot] = (lanInfo.info.TotalRxPacketCount + lanInfo.info.TotalTxPacketCount);
 
-			if (lanInfo.nextCntBlock == 0)
-				break;
-			else
-				blkNumber = lanInfo.nextCntBlock;
+//			printf("\rGet_NI_Counters: blk:%x PacketRxMiscErrorCount:%x, PacketTxMiscErrorCount:%x, TotalRxPacketCount:%x, TotalTxPacketCount:%x\n", 
+//				lanInfo.nextCntBlock,
+//				lanInfo.info.PacketRxMiscErrorCount, lanInfo.info.PacketTxMiscErrorCount,
+//				lanInfo.info.TotalRxPacketCount, lanInfo.info.TotalTxPacketCount);
+
+//			if (lanInfo.nextCntBlock == 0)
+//				break;
+//			else
+//				blkNumber = lanInfo.nextCntBlock;
 		}
 		else
 		{
-			cout << "Performance::Get_NI_Counters: Error in getting stats on board " << network_interfaces << endl;
+//			cout << "Performance::Get_NI_Counters: Error (" << rc << ") in getting stats on board " << network_interfaces << endl;
 			break;
 		}
+//		if (rc != 0) break;
 	}
-#endif
 }
 
 
@@ -319,7 +445,7 @@ void Performance::Calculate_NI_Stats( Net_Results *net_results )
 
 	// Loop through the counters and calculate performance.
 	net_results->ni_count = network_interfaces;
-	for ( net = 0; net < network_interfaces; net++ )
+	for ( net = 1; net < network_interfaces; net++ )
 	{
 		for ( stat = 0; stat < NI_RESULTS; stat++ )
 		{
@@ -341,10 +467,10 @@ void Performance::Calculate_NI_Stats( Net_Results *net_results )
 
 			net_results->ni_stats[net][stat] = result;
 
-			#if PERFORMANCE_DETAILS || _DETAILS
+//			#if PERFORMANCE_DETAILS || _DETAILS
 				cout << "   Network interface " << net << " recorded stat " << stat << " = " 
 					<< (long long)net_results->ni_stats[net][stat] << endl;
-			#endif
+//			#endif
 		}
 	}
 }

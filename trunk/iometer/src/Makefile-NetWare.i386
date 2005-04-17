@@ -52,7 +52,9 @@
 ##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ##                                                                           ##
-##  Changes ...: 2004-08-07 (daniel.scheibli@edelbyte.org)                   ##
+##  Changes ...: 2005-04-07 (tharmon@novell.com)                             ##
+##               - Remove extra white space and carriage return.             ##
+##               2004-08-07 (daniel.scheibli@edelbyte.org)                   ##
 ##               - Added iometer target and explained that there is no       ##
 ##                 Iometer GUI for non MS Windows platforms so far.          ##
 ##               2004-04-19 (tharmon@novell.com)                             ##
@@ -82,25 +84,25 @@ CXZ=c:/Novell/CLTools/mpkxdc
 # Note 2) -DIOMTR_SETTING_OVERRIDE_FS controls inclusion of destructive dynamo code.
 # Note 3) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
 # cflags for mwccnlm.exe compiler
-CFLAGS= -c 					\
-        -Cpp_exceptions on 	\
-        -lang c++ 			\
-        -enum int 			\
-        -nodefaults			\
-        -warn on, nounwanted, nounused \
-        -align 1            \
-        -O0					\
-        -i .                \
-        -I-					\
-        -IC:/Novell/NDK/libc/include \
-        -IC:/Novell/NDK/libc/imports \
-        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Headers" \
-        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries" \
-        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries\MSL C++\Include" \
-		-D_GNU_SOURCE \
-        -DIOMTR_OSFAMILY_NETWARE -DIOMTR_OS_NETWARE \
-        -DIOMTR_CPU_I386 \
-        -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
+CFLAGS= -c\
+        -Cpp_exceptions on\
+        -lang c++\
+        -enum int\
+        -nodefaults\
+        -warn on, nounwanted, nounused\
+        -align 1\
+        -O0\
+        -i .\
+        -I-\
+        -IC:/Novell/NDK/libc/include\
+        -IC:/Novell/NDK/libc/imports\
+        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Headers"\
+        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries"\
+        -I"C:\Program Files\Metrowerks\CodeWarrior8\Novell Support\Metrowerks Support\Libraries\MSL C++\Include"\
+		-D_GNU_SOURCE\
+        -DIOMTR_OSFAMILY_NETWARE -DIOMTR_OS_NETWARE\
+        -DIOMTR_CPU_I386\
+        -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64\
 		-D_REENTRANT
 
 # link flags for mwldnlm.exe
@@ -179,6 +181,4 @@ iometer:
 
 .c.o:
 	$(CXX) $(CFLAGS) -c $<
-
-
 

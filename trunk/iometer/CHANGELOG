@@ -8,6 +8,12 @@ ChangeLog (IOMETER2 - 2004.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1184671 : iometer-2004.07.30-post.Ming006ParseParamStruct.patch
+     by Ming Zhang (Patch that introduces the dynamo_param structure
+     which contains the arguments given to the dynamo executable).
+   - #1184668 : iometer-2004.07.30-post.Thayne001NetwareFollowUp.patch
+     by Thayne Harmon (Significant patch applying some adjustments as
+     well as adding support for network statistics).
    - iometer-2004.07.30-post.Ming005TargetDiskOverflow.patch by Ming
      Zhang (Patch applying the fix submitted by moozart@gmx.de which
      resolves a serious overflow in the IOTargetDisk.cpp file).

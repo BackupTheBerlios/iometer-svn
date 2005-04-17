@@ -50,7 +50,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
+/* ##               - Cast from SOCKET to CONNECTION in NetAsyncTCP()     ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Changed SOCKET to CONNECTION for greater clarity,   ## */
 /* ##                 because SOCKET has a standard meaning outside       ## */
 /* ##                 Iometer.                                            ## */
@@ -132,6 +134,12 @@ NetAsyncTCP::NetAsyncTCP()
 #endif
 
 #endif // IOMTR_OSFAMILY_UNIX
+
+#if defined(IOMTR_OSFAMILY_NETWARE)
+	server_fp.fd = client_fp.fd = -1;
+	server_socket = (CONNECTION)&server_fp;
+	client_socket = (CONNECTION)&client_fp;
+#endif
 
 	server_address.sin_family = AF_INET; // use Internet Protocol
 	client_address.sin_family = AF_INET; // use Internet Protocol

@@ -50,7 +50,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-08-18 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-06 (mingz@ele.uri.edu)                        ## */
+/* ##               - Introduced a dynamo_param structure to simplify     ## */
+/* ##                 the ParseParam() interface.                         ## */
+/* ##               2004-08-18 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Added some OS checks to make the block device       ## */
 /* ##                 stuff work on non Linux/Solaris OS'es.              ## */
@@ -134,20 +137,20 @@
  #include <ctype.h>
 #endif
 
-
+struct dynamo_param {
+	char *iometer;
+	char *manager_name;
+	char *manager_computer_name;
+	char *manager_exclude_fs;
+	char (*blkdevlist)[MAX_TARGETS][MAX_NAME];
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Forward declarations
 /////////////////////////////////////////////////////////////////////////////
 static void Syntax( const char* errmsg = NULL );
 
-static void ParseParam(	int   argc,
-                        char *argv[],
-			char iometer[MAX_NETWORK_NAME],
-			char manager_name[MAX_WORKER_NAME],
-			char manager_computer_name[MAX_NETWORK_NAME],
-			char manager_exclude_fs[MAX_EXCLUDE_FILESYS],
-			char blkdevlist[MAX_TARGETS][MAX_NAME] );
+static void ParseParam(int argc, char *argv[], struct dynamo_param *param);
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -255,6 +258,7 @@ int CDECL main( int argc, char *argv[] )
 {
 	Manager	manager;
 	char	iometer[MAX_NETWORK_NAME];
+	struct dynamo_param param;
 
 #if defined(IOMTR_OS_LINUX)
 	struct aioinit aioDefaults;
@@ -281,15 +285,14 @@ int CDECL main( int argc, char *argv[] )
 
 	//provide a temporary global ptr to the version string for Syntax() to use
 	g_pVersionStringWithDebug = manager.GetVersionString(TRUE);
-	ParseParam(
-		argc,
-		argv,
-	        iometer,
-       		manager.manager_name,
-        	manager.prt->network_name,
-        	manager.exclude_filesys,
-		manager.blkdevlist
-	);
+	
+	param.iometer = iometer;
+	param.manager_name = manager.manager_name;
+	param.manager_computer_name = manager.prt->network_name;
+	param.manager_exclude_fs = manager.exclude_filesys;
+	param.blkdevlist = &manager.blkdevlist;
+	
+	ParseParam(argc, argv, &param);
 	g_pVersionStringWithDebug = NULL;	//should use manager object after this...
 
 	// If there were command line parameters, indicate that they were recognized.
@@ -528,14 +531,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
 /* ##   P A R S E P A R A M ( )                                           ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
-void ParseParam(
-	int   argc,
-	char *argv[],
-	char iometer[MAX_NETWORK_NAME],
-	char manager_name[MAX_WORKER_NAME],
-	char manager_computer_name[MAX_NETWORK_NAME],
-	char manager_exclude_fs[MAX_EXCLUDE_FILESYS],
-	char blkdevlist[MAX_TARGETS][MAX_NAME])
+static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 {
 	// Local variables
 	
@@ -593,11 +589,11 @@ void ParseParam(
 					Syntax("Iometer address parameter was too long.");
 					return;
 				}
-				strcpy( iometer, argv[I] );
+				strcpy( param->iometer, argv[I] );
 				bParamIometer = TRUE;
 				break;
 			case 'N':
-				if ( manager_name[0] != '\0' ) {
+				if ( param->manager_name[0] != '\0' ) {
 					Syntax("Manager name was specified more than once.");
 					return;
 				}
@@ -605,7 +601,7 @@ void ParseParam(
 					Syntax("Manager name parameter was too long.");
 					return;
 				}
-				strcpy( manager_name, argv[I] );
+				strcpy( param->manager_name, argv[I] );
 				break;
 			case 'M':
 				// No check for more then once specification (as we have a default)
@@ -613,16 +609,16 @@ void ParseParam(
 					Syntax("Manager network name parameter was too long.");
 					return;
 				}
-				strcpy( manager_computer_name, argv[I] );
+				strcpy( param->manager_computer_name, argv[I] );
 				bParamDynamo = TRUE;
 				break;
 			case 'X':
-				if ( ( strlen( argv[I] ) + strlen( manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
+				if ( ( strlen( argv[I] ) + strlen( param->manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
 					Syntax("Excluded filesystem list too long.");
 					return;
 				}
-				strcat( manager_exclude_fs, argv[I] );
-        			strcat( manager_exclude_fs, " " );
+				strcat( param->manager_exclude_fs, argv[I] );
+        			strcat( param->manager_exclude_fs, " " );
 				break;
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 			case 'B':
@@ -631,7 +627,7 @@ void ParseParam(
 					return;
 				}
 				if (count < MAX_TARGETS) {
-					strcpy(blkdevlist[count++], argv[I]);
+					strcpy((*param->blkdevlist)[count++], argv[I]);
 				}
 				else {
 					cout << "Too many targets you want to test, skip " << argv[I] << endl;
@@ -651,7 +647,7 @@ void ParseParam(
 					if (check_blk_dev(devname))
 						continue;
 					if (count < MAX_TARGETS) {
-						strcpy(blkdevlist[count++], devname);
+						strcpy((*param->blkdevlist)[count++], devname);
 					}
 					else {
 						cout << "Too many targets you want to test, skip " << devname << endl;

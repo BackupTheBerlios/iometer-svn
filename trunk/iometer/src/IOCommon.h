@@ -52,7 +52,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
+/* ##               - Correct a typo of IOMTR_OSFAMILY_NETWARE            ## */
+/* ##               - Added a declaration for SSGetLANCommonCounters()    ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Added ifdef's to get Iometer to compile in x86_64   ## */
 /* ##                 environment. See IOMTR_SETTING_GCC_M64.             ## */
 /* ##               - Replaced most use of macro SOCKET with CONNECTION.  ## */
@@ -366,7 +369,7 @@ using namespace std;
 // differently depending on OSFAMILY. this gets the job done... 
 #if defined(IOMTR_OSFAMILY_WINDOWS)
  #define IOMTR_MACRO_INTERLOCK_CAST(a) (long *)
-#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OS_FAMILY_NETWARE)
+#elif defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_NETWARE)
  #define IOMTR_MACRO_INTERLOCK_CAST(a) (a *)
 #else
  #error ===> ERROR: You have to do some coding here to get the port done!
@@ -906,6 +909,7 @@ inline int IsBigEndian( void )
  extern LONG  GetTimerMinorTicksPerSecond(void);
  extern unsigned long kGetProcessorInterruptCount(unsigned int, unsigned int *);
  extern void  EnterDebugger();
+ extern LONG SSGetLANCommonCounters(unsigned long, unsigned long, unsigned char *, unsigned int);
  #ifdef __cplusplus
  }
  #endif

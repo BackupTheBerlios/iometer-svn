@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
+/* ##               - Adjusted some print output.                         ## */
+/* ##               2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed a note about the Reported_As_Logical()      ## */
 /* ##                 function as this one was removed.                   ## */
 /* ##               2004-07-02 (thayneharmon@users.sourceforge.net)       ## */
@@ -223,8 +225,8 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 			 << hostname << "\".\n";
 		return 0;
 	}
+	cout << "   My hostname: \"" << hostinfo->h_name << "\"" << endl;
 	#ifdef _DEBUG
-		printf("   My hostname: \"%s\"\n", hostinfo->h_name);
 		i=0;
 	   // this blows up - don't know why
 	   //	while ( hostinfo->h_aliases[i] != NULL )
@@ -240,9 +242,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		strncpy ( tcp_spec[count].name, inet_ntoa(sin.sin_addr), 
 			sizeof(tcp_spec[count].name) - 1 );
 		tcp_spec[count].type = TCPClientType;	// interface to access a client
-		#if _DEBUG
-			cout << "   Found " << tcp_spec[count].name << "." << endl;
-		#endif
+		cout << "   Found " << tcp_spec[count].name << "." << endl;
 		if ( ++count >= MAX_NUM_INTERFACES )
 		{
 			cout << "*** Found the maximum number of supported network interfaces: " 
