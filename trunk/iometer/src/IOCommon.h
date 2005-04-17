@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
+/* ##  Changes ...: 2005-04-10 (mingz@ele.uri.edu)                        ## */
+/* ##               - Corrected the macro definition for BLKGETSIZE64.    ## */
+/* ##               2005-04-07 (thayneharmon@users.sourceforge.net)       ## */
 /* ##               - Correct a typo of IOMTR_OSFAMILY_NETWARE            ## */
 /* ##               - Added a declaration for SSGetLANCommonCounters()    ## */
 /* ##               2004-09-28 (mingz@ele.uri.edu)                        ## */
@@ -895,7 +897,7 @@ inline int IsBigEndian( void )
   #define BLKGETSIZE   _IO(0x12,96)
  #endif
  #if defined(_IO)  && !defined(BLKGETSIZE64)
-  #define BLKGETSIZE64 _IOR(0x12,114,unsigned long long)
+  #define BLKGETSIZE64 _IOR(0x12,114, size_t)
  #endif
 #endif 
 // ----------------------------------------------------------------------------

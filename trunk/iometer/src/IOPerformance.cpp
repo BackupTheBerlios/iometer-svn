@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tiemam@intel.com)                ## */
+/* ##  Changes ...: 2005-04-10 (mingz@ele.uri.edu)                        ## */
+/* ##               - Add type cast to remove compile warning for Solaris.## */
+/* ##               2004-09-01 (henryx.w.tiemam@intel.com)                ## */
 /* ##               - Switched to more generic IOMTR_CPU_X86_64.          ## */
 /* ##               2004-03-27 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
@@ -212,7 +214,7 @@ Performance::Performance()
 	// else ioctl succeeded and we have all the data !
 	struct ifreq	*ifreqp;
 	ifreqp = myifconf.ifc_req;
-	for (i = 0; i < (myifconf.ifc_len/sizeof(struct ifreq)); i++, ifreqp++)
+	for (i = 0; i < (int)(myifconf.ifc_len/sizeof(struct ifreq)); i++, ifreqp++)
 	{
 		if (ifreqp->ifr_addr.sa_family != AF_INET)
 			continue;
@@ -520,12 +522,12 @@ PERF_DATA_BLOCK: A simple header for all of the performance data returned.
 //
 void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 {
-#if defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64) 
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64) 
 	long	query_result;			// Value returned trying to query performance data.
 	DWORD	perf_object_size;		// Size of buffer allocated to storing performance data.
 	char	perf_data_type_name[10];	// ASCII representation of performance data index.
 	_int64	perf_update_freq;		// Frequency that performance counters are updated.
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
  // nop
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
@@ -1039,7 +1041,7 @@ void Performance::Get_NI_Counters(int snapshot)
 			raw_ni_data[current_nic][NI_PACKETS][snapshot] = 0;
 			raw_ni_data[current_nic][NI_ERRORS][snapshot] = 0;
 
-			for (i=0; i < ksp->ks_ndata; i++)
+			for (i=0; i < (int)ksp->ks_ndata; i++)
 			{
 				knamed = KSTAT_NAMED_PTR(ksp)  + i;
 				if (strcmp(knamed->name, "opackets") == 0)

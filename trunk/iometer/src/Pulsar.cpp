@@ -54,7 +54,7 @@
 /* ##               - Introduced a dynamo_param structure to simplify     ## */
 /* ##                 the ParseParam() interface.                         ## */
 /* ##               2005-04-05 (mingz@ele.uri.edu)                        ## */
-/* ##               - Added set CPU affinity support.                     ## */
+/* ##               - Added set CPU affinity support. Disabled by default.## */
 /* ##               2004-09-28 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added syslog support.                               ## */
 /* ##               - Added warning for the common login fail error.      ## */
@@ -256,7 +256,7 @@ int check_blk_dev(char *devname)
 #endif
 
 // FIXME: should put into makefile.
-#define IOMTR_SET_AFFINITY
+//#define IOMTR_SET_AFFINITY
 
 #ifdef IOMTR_SET_AFFINITY
 int iomtr_set_cpu_affinity(unsigned long affinity_mask)

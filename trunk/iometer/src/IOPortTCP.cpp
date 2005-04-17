@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-01 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-10 (mingz@ele.uri.edu)                        ## */
+/* ##               - Add type cast to remove compile warning for Solaris.## */
+/* ##               2005-04-01 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added space in binding error msg print out          ## */
 /* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
 /* ##               - fixed include file differences for Windows DDK.     ## */
@@ -1020,7 +1022,7 @@ DWORD PortTCP::Peek()
 			//otherwise, there are no bytes available, this prevents recv() from blocking
 			bytes_available = 0;
 		}
-		success = ( bytes_available != SOCKET_ERROR );
+		success = ( (long)bytes_available != SOCKET_ERROR );
 	}
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	else

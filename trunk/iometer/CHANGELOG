@@ -8,6 +8,15 @@ ChangeLog (IOMETER2 - 2005.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1184764 : iometer-2004.07.30-post.Ming013BlkGetSize64.patch by
+     Ming Zhang (Tiny patch that corrects the BLKGETSIZE64 prototype
+     definition).
+   - #1184759 : iometer-2004.07.30-post.Ming012CpuAffinitityOffByDefault.patch
+     by Ming Zhang (Tiny patch that switches off the CPU affinity
+     support by default).
+   - #1184758 : iometer-2004.07.30-post.Ming011SolarisWarnings.patch
+     by Ming Zhang (Small patch that gets rid of some compiler warnings
+     on Solaris).
    - #1184741 : iometer-2004.07.30-post.Henry002Ia64LinuxAndDdkCleanup.patch
      by Henryx W. Tieman (Does some cleanup on the Windows/IA64 build
      using the DDK and brings basic support for a Linux/IA64 port).
