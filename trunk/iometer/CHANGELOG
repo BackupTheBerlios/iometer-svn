@@ -8,6 +8,9 @@ ChangeLog (IOMETER2 - 2005.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1184792 : iometer-2004.07.30-post.Daniel002CodeCleanup.patch by
+     Daniel Scheibli (Collective patch that brings different minor
+     cleanups to logic and coding style).
    - #1184764 : iometer-2004.07.30-post.Ming013BlkGetSize64.patch by
      Ming Zhang (Tiny patch that corrects the BLKGETSIZE64 prototype
      definition).
