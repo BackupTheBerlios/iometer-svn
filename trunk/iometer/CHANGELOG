@@ -8,6 +8,9 @@ ChangeLog (IOMETER2 - 2005.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1186307 : iometer-2004.07.30-post.DS1.Ming016KStatErrorMessage.patch
+     by Ming Zhang (Tiny patch that cleans up an error message that is
+     related to the kstat module one can optionally use on Linux).
    - #1186304 : iometer-2004.07.30-post.DS1.Ming015DebugDefine.patch by
      Ming Zhang (Cleanup the _DEBUG define usage in the Makefiles).
    - #1186297 : iometer-2004.07.30-post.DS1.Ming014ExcludeSwapDevices.patch

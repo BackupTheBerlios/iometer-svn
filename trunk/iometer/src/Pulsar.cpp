@@ -50,7 +50,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-18 (mingz@ele.uri.edu)                        ## */
+/* ##               - Changed kstat related error message.                ## */
+/* ##               2005-04-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed IOMTR_SET_AFFINITY to the new switch        ## */
 /* ##                 named IOMTR_SETTING_CPU_AFFINITY.                   ## */
 /* ##               - Restructured the Syntax() function structure.       ## */
@@ -178,7 +180,8 @@ int InitIoctlInterface(void)
 	int res;
         res = open("/dev/iomtr_kstat", O_RDONLY);
 	if (res < 0)
-		cerr << "Fail to open kstat device file" << endl;
+		cerr << "Fail to open kstat device file. You can ignore this warning" << endl;
+		cerr << "unless you are running dynamo on XSCALE CPU." << endl;
 	return res;
 }
 
