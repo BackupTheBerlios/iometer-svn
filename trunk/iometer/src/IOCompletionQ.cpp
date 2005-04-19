@@ -52,7 +52,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - ensure that all aio requests are canceled when the  ## */
+/* ##                 Grunt finishes the test                             ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Added a little more initialization.                 ## */
 /* ##               - Converted casts to fixed size types.                ## */
 /* ##               2004-05-14 (lamontcranston41@yahoo.com)               ## */
@@ -813,7 +816,12 @@ BOOL CloseHandle(HANDLE object, int object_type)
 		cqid = filep->iocq;
 		// cancel any pending aio requests.
 		retval = aio_cancel64(filep->fd, NULL);
-		if (retval == AIO_NOTCANCELED)
+		while (retval == AIO_NOTCANCELED)
+		{
+			retval = aio_cancel64(filep->fd,NULL);
+		}
+
+		if (cqid != NULL && cqid->element_list != NULL && cqid->aiocb_list != NULL)
 		{
 			for (i = 0; i < cqid->size; i++)
 			{

@@ -8,6 +8,9 @@ ChangeLog (IOMETER2 - 2005.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1186329 : iometer-2004.07.30-post.DS1.Rick001AioCancelTry2.patch by
+     Rick Altherr (Patch that fixes an Completion Queue issue and ensures
+     that all AIO requests are canceled if the Grunt has finished a test).
    - #1186314 : iometer-2004.07.30-post.DS1.Ming017CharDevicesForRaw.patch
      by Ming Zhang (Patch that adds support for char devices to support
      raw devices).
