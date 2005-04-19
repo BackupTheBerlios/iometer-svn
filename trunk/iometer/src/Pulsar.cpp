@@ -51,6 +51,8 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2005-04-18 (mingz@ele.uri.edu)                        ## */
+/* ##               - Changed block device check to device check in       ## */
+/* ##                 order to allow use of raw devices.                  ## */
 /* ##               - Changed kstat related error message.                ## */
 /* ##               2005-04-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed IOMTR_SET_AFFINITY to the new switch        ## */
@@ -242,7 +244,7 @@ void CleanupCCNTInterface(int fd)
 
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-int check_blk_dev(char *devname)
+int check_dev(char *devname)
 {
 	struct stat buf;
 	
@@ -252,7 +254,7 @@ int check_blk_dev(char *devname)
 	if (stat(devname, &buf)) {
 		return -1;
 	}
-	if (!S_ISBLK(buf.st_mode)) {
+	if (!S_ISBLK(buf.st_mode) && !S_ISCHR(buf.st_mode)) {
 		return -1;
 	}
 	return 0;
@@ -264,7 +266,7 @@ int check_blk_dev(char *devname)
 #endif
 
 #if defined(IOMTR_SETTING_CPU_AFFINITY)
-int iomtr_set_cpu_affinity(unsigned long affinity_mask)
+static int iomtr_set_cpu_affinity(unsigned long affinity_mask)
 {
 	int res = -1;
 	
@@ -324,7 +326,7 @@ int iomtr_set_cpu_affinity(unsigned long affinity_mask)
 	return res;
 }
 #else
-int iomtr_set_cpu_affinity(unsigned long affinity_mask)
+static int iomtr_set_cpu_affinity(unsigned long affinity_mask)
 {
 	return 0;
 }
@@ -558,11 +560,11 @@ void Syntax( const char* errmsg /*=NULL*/ )
 
 #if defined(IOMTR_OS_LINUX)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
-	cout << "       [-x excluded_fs_type] [-b extra_device] [-f extra_device_file] [-l]" << endl;
+	cout << "       [-x excluded_fs_type] [-d extra_device] [-f extra_device_file] [-l]" << endl;
 	cout << "       [-c cpu_affinity]" << endl;
 #elif defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
-	cout << "       [-x excluded_fs_type] [-b extra_device] [-f extra_device_file] [-l]" << endl;
+	cout << "       [-x excluded_fs_type] [-d extra_device] [-f extra_device_file] [-l]" << endl;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
 	cout << "       [/c cpu_affinity]" << endl;
@@ -729,9 +731,9 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				break;
 #endif
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-			case 'B':
-				if (check_blk_dev(argv[I])) {
-					Syntax("Not a valid block device.");
+			case 'D':
+				if (check_dev(argv[I])) {
+					Syntax("Not a valid device.");
 					return;
 				}
 				if (count < MAX_TARGETS) {
@@ -752,7 +754,7 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				while (!devfile.eof()) {
 					memset(devname, 0, MAX_NAME);
 					devfile.getline(devname, MAX_NAME - 1);
-					if (check_blk_dev(devname))
+					if (check_dev(devname))
 						continue;
 					if (count < MAX_TARGETS) {
 						strcpy((*param->blkdevlist)[count++], devname);
