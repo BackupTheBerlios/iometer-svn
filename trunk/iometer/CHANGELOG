@@ -8,6 +8,9 @@ ChangeLog (IOMETER2 - 2005.mm.dd):
 ==================================
 
 - Applied patches:
+   - #1186314 : iometer-2004.07.30-post.DS1.Ming017CharDevicesForRaw.patch
+     by Ming Zhang (Patch that adds support for char devices to support
+     raw devices).
    - #1186307 : iometer-2004.07.30-post.DS1.Ming016KStatErrorMessage.patch
      by Ming Zhang (Tiny patch that cleans up an error message that is
      related to the kstat module one can optionally use on Linux).
