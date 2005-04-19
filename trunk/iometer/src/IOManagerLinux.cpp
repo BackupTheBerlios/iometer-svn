@@ -49,7 +49,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-18 (mingz@ele.uri.edu)                        ## */
+/* ##               - Added a swap-device-check to avoid use swap devices ## */
+/* ##                 as target devices by mistake.                       ## */
+/* ##               2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed a note about the Reported_As_Logical()      ## */
 /* ##                 function as this one was removed.                   ## */
 /* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
@@ -119,6 +122,24 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	int		count = 0;
 	char usedDevs[USED_DEVS_MAX_SIZE + 1];
 	usedDevs[0] = '\0';
+
+	FILE *sfile;
+	char *swapbuf = NULL;
+	// prepare swap buffer which contains content of /proc/swaps
+	if ((sfile = fopen("/proc/swaps", "r")) == NULL)
+		swapbuf = NULL;
+	else {
+		swapbuf = (char *)malloc(4096);
+		if (swapbuf) {
+			memset(swapbuf, 0, 4096);
+			fread(swapbuf, sizeof(char), 4095, sfile);
+			if (ferror(sfile)) {
+				free(swapbuf);
+				swapbuf = NULL;
+			}
+		}
+		fclose(sfile);
+	}
 
 	cout << "Reporting drive information..." << endl;
 	
@@ -277,24 +298,42 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		cout << __FUNCTION__ << ": Found device " << devName << "\n";
 #endif
 		if (strstr(usedDevs, paddedDevName) == NULL) {
-			int duplicate;
+			int skip;
 			// Nobody has mounted this device. Try to open it for reading; if we can,
 			// then add it to our list of physical devices.
 #ifdef _DEBUG
 			cout << __FUNCTION__ << ": Device is not mounted.\n";
 #endif
-			duplicate = 0;
+			skip = 0;
 			for (i = 0; i < valid_devcnt; i++) {
 				if ((devName[0] == '/' && !strcmp(devName, blkdevlist[i])) ||
 					(devName[0] != '/' && !strcmp(devName, blkdevlist[i] + strlen("/dev/")))) {
 #ifdef _DEBUG
-					cout << "Find duplicate dev:" << devName << ", Ignoring." << endl;
+					cout << "Find duplicate device " << devName << ", Ignoring." << endl;
 #endif
-					duplicate = 1;
+					skip = 1;
 					break;
 				}
 			}
-			if ((!duplicate) && d.Init_Physical(devName)) {
+			// check if is swap device
+			if (!skip && swapbuf) {
+				int i = strlen(devName) + 2;
+				char *tmp = (char *)malloc(i);
+
+				if (tmp) {
+					memset(tmp, 0, i);
+					strcpy(tmp, devName);
+					tmp[i - 2] = ' ';
+					if (strstr(swapbuf, tmp) != NULL) {
+#ifdef _DEBUG
+					cout << __FUNCTION__ << ": Device " << devName << " is a swap device, Ignoring." << endl;
+#endif
+						skip = 1;
+					}
+					free(tmp);
+				}
+			}
+			if ((!skip) && d.Init_Physical(devName)) {
 				d.spec.type = PhysicalDiskType;
 				memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
 				++count;
@@ -314,6 +353,9 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		} while ((c != '\n') && (c != EOF));
 	}
 	fclose(file);
+	if (swapbuf) {
+		free(swapbuf);
+	}
 	qsort(disk_spec, count, sizeof(Target_Spec), compareRawDiskNames);
 	return(count);
 }
