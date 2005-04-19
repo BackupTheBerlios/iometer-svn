@@ -78,7 +78,7 @@ STRIP=/usr/bin/strip
 
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
-# Note 2) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
+# Note 2) -D_DETAILS=1 -D_DEBUG enables maximum debug information
 CFLAGS=	-O3 \
 	-Wall \
 	-D_GNU_SOURCE \

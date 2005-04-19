@@ -77,7 +77,7 @@ STRIP=/usr/ccs/bin/strip
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
 # Note 2) -DIOMTR_SETTING_OVERRIDE_FS controls inclusion of destructive dynamo code.
-# Note 3) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
+# Note 3) -D_DETAILS=1 -D_DEBUG enables maximum debug information
 #
 # Always enable CCFLAGS=-compat=4 on Sparc till the transition from compile
 # version SC4 to SC5 is complete.

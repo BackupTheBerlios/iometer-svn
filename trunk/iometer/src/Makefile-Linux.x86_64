@@ -67,7 +67,7 @@ CXX=/usr/bin/g++
 
 # Some common definitions used.
 # Note 1) -DWORKAROUND_MOD_BUG can be dropped if -O is used in place of -g in CFLAGS
-# Note 2) -D_DETAILS=1 -D_DEBUG=1 enables maximum debug information
+# Note 2) -D_DETAILS=1 -D_DEBUG enables maximum debug information
 # Note 3) -DIOMTR_SETTING_GCC_M64 allows for the gcc -m64 flag that makes longs
 #         64 bits and pointers 64 bits. This forces changes in data structures
 #         and type definitions for compatibility with a Win32 Iometer.
