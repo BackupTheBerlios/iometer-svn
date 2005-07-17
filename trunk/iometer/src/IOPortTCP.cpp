@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-10 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-04-10 (mingz@ele.uri.edu)                        ## */
 /* ##               - Add type cast to remove compile warning for Solaris.## */
 /* ##               2005-04-01 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added space in binding error msg print out          ## */
@@ -614,7 +616,7 @@ BOOL PortTCP::Accept()
 			}
 		}
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Attempting asynchronous connection in Unix." << endl
 			<< "     [PortTCP::Accept() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -656,7 +658,7 @@ BOOL PortTCP::GetAcceptResult()
 	result = GetOverlappedResult( (HANDLE)client_socket, &accept_overlapped, &bytes_read, FALSE );
 
 	return result;
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	*errmsg << "===> ERROR: Asynchronous socket accept attempted under Unix." << endl
 		<< "     [PortTCP::GetAcceptResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
 	OutputErrMsg();
@@ -698,7 +700,7 @@ DWORDLONG PortTCP::Receive( LPVOID msg, DWORD size )
 	{
 		return AsynchReceive( msg, size );
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::Receive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -790,7 +792,7 @@ DWORDLONG PortTCP::AsynchReceive( LPVOID msg, DWORD size )
 		}
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::AsynchReceive() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -831,7 +833,7 @@ DWORDLONG PortTCP::GetReceiveResult()
 	{
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::GetReceiveResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -944,7 +946,7 @@ DWORDLONG PortTCP::AsynchSend( LPVOID msg, DWORD size )
 		}
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::AsynchSend() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -979,7 +981,7 @@ DWORDLONG PortTCP::GetSendResult()
 	{
 		return PORT_ERROR;
 	}
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	else {
 		*errmsg << "===> ERROR: Asynchronous TCP attempted under Unix." << endl
 			<< "     [PortTCP::GetSendResult() in " << __FILE__ << " line " << __LINE__ << "]" << ends;
@@ -1000,7 +1002,7 @@ DWORD PortTCP::Peek()
 {
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
 	int		bytes_available = 0;
-#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#elif defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORD           bytes_available = 0;
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
@@ -1100,7 +1102,7 @@ BOOL PortTCP::CloseSocket( SOCKET *s, char *socket_name )
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( closesocket ( *s ) != 0 )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if ( close ( *s ) != 0 )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 

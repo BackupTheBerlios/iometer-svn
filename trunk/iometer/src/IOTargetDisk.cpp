@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-02 (moozart@gmx.de)                           ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-04-02 (moozart@gmx.de)                           ## */
 /* ##               - Corrected a overflow bug in getSizeOfPhysDisk().    ## */
 /* ##               2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed a note about the Reported_As_Logical()      ## */
@@ -147,6 +149,14 @@
   #include <assert.h>
   #include <sys/vfs.h>
  #endif
+
+ #if defined(IOMTR_OS_OSX)
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <sys/mount.h>
+  #include <sys/ioctl.h>
+  #include <sys/disk.h>
+ #endif
 #endif
 
 
@@ -175,7 +185,7 @@ TargetDisk::TargetDisk()
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	disk_file = (HANDLE)&file_handle;
-#if defined(IOMTR_SETTING_GCC_M64)
+#if defined(IOMTR_SETTING_GCC_M64) || defined(IOMTR_OS_OSX)
 	file_handle.iocq = NULL;
 #endif
 #endif
@@ -229,7 +239,7 @@ BOOL TargetDisk::Initialize( Target_Spec *target_info, CQ *cq )
 		retval = Init_Logical( spec.name[0] );
 	else if ( IsType( target_info->type, PhysicalDiskType ) )
 		retval = Init_Physical( atoi( spec.name + 14 ) );
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)  || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if ( IsType( target_info->type, LogicalDiskType ) )
 		retval = Init_Logical( spec.name );
 	else if ( IsType( target_info->type, PhysicalDiskType ) )
@@ -314,7 +324,7 @@ BOOL TargetDisk::Init_Logical( char *drive )
 	// Getting size information about the drive.
 	return( Set_Sizes() );
 }
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 // UNIX logical drives are accessed through path names.
 BOOL TargetDisk::Init_Logical( char *drive )
 {
@@ -396,7 +406,7 @@ BOOL TargetDisk::Init_Physical( char *drive )
 	// Getting information about the size of the drive.
 	return( Set_Sizes() );
 }
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS) 
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS) 
 BOOL TargetDisk::Init_Physical( char *drive )
 {
 	// Setting the spec.name of the drive.
@@ -1024,6 +1034,93 @@ BOOL TargetDisk::Set_Sizes( BOOL open_disk )
 		return FALSE;
 	}
 }
+#elif defined(IOMTR_OS_OSX)
+int TargetDisk::Set_Sizes(BOOL open_disk)
+{
+	struct statfs		st;
+	DWORD			fd;
+
+	if ( open_disk )
+	{
+		if (!Open(NULL))
+			return( FALSE );
+	}
+
+	if ( IsType( spec.type, LogicalDiskType) )
+	{
+		if (statfs(file_name, &st) < 0)
+		{
+			cout << "statfs error " << errno << ". Cannot get sector size" << endl;
+			if ( open_disk )
+				Close( NULL );
+			return( FALSE);
+		}
+		spec.disk_info.sector_size = (int) st.f_bsize;
+
+		// Ok move on the file size
+		struct stat stbuf64;
+		if (stat(file_name, &stbuf64) < 0)
+		{
+			cout << "unable to get file size. stat failed with error " << errno << endl;
+			if ( open_disk )
+				Close( NULL );
+			return (FALSE);
+		}
+		size = stbuf64.st_size;
+
+		Set_Sector_Info();
+		#if _DEBUG
+			cout << "    " << spec.name << " size = " << size << endl << flush;
+		#endif
+		if ( open_disk)
+			Close( NULL );
+	
+		// If test file exists, the drive is ready for access.
+		if (size)
+		{
+			ending_position = size;
+			spec.disk_info.ready = TRUE;
+			return (TRUE);
+		}
+
+		// Assuming that unlink always succeeds and never fails
+		unlink( file_name );
+		spec.disk_info.ready = FALSE;
+		return (TRUE);
+	} else if ( IsType( spec.type, PhysicalDiskType ) ) {
+		SetLastError(0);
+
+		fd = ((struct File *)disk_file)->fd;
+
+		if (ioctl(fd,DKIOCGETBLOCKSIZE, &spec.disk_info.sector_size) < 0) {
+			spec.disk_info.sector_size = 0;
+		}
+
+		if (ioctl(fd,DKIOCGETBLOCKCOUNT, &size) < 0) {
+			size = 0;
+		}
+
+		size *= spec.disk_info.sector_size;
+
+		Set_Sector_Info();
+
+		#if _DEBUG
+			cout << "    " << spec.name << " size = " << size << endl << flush;
+		#endif
+
+		if ( open_disk )
+			Close( NULL );
+
+		ending_position = size;
+		spec.disk_info.ready = TRUE;
+		return( TRUE );
+	} else {
+		cout << "*** Unexpected drive type in Disk::SetSizes()" << endl << flush;
+		if ( open_disk )
+			Close(NULL);
+		return( FALSE );
+	}
+}
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -1346,6 +1443,8 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 		disk_file = CreateFile( file_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | 
 			FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED, NULL );
 		SetErrorMode( 0 );
+#elif defined(IOMTR_OS_OSX)
+		((struct File *)disk_file)->fd = open(file_name, O_RDWR|O_CREAT|open_flag, S_IRUSR|S_IWUSR);
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -1364,6 +1463,8 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 													 FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED,
 													 NULL );
 		SetErrorMode( 0 );
+#elif defined(IOMTR_OS_OSX)
+		((struct File *)disk_file)->fd = open(file_name, O_RDWR, S_IRUSR|S_IWUSR);
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -1379,7 +1480,7 @@ BOOL TargetDisk::Open( volatile TestState *test_state, int open_flag )
 	#endif
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)disk_file)->fd == (int)INVALID_SOCKET )
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
@@ -1407,7 +1508,7 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 	// Note that test_state is not used.  It IS used by network targets.
 
 	// If testing connection rate, the disk may already be closed.
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if ( ((struct File *)disk_file)->fd == (int)INVALID_SOCKET )
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( disk_file == INVALID_HANDLE_VALUE )
@@ -1425,7 +1526,7 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 		cout << "Closing disk " << spec.name << endl;
 	#endif
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if ( !CloseHandle( disk_file, FILE_ELEMENT) )
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if ( !CloseHandle( disk_file ) )
@@ -1439,7 +1540,7 @@ BOOL TargetDisk::Close( volatile TestState *test_state )
 		return FALSE;
 	}
 	
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	((struct File *)disk_file)->fd = (int)INVALID_SOCKET;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	disk_file = INVALID_HANDLE_VALUE;

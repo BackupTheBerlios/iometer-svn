@@ -55,6 +55,7 @@
 /* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
 /* ##               - ensure that all aio requests are canceled when the  ## */
 /* ##                 Grunt finishes the test                             ## */
+/* ##               - Support for MacOS X                                 ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Added a little more initialization.                 ## */
 /* ##               - Converted casts to fixed size types.                ## */
@@ -78,7 +79,7 @@
 /* ######################################################################### */
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  // nop
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 
 
 #include "IOCommon.h"
@@ -97,7 +98,7 @@ BOOL SetQueueSize(HANDLE cqid, int size)
 	// and also for the parallel array of struct aiocb pointers.
 	struct IOCQ *this_cqid;
 	this_cqid = (struct IOCQ *)cqid;
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element) * size);
 #elif defined(IOMTR_OS_NETWARE)
 	this_cqid->element_list = (struct CQ_Element *)NXMemAlloc(sizeof(CQ_Element) * size, 1);
@@ -109,7 +110,7 @@ BOOL SetQueueSize(HANDLE cqid, int size)
 		cout << "memory allocation failed" << endl;
 		return(FALSE);
 	}
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	this_cqid->aiocb_list = (struct aiocb64 **)malloc(sizeof(struct aiocb64 *) * size);
 #elif defined(IOMTR_OS_NETWARE)
 	this_cqid->aiocb_list = (struct aiocb64 **)NXMemAlloc(sizeof(struct aiocb64 *) * size, 1);
@@ -119,7 +120,7 @@ BOOL SetQueueSize(HANDLE cqid, int size)
 	if (this_cqid->aiocb_list == NULL)
 	{
 		cout << "memory allocation failed" << endl;
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		free(this_cqid->element_list);
 #elif defined(IOMTR_OS_NETWARE)
 		NXMemFree(this_cqid->element_list);
@@ -164,7 +165,7 @@ HANDLE CreateIoCompletionPort(HANDLE file_handle, HANDLE cq, DWORD completion_ke
 	if (cqid == NULL)
 	{
 		// cqid is NULL. We assign a new completion queue.
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		cqid = (struct IOCQ *) malloc(sizeof(struct IOCQ));
 #elif defined(IOMTR_OS_NETWARE)
 		cqid = (struct IOCQ *) NXMemAlloc(sizeof(struct IOCQ), 1);
@@ -215,7 +216,7 @@ HANDLE CreateEvent(void *, BOOL, BOOL, LPCTSTR)
 	// We need to create an event queue.
 	IOCQ *eventqid;
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	eventqid = (struct IOCQ *) malloc(sizeof(struct IOCQ));
 #elif defined(IOMTR_OS_NETWARE)
 	eventqid = (struct IOCQ *) NXMemAlloc(sizeof(struct IOCQ), 1);
@@ -615,7 +616,7 @@ BOOL ReadFile(HANDLE file_handle, void *buffer, DWORD bytes_to_read, LPDWORD byt
 
 	*bytes_read = 0;
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if (aio_read64(&this_cq->element_list[free_index].aiocbp) < 0)
 #elif defined(IOMTR_OS_NETWARE)
 	if (aio_read64(&this_cq->element_list[free_index].aiocbp,filep->type) < 0)
@@ -738,7 +739,7 @@ BOOL WriteFile(HANDLE file_handle, void *buffer, DWORD bytes_to_write, LPDWORD b
 
 	*bytes_written = 0;
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if (aio_write64(&this_cq->element_list[free_index].aiocbp) < 0)
 #elif defined(IOMTR_OS_NETWARE)
 	if (aio_write64(&this_cq->element_list[free_index].aiocbp,filep->type) < 0)
@@ -837,7 +838,7 @@ BOOL CloseHandle(HANDLE object, int object_type)
 				retval = aio_return64(cqid->aiocb_list[i]);
 			}
 		}
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		close(filep->fd);
 #elif defined(IOMTR_OS_NETWARE)
 		if ( IsType( filep->type, LogicalDiskType ) )
@@ -857,7 +858,7 @@ BOOL CloseHandle(HANDLE object, int object_type)
 			if (!cqid->aiocb_list[i])
 				continue;
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_NETWARE)
 			/*
 			 * In Linux, you crash (!) if the aiocpb isn't in your queue. :-(
 			 * This code seems to occasionally do this...so I just cancel all
@@ -877,7 +878,7 @@ BOOL CloseHandle(HANDLE object, int object_type)
 			}
 		}       
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		free(cqid->aiocb_list);
 #elif defined(IOMTR_OS_NETWARE)
 		NXMemFree(cqid->aiocb_list);
@@ -894,7 +895,7 @@ BOOL CloseHandle(HANDLE object, int object_type)
 		// It suddenly seems to be working now.
 		// Remember to turn this "free" off when you hit the problem again.
 		// NEED TO LOOK INTO THIS.
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		free(cqid->element_list);
 		free(cqid);
 #elif defined(IOMTR_OS_NETWARE)

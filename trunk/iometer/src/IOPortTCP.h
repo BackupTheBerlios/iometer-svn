@@ -54,7 +54,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-01-19 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-01-19 (mingz@ele.uri.edu)                        ## */
 /* ##               - Removed socketlen_t define.                         ## */
 /* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
 /* ##               - prototype of AcceptEx() defined.                    ## */
@@ -102,7 +104,7 @@
  #define SOCKET	int
 #endif
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  // nop
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #define socklen_t int  

@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - The x86_64 DDK compiler is really touchy about      ## */
 /* ##                 parameter types. This change is for the DDK.        ## */
 /* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
@@ -140,7 +142,7 @@ BOOL CQAIO::SetQueueSize(int size)
 {
     struct IOCQ *this_cqid = (struct IOCQ *)completion_queue;
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
     this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element) * size);
 #elif defined(IOMTR_OS_NETWARE)
     this_cqid->element_list = (struct CQ_Element *)NXMemAlloc(sizeof(CQ_Element) * size, 1);
@@ -152,7 +154,7 @@ BOOL CQAIO::SetQueueSize(int size)
         cout << "memory allocation failed." << endl;
         return(FALSE);
     }
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
     this_cqid->aiocb_list = (struct aiocb64 **)malloc(sizeof(struct aiocb64 *) * size);
 #elif defined(IOMTR_OS_NETWARE)
     this_cqid->aiocb_list = (struct aiocb64 **)NXMemAlloc(sizeof(struct aiocb64 *) * size, 1);
@@ -162,7 +164,7 @@ BOOL CQAIO::SetQueueSize(int size)
     if (this_cqid->aiocb_list == NULL)
     {
         cout << "memory allocation failed." << endl;
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
         free(this_cqid->element_list);
 #elif defined(IOMTR_OS_NETWARE)
         NXMemFree(this_cqid->element_list);

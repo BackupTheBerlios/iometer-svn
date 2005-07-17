@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2004-09-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Removed the Reported_As_Logical() function as       ## */
 /* ##                 it does not get used in any part of the code.       ## */
 /* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
@@ -100,6 +102,8 @@
   #define DEFAULT_EXCLUDE_FILESYS   "proc shm swap devpts"
  #elif defined(IOMTR_OS_SOLARIS)
   #define DEFAULT_EXCLUDE_FILESYS   "proc specfs config" 
+ #elif defined(IOMTR_OS_OSX)
+  #define DEFAULT_EXCLUDE_FILESYS   "devfs nfs fdesc afpfs"
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done! 
  #endif
@@ -177,6 +181,9 @@ private:
 	int		Report_Disks( Target_Spec *disk_spec );
 #if defined(IOMTR_OSFAMILY_UNIX)
 	// These UNIX-specific methods are defined in IOManagerUNIX.cpp.
+ #if defined(IOMTR_OS_OSX)
+	BOOL		containsPartitions(mach_port_t masterPort, char *bsdname);
+ #endif
 	BOOL		Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count);
 
 	BOOL 		Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end);

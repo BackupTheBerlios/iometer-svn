@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-01-19 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-01-19 (mingz@ele.uri.edu)                        ## */
 /* ##               - Removed socketlen_t define.                         ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Changed SOCKET to CONNECTION for improved clarity,  ## */
@@ -77,7 +79,7 @@
 #include "Network.h"
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include "winsock2.h"
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  #include <sys/time.h>
  #include <unistd.h>
  #include <sys/socket.h>
@@ -92,7 +94,7 @@
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  // nop
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #define socklen_t int  

@@ -47,7 +47,9 @@
 /* ##  Remarks ...: <none>                                                ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-05 (ACurrid@nvidia.com)                       ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-04-05 (ACurrid@nvidia.com)                       ## */
 /* ##               - Fixed bug #1088486. Wait outstanding IO complete.   ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - The Interlocked functions take different parameters ## */
@@ -980,8 +982,8 @@ void Grunt::Asynchronous_Delay( int transfer_delay )
 
 		// More waiting is needed before allowing additional requests.
 		_ftime( &end_wait_time );
-		transfer_delay -= ( ( ( end_wait_time.time - start_wait_time.time ) * 1000 )
-			+ end_wait_time.millitm - start_wait_time.millitm );
+		transfer_delay -= ( ( ( end_wait_time._time - start_wait_time._time ) * 1000 )
+			+ end_wait_time._millitm - start_wait_time._millitm );
 	}
 	while ( transfer_delay > 0 );
 }
@@ -1522,6 +1524,8 @@ void Grunt::Begin_IO()
 		thr_yield();
  #elif defined(IOMTR_OS_LINUX)
  		sleep(0);
+ #elif defined(IOMTR_OS_OSX)
+		pthread_yield_np();
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done! 
  #endif
@@ -1550,7 +1554,7 @@ void Grunt::Begin_IO()
 //
 // When we use gcc, we add "LL" to take out a warning about integer overflow.
 //
-#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  #define A 136204069LL		// 3x7x11x13x17x23x   29x4 + 1
  #define B 28500701229LL	// 3x7x11x13x17x23x27x29x31
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)

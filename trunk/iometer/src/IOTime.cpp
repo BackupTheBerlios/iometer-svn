@@ -48,7 +48,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-01-12 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Added code for Linux on Intel Itanium (ia64).       ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - The x86_64 architecture can use rdtsc.              ## */
@@ -376,6 +378,30 @@
  {
 	return __rdtsc();
  }
+// ----------------------------------------------------------------------------
+#elif defined(IOMTR_OS_OSX)
+ #if defined(IOMTR_CPU_PPC)
+  #include <Carbon/Carbon.h>
+  double processor_speed_to_nsecs; // declared as extern double in IOCommon.h
+  DWORDLONG rdtsc()
+  {
+ 	DWORDLONG temp;
+ 	AbsoluteTime now;
+	Nanoseconds s;
+
+	now = UpTime();
+	s = AbsoluteToNanoseconds(now);
+	temp = s.hi;
+	temp <<= 32;
+	temp += s.lo;
+
+	// temp contains timestamp in nanosecs
+	// temp * processor_speed_to_nsecs = timestamp in cpu cycles
+	return (DWORDLONG)(temp * processor_speed_to_nsecs);
+  }
+ #else
+  #error ===> ERROR: You have to do some coding here to get the port done!
+ #endif
 // ----------------------------------------------------------------------------
 #else
  #error ===> ERROR: You have to do some coding here to get the port done!

@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -95,11 +97,13 @@
 
  #include <netinet/in.h>
 
- #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
   #include <net/if.h>
  #endif
 
- #include <stropts.h>
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OS_SOLARIS)
+  #include <stropts.h>
+ #endif
 
  #if defined(IOMTR_OS_SOLARIS)
   #include <sys/stream.h>
@@ -195,6 +199,9 @@ public:
 	long long timediff;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORDLONG timediff;
+#elif defined(IOMTR_OS_OSX)
+	double		timediff;
+	char		nic_names[MAX_NUM_INTERFACES][IFNAMSIZ];
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
@@ -217,7 +224,7 @@ private:
 	double		Calculate_Stat( __int64 start_value, __int64 end_value, DWORD counter_type );
 #endif
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	void		Get_CPU_Counters(int snapshot);
 	void		Get_NI_Counters(int snapshot);
 	void		Get_TCP_Counters(int snapshot);

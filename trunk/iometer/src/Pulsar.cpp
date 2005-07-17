@@ -50,7 +50,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-18 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-04-18 (mingz@ele.uri.edu)                        ## */
 /* ##               - Changed block device check to device check in       ## */
 /* ##                 order to allow use of raw devices.                  ## */
 /* ##               - Changed kstat related error message.                ## */
@@ -142,6 +144,8 @@
  #elif defined(IOMTR_OS_LINUX)
   int kstatfd;
   int procstatstyle = PROCSTATUNKNOWN;  
+ #elif defined(IOMTR_OS_OSX)
+  // nop
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
@@ -151,7 +155,7 @@
  #include <ctype.h>
 #endif
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 int do_syslog = FALSE;
 #endif
 
@@ -243,7 +247,7 @@ void CleanupCCNTInterface(int fd)
 
 
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 int check_dev(char *devname)
 {
 	struct stat buf;
@@ -407,7 +411,7 @@ int CDECL main( int argc, char *argv[] )
 	cout << endl;
 
 #if defined(IOMTR_OSFAMILY_UNIX)
- #if defined(IOMTR_OS_LINUX)
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX)
 	signal(SIGALRM, SIG_IGN);
  #elif defined(IOMTR_OS_SOLARIS)
 	sigignore(SIGALRM);
@@ -547,7 +551,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "SYNTAX" << endl;
 	cout << endl;
 	
-#if defined(IOMTR_OS_LINUX)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX)
 	cout << "dynamo -?" << endl;
 #elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo /?" << endl;
@@ -562,7 +566,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type] [-d extra_device] [-f extra_device_file] [-l]" << endl;
 	cout << "       [-c cpu_affinity]" << endl;
-#elif defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type] [-d extra_device] [-f extra_device_file] [-l]" << endl;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
@@ -595,7 +599,7 @@ void Syntax( const char* errmsg /*=NULL*/ )
         cout << "      and iometer will hang a long time during login." << endl;
 	cout << endl;
 
- #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	cout << "   excluded_fs_type - type of filesystems to exclude from device search" << endl;
 	cout << "      This string should contain the filesystem types that are not reported" << endl;
 	cout << "      to Iometer. The default is \"" << DEFAULT_EXCLUDE_FILESYS << "\"." << endl;
@@ -720,7 +724,7 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				}
 				strcpy( param->manager_name, argv[I] );
 				break;
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 			case 'X':
 				if ( ( strlen( argv[I] ) + strlen( param->manager_exclude_fs ) ) >= MAX_EXCLUDE_FILESYS ) {
 					Syntax("Excluded filesystem list too long.");
@@ -730,7 +734,7 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
         			strcat( param->manager_exclude_fs, " " );
 				break;
 #endif
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 			case 'D':
 				if (check_dev(argv[I])) {
 					Syntax("Not a valid device.");

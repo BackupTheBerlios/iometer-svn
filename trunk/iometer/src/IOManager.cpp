@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-28 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2004-09-28 (mingz@ele.uri.edu)                        ## */
 /* ##               - Added call to syslog.                               ## */
 /* ##               - Added warning for the common login fail error.      ## */
 /* ##               2004-07-26 (mingz@ele.uri.edu)                        ## */
@@ -109,7 +111,7 @@
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
  #include "winsock2.h"
-#elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  #include <netdb.h>
  #include <arpa/inet.h>
  #include <sys/types.h>
@@ -170,7 +172,7 @@ Manager::~Manager()
 	prt->Close();
 	delete prt;
 
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if(data != NULL)	
 		free(data);
 	if(swap_devices != NULL)	
@@ -244,7 +246,7 @@ BOOL Manager::Login( char* port_name )
 	}
 	else
 	{
-#if defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		// This will not work correctly if hostname length > MAX_NETWORK_NAME
 		if (gethostname(manager_name, name_size) < 0)
 		{
@@ -271,6 +273,18 @@ BOOL Manager::Login( char* port_name )
 	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].processor_speed / 1000000000; 
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
+ #endif
+#endif
+#if defined(IOMTR_CPU_PPC)
+ #if defined(IOMTR_OS_OSX)
+	// Calculate processor_speed_to_nsecs for use in rdtsc.c
+	// This is multiplied by the timestamp in nanosecs
+	// That gives (time in ns) * (proc speed in HZ) / 1000000000 = time in cpu cycles
+	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].processor_speed / 1000000000;
+ #elif defined(IOMTR_OS_LINUX)
+	// nop
+ #else
+  #error ===> ERROR: You have to do some coding here to get the port done!
  #endif
 #endif
 
@@ -350,7 +364,7 @@ BOOL Manager::Login( char* port_name )
 
 
 
-#if defined(IOMTR_OSFAMILY_WINDOWS) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OSFAMILY_WINDOWS)
 //
 // Checking for all TCP network interfaces.  Storing them, and returning the number
 // of interfaces found.  
@@ -1301,7 +1315,7 @@ BOOL Manager::Set_Access( int target, const Test_Spec *spec )
 	// Align all data transfers on a page boundary.  This will work for all disks
 	// with sector sizes that divide evenly into the page size - which is always
 	// the case.
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	free(data);
 	errno = 0;
 	if ( !(data = valloc(grunts[target]->access_spec.max_transfer) ))

@@ -49,7 +49,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2004-03-26 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup to ensure common style.                ## */
 /* ##               - Applied Thayne Harmon's patch for supporting        ## */
 /* ##                 Netware support (on I386).                          ## */
@@ -99,7 +101,7 @@
  #define SECTOR_SIZE						512
  #if defined(IOMTR_OS_SOLARIS)
   #define RAW_DEVICE_DIR					"/dev/rdsk"
- #elif defined(IOMTR_OS_LINUX)
+ #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX)
   #define RAW_DEVICE_DIR					"/dev"
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done! 
@@ -128,7 +130,7 @@ public:
 	BOOL		Init_Logical( char drive );
 	// Initialize physical (system) disks (e.g. physicaldisk0, physicaldisk1, etc.).
 	BOOL		Init_Physical( int drive );
-#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	BOOL		Init_Logical( char *drive );
 	BOOL		Init_Physical( char *drive );
 #else

@@ -52,7 +52,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-17 (daniel.scheibli@edelbyte.org)             ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-04-17 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Code cleanup.                                       ## */
 /* ##               2005-04-10 (mingz@ele.uri.edu)                        ## */
 /* ##               - Corrected the macro definition for BLKGETSIZE64.    ## */
@@ -168,11 +170,12 @@
 #endif
 // ----------------------------------------------------------------------------
 // Check the Operating System mapping
-#if ( defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) &&  defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) &&  defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) &&  defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
-    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) &&  defined(IOMTR_OS_WIN64))
+#if ( defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_OSX) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) &&  defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_OSX) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) &&  defined(IOMTR_OS_OSX) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_OSX) &&  defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_OSX) && !defined(IOMTR_OS_SOLARIS) &&  defined(IOMTR_OS_WIN32) && !defined(IOMTR_OS_WIN64)) || \
+    (!defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_OSX) && !defined(IOMTR_OS_SOLARIS) && !defined(IOMTR_OS_WIN32) &&  defined(IOMTR_OS_WIN64))
  // nop
 #else    
  #error ===> ERROR: You have to define exactly one IOMTR_OS_* global define!
@@ -212,11 +215,11 @@
  #include <winperf.h>
  #include <winreg.h>
  #include <afxmt.h>
+ #include <malloc.h>
 #endif
 // ----------------------------------------------------------------------------
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 #include <time.h>
 #include <limits.h>
 #include <sys/types.h>
@@ -241,6 +244,7 @@ using namespace std;
  #include <nks/fsio.h>
  #include <pthread.h>
  #include <mmpublic.h>
+ #include <malloc.h>
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX)
@@ -248,12 +252,21 @@ using namespace std;
  #include <unistd.h>
  #include <pthread.h>
  #include <signal.h>
- #include <aio.h>
  #include <netinet/in.h>   // in_addr_t
+
+ #if defined(IOMTR_OS_OSX)
+  #include <sys/aio.h>
+ #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+  #include <malloc.h>
+  #include <aio.h>
+ #else
+  #error ===> ERROR: You have to define exactly one IOMTR_CPU_* global define!
+ #endif
+
  #if defined(IOMTR_OS_LINUX)
   #include <sys/ioctl.h>
  #endif
- #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+ #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
   #include <syslog.h>
  #endif
 #endif
@@ -302,9 +315,13 @@ using namespace std;
   // in MeterCtrl.cpp.or safely internally in IOTargetDisk.cpp.
   // It could cause problems because in the x86-64 environment long is 64 bits.
   typedef long		       LONG;
+  #if defined(IOMTR_OS_OSX)
+   #define off64_t	off_t  
+  #endif 
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
+ 
  #if defined(IOMTR_SETTING_GCC_M64)
   // DWORD is supposed to be an unsigned 32 bit number.
   typedef unsigned int	       DWORD;
@@ -713,7 +730,7 @@ const char NEW_WORKER_EXECUTABLE[] = "dynamo";
  extern pthread_mutex_t lock_mt;   // we use one global locking mutex
 #endif
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_CPU_SPARC)
+#if defined(IOMTR_CPU_SPARC) || defined(IOMTR_CPU_PPC)
  extern double processor_speed_to_nsecs;
 #endif
 // ----------------------------------------------------------------------------
@@ -836,11 +853,33 @@ inline int IsBigEndian( void )
  #if defined(IOMTR_OSFAMILY_NETWARE)
   #define _timeb		timeb
   #define _ftime		nwtime
+  #define _time			time
+  #define _millitm		millitm
   #define Sleep(x)		delay((x))
  #elif defined(IOMTR_OSFAMILY_UNIX)
-  #define _timeb		timeb
-  #define _ftime		ftime
-  #define Sleep(x) 		usleep((x) * 1000)
+  #if defined(IOMTR_OS_OSX)
+   #define aiocb64 		aiocb
+   #define aio_suspend64	aio_suspend
+   #define aio_error64		aio_error
+   #define aio_cancel64		aio_cancel
+   #define aio_read64		aio_read
+   #define aio_write64		aio_write
+   #define aio_return64		aio_return
+
+   #define _timeb		timeval
+   #define _ftime(x)		gettimeofday(x,NULL)
+   #define _time		tv_sec
+   #define _millitm		tv_usec
+   #define Sleep(x) 		usleep((x) * 1000)
+  #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+   #define _timeb		timeb
+   #define _ftime		ftime
+   #define _time			time
+   #define _millitm		millitm
+   #define Sleep(x) 		usleep((x) * 1000)
+  #else
+   #error ===> ERROR: You have to do some coding here to get the port done!
+  #endif
  #else
   #warning ===> WARNING: You have to do some coding here to get the port done!
  #endif
@@ -926,7 +965,7 @@ inline int IsBigEndian( void )
  extern DWORDLONG rdtsc(void); 
 #endif
 // ----------------------------------------------------------------------------
-#if defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  extern "C" DWORDLONG rdtsc();
 #endif
 // ----------------------------------------------------------------------------

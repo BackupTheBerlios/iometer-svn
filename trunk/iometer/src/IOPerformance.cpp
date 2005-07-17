@@ -53,7 +53,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-10 (mingz@ele.uri.edu)                        ## */
+/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##               - Support for MacOS X                                 ## */
+/* ##               2005-04-10 (mingz@ele.uri.edu)                        ## */
 /* ##               - Add type cast to remove compile warning for Solaris.## */
 /* ##               2004-09-01 (henryx.w.tiemam@intel.com)                ## */
 /* ##               - Switched to more generic IOMTR_CPU_X86_64.          ## */
@@ -91,7 +93,7 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 #define PERFORMANCE_DETAILS	0 // Turn on to display additional performance messages.
-#if !defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE)
+#if !defined(IOMTR_OS_LINUX) && !defined(IOMTR_OS_NETWARE) && !defined(IOMTR_OS_OSX)
 
 
 
@@ -1582,4 +1584,4 @@ double Performance::Calculate_Stat( _int64 start_value, _int64 end_value, DWORD 
 
 
 
-#endif   // !IOMTR_OS_LINUX || !IOMTR_OS_NETWARE
+#endif   // !IOMTR_OS_LINUX || !IOMTR_OS_NETWARE || !MTR_OS_OSX

@@ -171,6 +171,7 @@ find important global defines (-D<key>[=<value>]):
    IOMTR_OS_LINUX            Linux, 32 bit   
    IOMTR_OS_LINUX64          Linux, 64 bit *
    IOMTR_OS_NETWARE          Novell Netware, 32 bit
+   IOMTR_OS_OSX              Mac OS X, 64 bit
    IOMTR_OS_SOLARIS          Sun Solaris (64 bit)
    IOMTR_OS_WIN32            Microsoft Windows, 32 bit
    IOMTR_OS_WIN64            Microsoft Windows, 64 bit
@@ -193,6 +194,7 @@ find important global defines (-D<key>[=<value>]):
    IOMTR_CPU_I386            Intel x86 processors (32 bit)
    IOMTR_CPU_IA64            Intel Itanium family (64 bit)
    IOMTR_CPU_MIPS            MIPS CPU (used in SGI machines etc.) *
+   IOMTR_CPU_PPC             PowerPC processor (Apple machines etc.)
    IOMTR_CPU_SPARC           Sun Sparc processor (64 bit)
    IOMTR_CPU_X86_64          AMD x86 with 64 bit extention and
                              Intel Xeon with EM64T
