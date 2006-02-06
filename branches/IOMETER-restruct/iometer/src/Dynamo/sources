@@ -1,0 +1,58 @@
+TARGETNAME=DYNAMO
+TARGETPATH=OBJ
+TARGETTYPE=PROGRAM
+
+MSC_WARNING_LEVEL=/W3 /WX
+USE_MFC=1
+USE_CRTDLL=1
+BROWSER_INFO=1
+
+INCLUDES=$(SDK_INC_PATH); $(MSSDK)\INCLUDE; ..
+C_DEFINES=$(C_DEFINES) -D_PULSAR_ -DDOSWIN32 -DUSING_DDK -D_AFX_NO_RICHEDIT_SUPPORT
+LINKER_OPTIDATA=$(LINKER_OPTIDATA) /STACK:0xc0000,0x2000
+
+UMTYPE=console
+UMENTRY=main
+
+TARGETLIBS=$(SDK_LIB_PATH)\KERNEL32.LIB \
+   $(SDK_LIB_PATH)\USER32.LIB		\
+    $(SDK_LIB_PATH)\ADVAPI32.LIB	\
+    $(SDK_LIB_PATH)\WSOCK32.LIB		\
+    $(SDK_LIB_PATH)\WS2_32.LIB		\
+    $(SDK_LIB_PATH)\COMCTL32.LIB	\
+    $(SDK_LIB_PATH)\GDI32.LIB		\
+    $(SDK_LIB_PATH)\WINSPOOL.LIB	\
+    $(SDK_LIB_PATH)\COMDLG32.LIB	\
+    $(SDK_LIB_PATH)\SHELL32.LIB		\
+    $(SDK_LIB_PATH)\VERSION.LIB		\
+    $(CRT_LIB_PATH)\MSVCPRT.LIB		\
+    $(SDK_LIB_PATH)\SETUPAPI.LIB
+
+
+SOURCES= ..\ByteOrder.cpp		\
+	..\IOAccess.cpp			\
+	..\IOCompletionQ.cpp		\
+#	..\IOCq.cpp			\
+	..\IOCQAIO.cpp			\
+	..\IOCQVI.cpp			\
+	..\IOGlobals.cpp		\
+	..\IOGrunt.cpp			\
+	..\IOManager.cpp		\
+	..\IOManagerWin.cpp		\
+	..\IOPerformance.cpp		\
+	..\IOPort.cpp			\
+#	..\IOPortPipe.cpp		\
+	..\IOPortTCP.cpp		\
+	..\IOTarget.cpp			\
+	..\IOTargetDisk.cpp		\
+	..\IOTargetTCP.cpp		\
+	..\IOTargetVI.cpp		\
+	..\IOTime.cpp 			\
+	..\IOVIPL.cpp			\
+	..\NetTCP.cpp			\
+	..\NetVI.cpp			\
+	..\Network.cpp			\
+	..\Pulsar.cpp			\
+	..\stdafx.cpp			\
+	..\VINic.cpp			\
+	..\Pulsar.rc
