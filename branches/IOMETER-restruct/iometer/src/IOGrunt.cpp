@@ -162,19 +162,19 @@ Grunt::~Grunt()
 	// Release grunt's I/O data buffers if they are in use.
 	if (data_size)
 #if defined(IOMTR_OSFAMILY_NETWARE)
-		NXMemFree(read_data);
+	NXMemFree(read_data);
 	NXMemFree(write_data);
 #elif defined(IOMTR_OSFAMILY_UNIX)
-		free(read_data);
+	free(read_data);
 	free(write_data);
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
-		VirtualFree(read_data, 0, MEM_RELEASE);
+	VirtualFree(read_data, 0, MEM_RELEASE);
 	VirtualFree(write_data, 0, MEM_RELEASE);
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-		Free_Transaction_Arrays();
+	Free_Transaction_Arrays();
 }
 
 //
