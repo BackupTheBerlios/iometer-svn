@@ -57,7 +57,7 @@
 /* ##                 under which the Source Code and Binaries are        ## */
 /* ##                 distributed.                                        ## */
 /* ##                 EULA sections which are obsolet or stays in         ## */
-/* ##                 contrast to that (namely LIMITED MEDIA WARRANTY,    ## */         
+/* ##                 contrast to that (namely LIMITED MEDIA WARRANTY,    ## */
 /* ##                 TERMINATION OF THIS LICENSE and U.S. GOVERNMENT     ## */
 /* ##                 RESTRICTED RIGHTS) has been blanked out.            ## */
 /* ##               - Integrated the License Statement into this header.  ## */
@@ -68,12 +68,9 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "GalileoApp.h"
 #include "LegalBox.h"
-
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -85,20 +82,18 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLegalBox dialog
 
-
-CLegalBox::CLegalBox(CWnd* pParent /*=NULL*/)
-	: CDialog(CLegalBox::IDD, pParent)
+CLegalBox::CLegalBox(CWnd * pParent /*=NULL*/ )
+:  CDialog(CLegalBox::IDD, pParent)
 {
 	running = FALSE;
 	//{{AFX_DATA_INIT(CLegalBox)
@@ -106,8 +101,7 @@ CLegalBox::CLegalBox(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 }
 
-
-void CLegalBox::DoDataExchange(CDataExchange* pDX)
+void CLegalBox::DoDataExchange(CDataExchange * pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLegalBox)
@@ -117,16 +111,13 @@ void CLegalBox::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CLegalBox, CDialog)
-	//{{AFX_MSG_MAP(CLegalBox)
-	//}}AFX_MSG_MAP
+    //{{AFX_MSG_MAP(CLegalBox)
+    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
 /////////////////////////////////////////////////////////////////////////////
 // CLegalBox message handlers
-
-BOOL CLegalBox::OnInitDialog() 
+BOOL CLegalBox::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
@@ -182,7 +173,7 @@ modification, are permitted provided that the following conditions are met:\x0d\
 	legal += "   Neither the name of the Intel Corporation nor the names of its contributors \
    may be used to endorse or promote products derived from this software \
    without specific prior written permission.\x0d\x0a \x0d\x0a";
- 
+
 	legal += "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' \
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE \
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE \
@@ -239,14 +230,13 @@ regulations.  Intel is not be obligated under any other agreements \
 unless they are in writing and signed by an authorized representative of \
 Intel.";
 
-	m_ELegal.SetWindowText( legal );
+	m_ELegal.SetWindowText(legal);
 
-	if ( running )
-	{
-		GetDlgItem( IDCANCEL )->ModifyStyle( WS_VISIBLE, WS_DISABLED );
-		GetDlgItem( IDOK )->SetWindowText( "OK" );
+	if (running) {
+		GetDlgItem(IDCANCEL)->ModifyStyle(WS_VISIBLE, WS_DISABLED);
+		GetDlgItem(IDOK)->SetWindowText("OK");
 	}
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	return TRUE;		// return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
 }

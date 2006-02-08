@@ -84,28 +84,25 @@
 #ifndef ICF_IFSTREAM_DEFINED
 #define ICF_IFSTREAM_DEFINED
 
-
 #include <fstream>
 using namespace std;
 
-
 #define MAX_ICF_LINE 200
 
+class ICF_ifstream:public ifstream {
+      public:
+	ICF_ifstream():ifstream() {
+	} ICF_ifstream(const CString & infilename):ifstream(infilename) {
+	}
 
-class ICF_ifstream : public ifstream
-{
-public:
-	ICF_ifstream()							: ifstream() { }
-	ICF_ifstream(const CString& infilename)	: ifstream(infilename) { }
+	long GetVersion();
+	BOOL SkipTo(CString identifier);
+	CString GetNextLine();
+	BOOL GetPair(CString & key, CString & value);
 
-	long	GetVersion();
-	BOOL	SkipTo(CString identifier);
-	CString	GetNextLine();
-	BOOL	GetPair(CString& key, CString& value);
-
-	static BOOL		ExtractFirstInt(CString& string, int& number);
-	static BOOL		ExtractFirstIntVersion(CString& string, int& number);
-	static CString	ExtractFirstToken(CString& string, BOOL spaces=FALSE);
+	static BOOL ExtractFirstInt(CString & string, int &number);
+	static BOOL ExtractFirstIntVersion(CString & string, int &number);
+	static CString ExtractFirstToken(CString & string, BOOL spaces = FALSE);
 };
 
 #endif

@@ -60,14 +60,12 @@
 #ifndef PAGEACCESS_DEFINED
 #define PAGEACCESS_DEFINED
 
-
 #include "GalileoApp.h"
 #include "IOTest.h"
 
-
 // Info for access spec image list (LED's and default assignment)
 #define ACCESS_ICON_SIZE			15
-#define ACCESS_ICON_EXPAND			10 // number of icons to add to ImageList when expanding
+#define ACCESS_ICON_EXPAND			10	// number of icons to add to ImageList when expanding
 #define GLOBAL_ACCESS_ICON_BGCOLOR		0x00ff00ff
 #define ASSIGNED_ACCESS_ICON_BGCOLOR		0x00ffffff
 
@@ -81,75 +79,77 @@
 #define FIND_FIRST	-1	// Used when searching through a list control.  Indicates that the first item
 						// that matches the criteria should be returned.
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CPageAccess dialog
 
-class CPageAccess : public CPropertyPage
-{
+class CPageAccess:public CPropertyPage {
 	DECLARE_DYNCREATE(CPageAccess)
-
 // Construction
-public:
+      public:
 	CPageAccess();
-	~CPageAccess() {};
+	~CPageAccess() {
+	};
 
-protected:
+      protected:
 // Dialog Data
 	//{{AFX_DATA(CPageAccess)
 	enum { IDD = IDD_ACCESS };
-	CButton	m_GGlobalFrame;
-	CButton	m_GAssignedFrame;
-	CButton	m_BEditCopy;
-	CListCtrl	m_LAssignedAccess;
-	CButton	m_BUp;
-	CListCtrl	m_LGlobalAccess;
-	CButton	m_BRemove;
-	CButton	m_BNew;
-	CButton	m_BEdit;
-	CButton	m_BDown;
-	CButton	m_BAdd;
-	CButton	m_BDelete;
+	CButton m_GGlobalFrame;
+	CButton m_GAssignedFrame;
+	CButton m_BEditCopy;
+	CListCtrl m_LAssignedAccess;
+	CButton m_BUp;
+	CListCtrl m_LGlobalAccess;
+	CButton m_BRemove;
+	CButton m_BNew;
+	CButton m_BEdit;
+	CButton m_BDown;
+	CButton m_BAdd;
+	CButton m_BDelete;
+
 	//}}AFX_DATA
 
-public:
+      public:
 
-	void		ShowAssignedAccess();
-	void		ShowGlobalAccess();
-	void		EnableWindow( BOOL enable = TRUE );
-	void		Reset();
-	
-	void		MarkAccess( int access_index, int color );
-	void		MarkAccesses( int current_access );
+	void ShowAssignedAccess();
+	void ShowGlobalAccess();
+	void EnableWindow(BOOL enable = TRUE);
+	void Reset();
+
+	void MarkAccess(int access_index, int color);
+	void MarkAccesses(int current_access);
 
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPageAccess)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
+
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 
-	void		SetGlobalButtons( BOOL enable = TRUE );
-	void		SetAssignedButtons( BOOL enable = TRUE );
-	void		SetAssignedAccess( BOOL enable = TRUE );
-	void		Move( int desired_index );
+	void SetGlobalButtons(BOOL enable = TRUE);
+	void SetAssignedButtons(BOOL enable = TRUE);
+	void SetAssignedAccess(BOOL enable = TRUE);
+	void Move(int desired_index);
 
-	void		Insert( CPoint point );		// Inserts an item into the assigned list before the currently selected item.
-	void		InsertAt( int insert_index );
-	void		Remove();	// Removes the item in the assigned list specified by item_index.
-	BOOL		Edit();
-	void		Delete();
+	void Insert(CPoint point);	// Inserts an item into the assigned list before the currently selected item.
+	void InsertAt(int insert_index);
+	void Remove();		// Removes the item in the assigned list specified by item_index.
+	BOOL Edit();
+	void Delete();
 
-	CImageList	m_AssignedImageList;	// LEDs indicate which access spec has run, is running, and will run.
-	CImageList	m_GlobalImageList;		// Icons indicate which access specs get assigned by default to which type of worker.
-	CImageList*	p_DragImage;
-	BOOL		global_dragging;	// indicates that an item is being dragged 
-									// from the global list to the assigned list.
-	BOOL		assigned_dragging;	// indicates that an item is being dragged 
-									// within the assigned list.
+	CImageList m_AssignedImageList;	// LEDs indicate which access spec has run, is running, and will run.
+	CImageList m_GlobalImageList;	// Icons indicate which access specs get assigned by default to which type of worker.
+	CImageList *p_DragImage;
+	BOOL global_dragging;	// indicates that an item is being dragged 
+
+	// from the global list to the assigned list.
+	BOOL assigned_dragging;	// indicates that an item is being dragged 
+
+	// within the assigned list.
 
 	// Generated message map functions
 	//{{AFX_MSG(CPageAccess)
@@ -161,23 +161,23 @@ protected:
 	afx_msg void OnBRemove();
 	afx_msg void OnBDown();
 	afx_msg void OnBUp();
-	afx_msg void OnDblclkLGlobalAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnBegindragLGlobalAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-	afx_msg void OnItemchangedLAssignedAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnBegindragLAssignedAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnItemchangedLGlobalAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSetfocusLGlobalAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSetfocusLAssignedAccess(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDblclkLGlobalAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnBegindragLGlobalAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg BOOL OnSetCursor(CWnd * pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnItemchangedLAssignedAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnBegindragLAssignedAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnItemchangedLGlobalAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnSetfocusLGlobalAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnSetfocusLAssignedAccess(NMHDR * pNMHDR, LRESULT * pResult);
 	afx_msg void OnBEditCopy();
-	afx_msg void OnKillfocusLGlobalAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnKillfocusLAssignedAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnClickLGlobalAccess(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnClickLAssignedAccess(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKillfocusLGlobalAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnKillfocusLAssignedAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnClickLGlobalAccess(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnClickLAssignedAccess(NMHDR * pNMHDR, LRESULT * pResult);
+
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 };
-
 
 #endif

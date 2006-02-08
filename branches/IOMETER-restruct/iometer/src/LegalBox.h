@@ -58,54 +58,50 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #ifndef LEGALBOX_DEFINED
 #define LEGALBOX_DEFINED
 
 #if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+#endif				// _MSC_VER >= 1000
 // LegalBox.h : header file
 //
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CLegalBox dialog
 
-class CLegalBox : public CDialog
-{
+class CLegalBox:public CDialog {
 // Construction
-public:
-	CLegalBox(CWnd* pParent = NULL);   // standard constructor
+      public:
+	CLegalBox(CWnd * pParent = NULL);	// standard constructor
 
 	BOOL running;
 
 // Dialog Data
 	//{{AFX_DATA(CLegalBox)
 	enum { IDD = IDD_LEGAL };
-	CEdit	m_ELegal;
-	CString	m_test;
+	CEdit m_ELegal;
+	CString m_test;
 	//}}AFX_DATA
-
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CLegalBox)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CLegalBox)
-	virtual BOOL OnInitDialog();
+	 virtual BOOL OnInitDialog();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-#endif // #ifndef LEGALBOX_DEFINED
+#endif				// #ifndef LEGALBOX_DEFINED

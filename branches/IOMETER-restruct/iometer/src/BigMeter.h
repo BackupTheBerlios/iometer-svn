@@ -59,92 +59,87 @@
 #ifndef BIGMETER_DEFINED
 #define BIGMETER_DEFINED
 
-
 #define BUTTON_START		0x01
 #define BUTTON_STOP		0x02
 #define BUTTON_STOPALL		0x04
 
-
-
 /////////////////////////////////////////////////////////////////////////////
 // CBigMeter dialog
 
-class CBigMeter : public CDialog
-{
+class CBigMeter:public CDialog {
 // Construction
-public:
-	CBigMeter( CWnd* pParent = NULL );   // standard constructor
+      public:
+	CBigMeter(CWnd * pParent = NULL);	// standard constructor
 
 	// Create the dialog
-	virtual BOOL	Create(	int performance_bar, CString test_title, 
-						CString result_title, CString worker_title );
-	
+	virtual BOOL Create(int performance_bar, CString test_title, CString result_title, CString worker_title);
+
 	// Tell the dialog which main frame toolbar
 	// buttons are enabled (of START, STOP, STOP ALL)
-	void		SetButtonState( BOOL start, BOOL stop, BOOL stopall );
+	void SetButtonState(BOOL start, BOOL stop, BOOL stopall);
 
 	// Called from CGalileoView when user selects a new result to display
-	void		OnMDisplay( int submenu_id, int menu_item, int result_code );
-	void		ClearCheckButton();
+	void OnMDisplay(int submenu_id, int menu_item, int result_code);
+	void ClearCheckButton();
 
-	void		UpdateDisplay();	// Call this when value has changed
+	void UpdateDisplay();	// Call this when value has changed
 
 	// Is the dialog visible?
-	BOOL		is_displayed;
+	BOOL is_displayed;
 
-protected:
+      protected:
 
 	// Update the "Next>>" and "Stop buttons.
-	void		UpdateButtons();
-	int			button_state;		// The state of CGalileoView's toolbar buttons
+	void UpdateButtons();
+	int button_state;	// The state of CGalileoView's toolbar buttons
 
 	// Controlling the maximum displayed value for the meter.
-	void		SetMaxRange( int new_range );
-	int			max_range;
+	void SetMaxRange(int new_range);
+	int max_range;
 
-	virtual void	OnOK();
-	virtual void	OnCancel();
+	virtual void OnOK();
+	virtual void OnCancel();
 
 	// Information needed to extract the result value being displayed.
-	Results		*results; // Pointer to base of results[MAX_UPDATE] array
-	int			result_to_display;
-	double		result_value;
-	CString		result_text;
+	Results *results;	// Pointer to base of results[MAX_UPDATE] array
+	int result_to_display;
+	double result_value;
+	CString result_text;
 
-	CString		result_name;
-	CString		worker_name;
+	CString result_name;
+	CString worker_name;
 
 // Dialog Data
 	//{{AFX_DATA(CBigMeter)
 	enum { IDD = IDD_BIGMETER };
-	CButton	m_CkWatermark;
-	CButton	m_BResultType;
-	CButton	m_BNext;
-	CButton	m_BStop;
+	CButton m_CkWatermark;
+	CButton m_BResultType;
+	CButton m_BNext;
+	CButton m_BStop;
 	//}}AFX_DATA
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBigMeter)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 	// Generated message map functions
 	//{{AFX_MSG(CBigMeter)
-	afx_msg void OnBResultType();
+	 afx_msg void OnBResultType();
 	afx_msg void OnBNext();
 	afx_msg void OnBStop();
 	afx_msg void OnKillfocusEMaxRange();
 	afx_msg void OnChangeEMaxRange();
 	afx_msg void OnCkWatermark();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-#endif // !BIGMETER_DEFINED
+#endif				// !BIGMETER_DEFINED

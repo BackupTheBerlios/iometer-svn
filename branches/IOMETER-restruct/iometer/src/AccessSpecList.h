@@ -62,64 +62,62 @@
 #ifndef ACCESS_LIST_DEFINED
 #define ACCESS_LIST_DEFINED
 
-
 #include "IOAccess.h"
 #include "IOTest.h"
 #include "ICF_ifstream.h"
 #include <afxtempl.h>
 
-#define IDLE_SPEC		0		// The index of the idle spec.
+#define IDLE_SPEC		0	// The index of the idle spec.
 #define	IDLE_NAME		"Idle"	// The name of the idle spec.
 
 // The AccessSpecList controls the addition and removal of the global access specs.
-class AccessSpecList
-{
-public:
-// Member Functions	
+class AccessSpecList {
+      public:
+// Member Functions     
 	AccessSpecList();
 	~AccessSpecList();
 
-	Test_Spec*	New();	// Creates a new Test_Spec in memory,
-						// and adds a pointer to it in the SpecList array.
-						// Returns the index to the entry in the pointer array
-						// if successful.
+	Test_Spec *New();	// Creates a new Test_Spec in memory,
+	// and adds a pointer to it in the SpecList array.
+	// Returns the index to the entry in the pointer array
+	// if successful.
 
-	Test_Spec*	Copy( Test_Spec *source_spec ); // Creates a copy of the 
-												// specified access spec.
-	
-	void	Delete( Test_Spec *spec );	// Removes the given pointer to a 
-										// Test_Spec from the SpecList array, 
-										// and removes the associated spec.
-										// Returns True if successful.
+	Test_Spec *Copy(Test_Spec * source_spec);	// Creates a copy of the 
+	// specified access spec.
 
-	Test_Spec*	Get(int index);	// Returns the pointer to the Test_Spec at the provided index.
+	void Delete(Test_Spec * spec);	// Removes the given pointer to a 
+	// Test_Spec from the SpecList array, 
+	// and removes the associated spec.
+	// Returns True if successful.
 
-	int		Count();			// Return the number of entries in the array.
+	Test_Spec *Get(int index);	// Returns the pointer to the Test_Spec at the provided index.
 
-	int		IndexByRef( const Test_Spec* spec );		// Returns the index of the given access spec.
-	Test_Spec*	RefByName( const char* check_name );	// Checks the access spec list for a spec of the given name.
+	int Count();		// Return the number of entries in the array.
 
-	BOOL	SaveResults( ostream& outfile );	// Saves only the currently active access specs to a result file.
+	int IndexByRef(const Test_Spec * spec);	// Returns the index of the given access spec.
+	Test_Spec *RefByName(const char *check_name);	// Checks the access spec list for a spec of the given name.
 
-	BOOL	SaveConfig( ostream& outfile );	// Saves all access specs to a config file.
-	BOOL	LoadConfig( const CString& infilename, BOOL replace );	// Gets the file version and calls the appropriate LoadConfigXXX function.
-	BOOL	LoadConfigNew( ICF_ifstream& infile );	// Loads the global access spec list from a current version's setup file.
-	BOOL	LoadConfigOld( ICF_ifstream& infile );	// Loads the global access spec list from a previous version's setup file.
+	BOOL SaveResults(ostream & outfile);	// Saves only the currently active access specs to a result file.
 
-protected:
+	BOOL SaveConfig(ostream & outfile);	// Saves all access specs to a config file.
+	BOOL LoadConfig(const CString & infilename, BOOL replace);	// Gets the file version and calls the appropriate LoadConfigXXX function.
+	BOOL LoadConfigNew(ICF_ifstream & infile);	// Loads the global access spec list from a current version's setup file.
+	BOOL LoadConfigOld(ICF_ifstream & infile);	// Loads the global access spec list from a previous version's setup file.
+
+      protected:
 // Private Functions
-	void	InsertIdleSpec();		// Creates the idle spec and inserts it's pointer into the poiter array.
-	void	InsertDefaultSpecs();	// Inserts the different default specifications.
+	void InsertIdleSpec();	// Creates the idle spec and inserts it's pointer into the poiter array.
+	void InsertDefaultSpecs();	// Inserts the different default specifications.
 
-	void	DeleteAll();		// Deletes all entries in the access spec list.
+	void DeleteAll();	// Deletes all entries in the access spec list.
 
-	void	InitAccessSpecLine( Access_Spec* spec_line); //Initializes a line of an access spec to the default values.
+	void InitAccessSpecLine(Access_Spec * spec_line);	//Initializes a line of an access spec to the default values.
 
-	void	SmartName( Test_Spec* spec); //Takes an access spec and assigns it a descriptive name
-	void	NextUntitled( char *name ); // Name an untitled access specs ("Untitled n").
+	void SmartName(Test_Spec * spec);	//Takes an access spec and assigns it a descriptive name
+	void NextUntitled(char *name);	// Name an untitled access specs ("Untitled n").
 
 // Private data structures
-	CTypedPtrArray<CPtrArray, Test_Spec*> spec_list;	// Pointer array to AccessSpecObjects
+	 CTypedPtrArray < CPtrArray, Test_Spec * >spec_list;	// Pointer array to AccessSpecObjects
 };
 
 #endif

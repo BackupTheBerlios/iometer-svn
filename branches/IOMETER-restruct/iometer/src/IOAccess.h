@@ -57,32 +57,27 @@
 #ifndef ACCESS_DEFINED
 #define ACCESS_DEFINED
 
-
 #include "IOCommon.h"
-#define NOT_POWER_OF_TWO   (DWORDLONG) -1   // a mask is set to this if it cannot be used for
+#define NOT_POWER_OF_TWO   (DWORDLONG) -1	// a mask is set to this if it cannot be used for
 					    // byte alignment (because the alignment isn't a
 					    // power of two)
 
-typedef struct
-{
+typedef struct {
 	int random;
 	int read;
 	DWORD size;
-	int	delay;
+	int delay;
 	int burst;
 	DWORD align;
 	DWORD reply;
 	DWORDLONG align_mask;
-}	ACCESS;
+} ACCESS;
 
-
-
-struct Access_Spec
-{
-	int of_size;	// Indicates how many percent this Access_Spec
-	                // acquires in AccessSpecList (so the sum of
-					// all Access_Spec's of_size fields has to be
-					// 100 in total)
+struct Access_Spec {
+	int of_size;		// Indicates how many percent this Access_Spec
+	// acquires in AccessSpecList (so the sum of
+	// all Access_Spec's of_size fields has to be
+	// 100 in total)
 	int reads;
 	int random;
 	int delay;
@@ -91,38 +86,31 @@ struct Access_Spec
 	DWORD reply;
 	DWORD size;
 };
+
 #define Access_Specs Access_Spec*
-#define MAX_ACCESS_SPECS	100		// Maximum number of specs in a total specification.
+#define MAX_ACCESS_SPECS	100	// Maximum number of specs in a total specification.
 
+class Access {
+      public:
 
+	Access() {
+		max_transfer = 0;
+	} ~Access() {
+	}
 
-class Access
-{
-public:
+	void Initialize(const Access_Specs specs);
 
-	Access() { max_transfer = 0; }
-	~Access() { }
+	void GetNextBurst(int access_percent,
+			  int *burst, DWORD * size, int *delay, DWORD * align, DWORDLONG * align_mask, DWORD * reply);
 
-	void	Initialize( const Access_Specs specs );
+	BOOL Read(int access_percent, int read_percent);
+	BOOL Random(int access_percent, int random_percent);
 
-	void	GetNextBurst(	int			access_percent,
-							int			*burst,
-							DWORD		*size,
-							int			*delay,
-							DWORD		*align,
-							DWORDLONG	*align_mask,
-							DWORD		*reply );
+	int max_transfer;	// Maximum size of a transfer request for a test.
 
-	BOOL	Read( int access_percent, int read_percent );
-	BOOL	Random( int access_percent, int random_percent );
-
-	int		max_transfer;				// Maximum size of a transfer request for a test.
-
-private:
+      private:
 
 	ACCESS access_grid[MAX_ACCESS_SPECS];
 };
-
-
 
 #endif

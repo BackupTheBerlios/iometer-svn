@@ -59,52 +59,50 @@
 #ifndef GALILEO_CMD_LINE_INCLUDED
 #define GALILEO_CMD_LINE_INCLUDED
 
-
-class CGalileoCmdLine : public CCommandLineInfo  
-{
-public:
+class CGalileoCmdLine:public CCommandLineInfo {
+      public:
 	CGalileoCmdLine();
-	virtual ~CGalileoCmdLine();
+	virtual ~ CGalileoCmdLine();
 
 	// see definitions in GalileoCmdLine.cpp
 	static const int DefaultTimeout;
 	static const char DefaultConfigFile[];
 
-	void ParseParam( const char* pszParam, BOOL bFlag, BOOL bLast );
+	void ParseParam(const char *pszParam, BOOL bFlag, BOOL bLast);
 
-	CString	GetConfigFile();
-	CString	GetResultFile();
-	int		GetTimeout();
+	CString GetConfigFile();
+	CString GetResultFile();
+	int GetTimeout();
 
 	// Interactive mode is the normal mode of operation for Iometer.
 	// If the user specifies both the config file and the results file
 	// on the command line, Iometer goes into batch mode, in which
 	// Iometer starts up, runs a test for its specified run time, writes
 	// the results file, and closes without user interaction.
-	//		TRUE = batch mode
-	//		FALSE = interactive mode
-	BOOL	IsBatchMode();
+	//              TRUE = batch mode
+	//              FALSE = interactive mode
+	BOOL IsBatchMode();
 
-	void	OverrideBatchMode();	// set m_bOverrideBatch (manually override batch mode)
+	void OverrideBatchMode();	// set m_bOverrideBatch (manually override batch mode)
 
-	BOOL	m_bFail;		// did the command line parser fail?
+	BOOL m_bFail;		// did the command line parser fail?
 
-protected:
-	void	Fail( const CString& errmsg );
-	BOOL	IsValidInteger( const CString& instring );
-	BOOL	IsValidFilename( const CString& instring );
+      protected:
+	void Fail(const CString & errmsg);
+	BOOL IsValidInteger(const CString & instring);
+	BOOL IsValidFilename(const CString & instring);
 
 	// See if the file is writable, otherwise clear the filename string.
-	BOOL	VerifyWritable( const CString& filename );
-	BOOL	VerifyReadable( const CString& filename );
+	BOOL VerifyWritable(const CString & filename);
+	BOOL VerifyReadable(const CString & filename);
 
-	BOOL	m_bSwitches;	// are switches being used
+	BOOL m_bSwitches;	// are switches being used
 
-	CString	m_sConfigFile;	// the specified config file
-	CString	m_sResultFile;	// the specified result file
-	int		m_iTimeout;		// the specified timeout value
+	CString m_sConfigFile;	// the specified config file
+	CString m_sResultFile;	// the specified result file
+	int m_iTimeout;		// the specified timeout value
 
-	BOOL	m_bOverrideBatch;	// if set, forces IsBatchMode to return FALSE
+	BOOL m_bOverrideBatch;	// if set, forces IsBatchMode to return FALSE
 };
 
-#endif	// GALILEO_CMD_LINE_INCLUDED
+#endif				// GALILEO_CMD_LINE_INCLUDED

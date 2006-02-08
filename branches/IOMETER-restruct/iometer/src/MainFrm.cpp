@@ -61,12 +61,10 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "GalileoApp.h"
 #include "GalileoView.h"
 #include "MainFrm.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -78,29 +76,26 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
 
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
-BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
-	//{{AFX_MSG_MAP(CMainFrame)
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
+    BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
+    //{{AFX_MSG_MAP(CMainFrame)
+    ON_WM_CREATE()
+    //}}AFX_MSG_MAP
+    END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame construction/destruction
-
-CMainFrame::CMainFrame()
+    CMainFrame::CMainFrame()
 {
 	// CG: The following block was inserted by 'Status Bar' component.
 	{
@@ -119,39 +114,34 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// Disable the maximize button.
-	ModifyStyle( WS_MAXIMIZEBOX, NULL );
+	ModifyStyle(WS_MAXIMIZEBOX, NULL);
 	// Remove the document title from before the application title.
-	ModifyStyle( FWS_ADDTOTITLE, NULL );
+	ModifyStyle(FWS_ADDTOTITLE, NULL);
 
 	// Create a toolbar.
-	if ( !(theApp.m_wndToolBar.Create(this)) ||
-		 !(theApp.m_wndToolBar.LoadToolBar(IDR_MAINFRAME)) )
-	{
+	if (!(theApp.m_wndToolBar.Create(this)) || !(theApp.m_wndToolBar.LoadToolBar(IDR_MAINFRAME))) {
 		TRACE0("Failed to create toolbar\n");
-		return -1;      // fail to create
+		return -1;	// fail to create
 	}
-
 	// Create a stus bar at the bottom of the window.
-	if ( !(theApp.m_wndStatusBar.Create(this)) )
-	{
+	if (!(theApp.m_wndStatusBar.Create(this))) {
 		TRACE0("Failed to create statusbar\n");
-		return -1;      // fail to create
+		return -1;	// fail to create
 	}
-
 	// TODO: Remove this if you don't want tool tips or a resizeable toolbar
 	theApp.m_wndToolBar.SetBarStyle(theApp.m_wndToolBar.GetBarStyle() |
-		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+					CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
 	// TODO: Delete these three lines if you don't want the toolbar to
 	//  be dockable
-//	theApp.m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-//	EnableDocking(CBRS_ALIGN_ANY);
-//	DockControlBar(&(theApp.m_wndToolBar));
+//      theApp.m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+//      EnableDocking(CBRS_ALIGN_ANY);
+//      DockControlBar(&(theApp.m_wndToolBar));
 
 	return 0;
 }
 
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CMainFrame::PreCreateWindow(CREATESTRUCT & cs)
 {
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
@@ -159,28 +149,25 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	return CFrameWnd::PreCreateWindow(cs);
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
 #ifdef _DEBUG
-void CMainFrame::AssertValid() const
+void CMainFrame::AssertValid() const const
 {
 	CFrameWnd::AssertValid();
 }
 
-void CMainFrame::Dump(CDumpContext& dc) const
+void CMainFrame::Dump(CDumpContext & dc) const const
 {
 	CFrameWnd::Dump(dc);
 }
 
-#endif //_DEBUG
+#endif				//_DEBUG
 
-
-LRESULT CMainFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+LRESULT CMainFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if ( message == WM_EXITMENULOOP )
-	{
+	if (message == WM_EXITMENULOOP) {
 		// Popup is being destroyed.  Uncheck any checked buttons on the
 		// display page.
 		theApp.pView->m_pPageDisplay->ClearCheckButton();

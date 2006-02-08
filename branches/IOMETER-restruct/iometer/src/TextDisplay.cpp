@@ -61,10 +61,8 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "TextDisplay.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -76,31 +74,25 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
-
-IMPLEMENT_DYNAMIC( CTextDisplay, CWnd )
-
+IMPLEMENT_DYNAMIC(CTextDisplay, CWnd)
 
 // Message mapping
-BEGIN_MESSAGE_MAP(CTextDisplay, CWnd)
-	//{{AFX_MSG_MAP(CTextDisplay)
-	ON_WM_PAINT()
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
+    BEGIN_MESSAGE_MAP(CTextDisplay, CWnd)
+    //{{AFX_MSG_MAP(CTextDisplay)
+    ON_WM_PAINT()
+    ON_WM_CREATE()
+    //}}AFX_MSG_MAP
+    END_MESSAGE_MAP()
 
 // Static member initialization
 BOOL CTextDisplay::registered = Register();
-
-
 
 //
 // Initialize class member variables.
@@ -110,33 +102,29 @@ CTextDisplay::CTextDisplay()
 	text = "";
 }
 
-
-
 //
 // Handles WM_CREATE message (Window is being created)
 //
-int CTextDisplay::OnCreate( LPCREATESTRUCT lpCreateStruct )
+int CTextDisplay::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	// Create the window.
-	VERIFY( CWnd::OnCreate( lpCreateStruct ) == 0 );
+	VERIFY(CWnd::OnCreate(lpCreateStruct) == 0);
 
 	// Store where the text box (rectangle) was placed.
-	GetClientRect( &text_box );
+	GetClientRect(&text_box);
 	text_alignment = TA_LEFT;
 	text_position = text_box.left;
 
 	// Initialize default font settings.
-	memset( &font_settings, 0, sizeof( LOGFONT ) );
+	memset(&font_settings, 0, sizeof(LOGFONT));
 	font_settings.lfCharSet = ANSI_CHARSET;
-    font_settings.lfOutPrecision = OUT_TT_PRECIS;
+	font_settings.lfOutPrecision = OUT_TT_PRECIS;
 	font_settings.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	font_settings.lfQuality = DEFAULT_QUALITY;
 	font_settings.lfPitchAndFamily = DEFAULT_PITCH;
 
 	return 0;
 }
-
-
 
 //
 // Removes used memory.  Called after response to WM_NCDESTROY
@@ -146,8 +134,6 @@ void CTextDisplay::PostNcDestroy()
 	delete this;
 }
 
-
-
 //
 // Registers the class with windows
 //
@@ -156,21 +142,18 @@ BOOL CTextDisplay::Register()
 	WNDCLASS wc;
 
 	// See if the class has already been registered.
-	if ( GetClassInfo( NULL, "CTextDisplay", &wc ) )
-	{
+	if (GetClassInfo(NULL, "CTextDisplay", &wc)) {
 		// Name already registered - ok if it was us
-		return ( wc.lpfnWndProc == (WNDPROC)TextDisplayWndProc );
+		return (wc.lpfnWndProc == (WNDPROC) TextDisplayWndProc);
 	}
-
 	// Register the window class of the control.
-	wc.style = CS_GLOBALCLASS | CS_OWNDC | CS_BYTEALIGNCLIENT |
-		CS_BYTEALIGNWINDOW;
+	wc.style = CS_GLOBALCLASS | CS_OWNDC | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
 	wc.lpfnWndProc = CTextDisplay::TextDisplayWndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = NULL;
 	wc.hIcon = NULL;
-	wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+	wc.hCursor =::LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH) COLOR_WINDOW;
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = "CTextDisplay";
@@ -178,33 +161,27 @@ BOOL CTextDisplay::Register()
 	return RegisterClass(&wc);
 }
 
-
-
 //
 // Window procedure for the "CTextDisplay" window class.  This global function
 // handles the creation of new CTextDisplay objects and subclasses the 
 // objects so the MFC framework passes messages along to the CTextDisplay 
 // member functions.
 //
-LRESULT CALLBACK EXPORT CTextDisplay::TextDisplayWndProc( HWND hWnd, 
-	UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK EXPORT CTextDisplay::TextDisplayWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	AFX_MANAGE_STATE( AfxGetStaticModuleState() );
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	CWnd	*pWnd;
+	CWnd *pWnd;
 
 	// See if we're creating the window.
-	if ( !(pWnd = CWnd::FromHandlePermanent( hWnd )) && message == WM_NCCREATE )
-	{
+	if (!(pWnd = CWnd::FromHandlePermanent(hWnd)) && message == WM_NCCREATE) {
 		// Yes, create the object.
 		pWnd = new CTextDisplay();
-		pWnd->Attach( hWnd );
+		pWnd->Attach(hWnd);
 	}
 
-	return AfxCallWndProc( pWnd, hWnd, message, wParam, lParam );
+	return AfxCallWndProc(pWnd, hWnd, message, wParam, lParam);
 }
-
-
 
 //
 // Handles WM_PAINT message.  Displays the text in the custom control according
@@ -212,113 +189,97 @@ LRESULT CALLBACK EXPORT CTextDisplay::TextDisplayWndProc( HWND hWnd,
 //
 void CTextDisplay::OnPaint()
 {
-	CPaintDC	dc(this); // device context for painting
+	CPaintDC dc(this);	// device context for painting
 
 	// Display the text using the store text settings.
-	dc.SetTextAlign( text_alignment );
-	dc.SelectObject( &font );
-	dc.SetTextColor( text_color );
-	dc.SetBkMode( TRANSPARENT );
-	dc.TextOut( text_position, text_box.top, text );
+	dc.SetTextAlign(text_alignment);
+	dc.SelectObject(&font);
+	dc.SetTextColor(text_color);
+	dc.SetBkMode(TRANSPARENT);
+	dc.TextOut(text_position, text_box.top, text);
 }
-
-
-
 
 //
 // Initializing text display values.
 //
-void CTextDisplay::SetAll( CString *show_text, char *font_name, LONG font_size, 
-	TextAlignment alignment, BOOL bold, BOOL italic, BOOL underline,
-	COLORREF color )
+void CTextDisplay::SetAll(CString * show_text, char *font_name, LONG font_size,
+			  TextAlignment alignment, BOOL bold, BOOL italic, BOOL underline, COLORREF color)
 {
 	// Update all settings for the displayed text, but do not update the
 	// window until everything has been updated.
-	SetText( show_text, FALSE );
-	SetFontType( font_name, FALSE );
-	SetFontSize( font_size, FALSE );
-	SetTextAlignment( alignment, FALSE );
-	Bold( bold, FALSE );
-	Italic( italic, FALSE );
-	Underline( underline, FALSE );
-	SetTextColor( color, FALSE );
+	SetText(show_text, FALSE);
+	SetFontType(font_name, FALSE);
+	SetFontSize(font_size, FALSE);
+	SetTextAlignment(alignment, FALSE);
+	Bold(bold, FALSE);
+	Italic(italic, FALSE);
+	Underline(underline, FALSE);
+	SetTextColor(color, FALSE);
 
 	// Update the display.
 	RedrawWindow();
 }
 
-
-
 //
 // Setting what text should be displayed.  Updating the display if needed.
 //
-void CTextDisplay::SetText( CString *show_text, BOOL refresh )
+void CTextDisplay::SetText(CString * show_text, BOOL refresh)
 {
-	if ( text == *show_text )
+	if (text == *show_text)
 		return;
 
 	text = *show_text;
 
-	if ( refresh )
+	if (refresh)
 		RedrawWindow();
 }
-
-
 
 //
 // Updating the type of font used by the text display based on the recorded
 // font settings.
 //
-void CTextDisplay::UpdateFont( BOOL refresh )
+void CTextDisplay::UpdateFont(BOOL refresh)
 {
 	font.DeleteObject();
-	font.CreateFontIndirect( &font_settings );
-	SetFont( &font );
+	font.CreateFontIndirect(&font_settings);
+	SetFont(&font);
 
-	if ( refresh )
+	if (refresh)
 		RedrawWindow();
 }
-
-
 
 //
 // Setting the text's font.
 //
-void CTextDisplay::SetFontType( char *font_name, BOOL refresh )
+void CTextDisplay::SetFontType(char *font_name, BOOL refresh)
 {
-	strcpy( font_settings.lfFaceName, font_name );
+	strcpy(font_settings.lfFaceName, font_name);
 	UpdateFont();
 }
-
-
 
 //
 // Setting the size of the text to display.
 //
-void CTextDisplay::SetFontSize( LONG size, BOOL refresh )
+void CTextDisplay::SetFontSize(LONG size, BOOL refresh)
 {
 	font_settings.lfHeight = size;
 	UpdateFont();
 }
 
-
-
-void CTextDisplay::SetTextColor( COLORREF color, BOOL refresh )
+void CTextDisplay::SetTextColor(COLORREF color, BOOL refresh)
 {
 	text_color = color;
 
-	if ( refresh )
+	if (refresh)
 		RedrawWindow();
 }
-
-
 
 //
 // Setting whether the text is bold.
 //
-void CTextDisplay::Bold( BOOL enable, BOOL refresh )
+void CTextDisplay::Bold(BOOL enable, BOOL refresh)
 {
-	if ( enable )
+	if (enable)
 		font_settings.lfWeight = FW_BOLD;
 	else
 		font_settings.lfWeight = FW_NORMAL;
@@ -326,14 +287,12 @@ void CTextDisplay::Bold( BOOL enable, BOOL refresh )
 	UpdateFont();
 }
 
-
-
 //
 // Setting whether the text is italic.
 //
-void CTextDisplay::Italic( BOOL enable, BOOL refresh )
+void CTextDisplay::Italic(BOOL enable, BOOL refresh)
 {
-	if ( enable )
+	if (enable)
 		font_settings.lfItalic = TRUE;
 	else
 		font_settings.lfItalic = FALSE;
@@ -341,14 +300,12 @@ void CTextDisplay::Italic( BOOL enable, BOOL refresh )
 	UpdateFont();
 }
 
-
-
 //
 // Setting whether the text is underlined.
 //
-void CTextDisplay::Underline( BOOL enable, BOOL refresh )
+void CTextDisplay::Underline(BOOL enable, BOOL refresh)
 {
-	if ( enable )
+	if (enable)
 		font_settings.lfUnderline = TRUE;
 	else
 		font_settings.lfUnderline = FALSE;
@@ -356,15 +313,12 @@ void CTextDisplay::Underline( BOOL enable, BOOL refresh )
 	UpdateFont();
 }
 
-
-
 //
 // Setting the text's alignment in the custom control box.
 //
-void CTextDisplay::SetTextAlignment( TextAlignment alignment, BOOL refresh )
+void CTextDisplay::SetTextAlignment(TextAlignment alignment, BOOL refresh)
 {
-	switch ( alignment )
-	{
+	switch (alignment) {
 	case AlignLeft:
 		text_alignment = TA_LEFT;
 		text_position = text_box.left;
@@ -379,6 +333,6 @@ void CTextDisplay::SetTextAlignment( TextAlignment alignment, BOOL refresh )
 		break;
 	}
 
-	if ( refresh )
+	if (refresh)
 		RedrawWindow();
 }

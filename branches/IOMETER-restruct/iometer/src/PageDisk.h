@@ -60,71 +60,67 @@
 #ifndef PAGEDISK_DEFINED
 #define PAGEDISK_DEFINED
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CPageDisk dialog
 
 #include "GalileoApp.h"
 #include "PageTarget.h"
 
-class CPageDisk : public CPropertyPage
-{
+class CPageDisk:public CPropertyPage {
 	DECLARE_DYNCREATE(CPageDisk)
-
 // Construction
-public:
+      public:
 	CPageDisk();
 	~CPageDisk();
 
 	void Reset();
-	void EnableWindow( BOOL enable = TRUE );
+	void EnableWindow(BOOL enable = TRUE);
 	void ShowData();
 	void ShowTargets();
 // Dialog Data
 	//{{AFX_DATA(CPageDisk)
 	enum { IDD = IDD_DISKS };
-	CEdit	m_EQueueDepth;
-	CSpinButtonCtrl	m_SConnectionRate;
-	CButton	m_CConnectionRate;
-	CTreeCtrl	m_TTargets;
-	CEdit	m_EConnectionRate;
-	CEdit	m_EDiskStart;
-	CEdit	m_EDiskSize;
+	CEdit m_EQueueDepth;
+	CSpinButtonCtrl m_SConnectionRate;
+	CButton m_CConnectionRate;
+	CTreeCtrl m_TTargets;
+	CEdit m_EConnectionRate;
+	CEdit m_EDiskStart;
+	CEdit m_EDiskSize;
 	//}}AFX_DATA
 
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPageDisk)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
-	void	SetFocusUp();
-	void	SetFocusDown();
-	void	SetFocusHome();
-	void	SetFocusEnd();
+      protected:
+	void SetFocusUp();
+	void SetFocusDown();
+	void SetFocusHome();
+	void SetFocusEnd();
 
-	void	ShowConnectionRate();
-	void	ShowTargetSelection();
-	void	ShowSettings();
-	void	ShowFocus();
-	void	StoreTargetSelection();
+	void ShowConnectionRate();
+	void ShowTargetSelection();
+	void ShowSettings();
+	void ShowFocus();
+	void StoreTargetSelection();
 
-	void	SelectRange( HTREEITEM hstart, HTREEITEM hend, BOOL replace = TRUE, 
-						TargetSelType state = TargetChecked );
-	void	SetSelectionCheck( HTREEITEM hitem, TargetSelType selection );
-	TargetSelType	GetSelectionCheck( HTREEITEM hitem );
-	void	SetAllCheck( TargetSelType selection );
-	void	KeyMultiSel( WORD wVKey );
+	void SelectRange(HTREEITEM hstart, HTREEITEM hend, BOOL replace = TRUE, TargetSelType state = TargetChecked);
+	void SetSelectionCheck(HTREEITEM hitem, TargetSelType selection);
+	TargetSelType GetSelectionCheck(HTREEITEM hitem);
+	void SetAllCheck(TargetSelType selection);
+	void KeyMultiSel(WORD wVKey);
 
-	void	EditSetfocus( CEdit* edit );
+	void EditSetfocus(CEdit * edit);
 
-	CImageList	m_ImageList;
-	HTREEITEM	selected;		// The last selected item, or NULL if the 
-								// selection has not changed.
-	HTREEITEM	highlighted;	// The current selection when using the keyboard.
+	CImageList m_ImageList;
+	HTREEITEM selected;	// The last selected item, or NULL if the 
+	// selection has not changed.
+	HTREEITEM highlighted;	// The current selection when using the keyboard.
 
 	// Generated message map functions
 	//{{AFX_MSG(CPageDisk)
@@ -135,18 +131,17 @@ protected:
 	afx_msg void OnSetfocusEQueueDepth();
 	afx_msg void OnSetfocusEDiskSize();
 	afx_msg void OnSetfocusEDiskStart();
-	afx_msg void OnKeydownTTargets(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnClickTTargets(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKeydownTTargets(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnClickTTargets(NMHDR * pNMHDR, LRESULT * pResult);
 	afx_msg void OnKillfocusEConnectionRate();
 	afx_msg void OnSetfocusEConnectionRate();
-	afx_msg void OnDeltaposSConnectionRate(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDeltaposSConnectionRate(NMHDR * pNMHDR, LRESULT * pResult);
 	afx_msg void OnCConnectionRate();
-	afx_msg void OnSetfocusTTargets(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSelchangingTTargets(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnSetfocusTTargets(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnSelchangingTTargets(NMHDR * pNMHDR, LRESULT * pResult);
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 
 };
-
 
 #endif

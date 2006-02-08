@@ -4,10 +4,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Job .......: Interface for the abstract class CQ (Completion       ## */ 
-/* ##               Queue), which is used to manage completions.          ## */ 
-/* ##               Inherited subclasses can be blocking or non-blocking, ## */ 
-/* ##               allowing the use of completion polling or waiting.    ## */ 
+/* ##  Job .......: Interface for the abstract class CQ (Completion       ## */
+/* ##               Queue), which is used to manage completions.          ## */
+/* ##               Inherited subclasses can be blocking or non-blocking, ## */
+/* ##               allowing the use of completion polling or waiting.    ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -67,26 +67,21 @@
 #ifndef	CQ_DEFINED
 #define	CQ_DEFINED
 
-
-
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include <afxwin.h>
+#include <afxwin.h>
 #endif
 #include "IOTransfers.h"
 #include "IOCommon.h"
 
+class CQ {
+      public:
 
-
-class CQ
-{
-public:
-
-	virtual	ReturnVal	GetStatus( int *bytes, int *data, int delay ) = 0;
+	virtual ReturnVal GetStatus(int *bytes, int *data, int delay) = 0;
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	virtual BOOL		SetQueueSize(int size) { return FALSE; };
+	virtual BOOL SetQueueSize(int size) {
+		return FALSE;
+	};
 #endif
 };
 
-
-
-#endif // CQ_DEFINED
+#endif				// CQ_DEFINED

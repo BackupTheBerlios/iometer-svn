@@ -59,21 +59,16 @@
 #ifndef	TARGETVI_DEFINED
 #define	TARGETVI_DEFINED
 
-
-
 #include "IOTarget.h"
 #include "NetVI.h"
 #include "IOCQVI.h"
 #include "Network.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Used to indicate that immediate data contains information used
 // to maintain control flow.
 #define CONTROL_MESSAGE 0xFFFFFFFF
 ///////////////////////////////////////////////////////////////////////////////
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Abstracts VI connections used as targets of I/O requests.
@@ -82,33 +77,30 @@
 // this class.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class TargetVI : public Target
-{
-public:
+class TargetVI:public Target {
+      public:
 
 	TargetVI();
 	~TargetVI();
 
-
 	///////////////////////////////////////////////////////////////////////////
 	// Public functions used to manage a VI target.
 	//
-	BOOL		Initialize( Target_Spec *target_info, CQ *completion_queue );
+	BOOL Initialize(Target_Spec * target_info, CQ * completion_queue);
 	//
-	BOOL		Open( volatile TestState *test_state, int open_flag = 0 );
-	BOOL		Close( volatile TestState *test_state );
+	BOOL Open(volatile TestState * test_state, int open_flag = 0);
+	BOOL Close(volatile TestState * test_state);
 	//
-	ReturnVal	Read( LPVOID buffer, Transaction *trans );
-	ReturnVal	Write( LPVOID buffer, Transaction *trans );
-private:
-	ReturnVal	Send( Transaction *trans );
-	ReturnVal	Receive( Transaction *trans );
-	ReturnVal	SendControl();
+	ReturnVal Read(LPVOID buffer, Transaction * trans);
+	ReturnVal Write(LPVOID buffer, Transaction * trans);
+      private:
+	 ReturnVal Send(Transaction * trans);
+	ReturnVal Receive(Transaction * trans);
+	ReturnVal SendControl();
 	//
-	ReturnVal	PostRecv();
+	ReturnVal PostRecv();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Pointers to descriptors to use for I/O requests and related information.
@@ -117,34 +109,32 @@ private:
 	// for sends and receives.  Both VI sends and receives complete in the
 	// order that they are posted with respect to other sends/receives.
 	//
-	VIP_DESCRIPTOR	*descriptors;
-	VIP_MEM_HANDLE	descriptor_handle;
-	int				descriptor_count;
-	int				send_count;
-	int				recv_count;
+	VIP_DESCRIPTOR *descriptors;
+	VIP_MEM_HANDLE descriptor_handle;
+	int descriptor_count;
+	int send_count;
+	int recv_count;
 	//
 	// First half of descriptors are allocated for sends.
-	VIP_DESCRIPTOR	*send_descriptors;
-	int				next_send_index;
+	VIP_DESCRIPTOR *send_descriptors;
+	int next_send_index;
 	//
 	// Second half of descriptors are allocated for receives.
-	VIP_DESCRIPTOR	*recv_descriptors;
-	int				next_recv_index;
+	VIP_DESCRIPTOR *recv_descriptors;
+	int next_recv_index;
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-
 	// Is this the client or server side of the connection.  Note that this is
 	// independent of VI client/server or peer-to-peer connections.
-	BOOL			is_server;
-	ReadWriteType	lastIO;		// Was the last I/O a read or write?
-
+	BOOL is_server;
+	ReadWriteType lastIO;	// Was the last I/O a read or write?
 
 	///////////////////////////////////////////////////////////////////////////
 	// Resouces used to perform I/O to a VI target.
 	//
-public:
-	NetVI		vi;
+      public:
+	 NetVI vi;
 	// Information needed to maintain connection information over a VI.  Due to VI
 	// pre-posting requirements, the VI completion queue needs to intercept and
 	// process control flow messages.  When this occurs, it updates the following
@@ -152,50 +142,47 @@ public:
 	//
 	// Number of receives that may be posted.  Due to pre-posting requirements
 	// all receives may be outstanding when we go to post another.
-	int		available_receives;
+	int available_receives;
 	//
 	// Number of receives that have been posted, but have not yet completed.
 	// This number will be negative if receives complete *before* being 
 	// requested.  (This can happen due to pre-posting requirements.)
-	int		requested_receives;
+	int requested_receives;
 	//
 	// Indicates that a control message was received signalling that additional
 	// receives have been posted on the remote side.  When set, this (local) 
 	// side of the connection updates the number of available sends.
-	BOOL	more_sends_available;
+	BOOL more_sends_available;
 	//
 	// Total number of I/Os that can be outstanding at any one time, including
 	// sends, receives, and any control messages.
-	int		outstanding_ios;
+	int outstanding_ios;
 	//
-private:
+      private:
 	// The total number of sends that are available to be sent.  If more than
 	// this number are sent, we cannot guarantee that the remote side has pre-
 	// posted enough receives to get them all.
-	int		available_sends;
+	int available_sends;
 	//
 	// Manage the number of receives that can be posted before we need to send
 	// notification to the remote side that additional receives have been pre-
 	// posted.
-	int		control_countdown;
-	int		control_countdown_start;
+	int control_countdown;
+	int control_countdown_start;
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// VI buffer and handle to buffer memory must be set before the target is
 	// initialized.
-public:
-	VINic	vi_nic;
+      public:
+	 VINic vi_nic;
 	//
-	char	*data_buffer;
-	int		data_buffer_size;
-private:
-	VIP_MEM_HANDLE	data_buffer_handle;
+	char *data_buffer;
+	int data_buffer_size;
+      private:
+	 VIP_MEM_HANDLE data_buffer_handle;
 	//
 	///////////////////////////////////////////////////////////////////////////
 };
 
-
-
-#endif // TARGETVI_DEFINED
+#endif				// TARGETVI_DEFINED

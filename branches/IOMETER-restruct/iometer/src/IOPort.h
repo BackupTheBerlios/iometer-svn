@@ -75,9 +75,11 @@
 #define PORT_DEFINED
 
 #ifdef IOMTR_OSFAMILY_WINDOWS
-namespace std {}
+namespace std {
+}
 #endif
 using namespace std;
+
 #include <sstream>
 
 #include "IOCommon.h"
@@ -88,7 +90,6 @@ using namespace std;
 // still appear.
 #define PORT_DETAILS	0
 
-
 #define PORT_TYPE_INVALID	0
 #define PORT_TYPE_TCP		1
 
@@ -98,59 +99,55 @@ using namespace std;
 
 #define PORT_ERROR			(~(DWORDLONG)0)
 
-class Port
-{
-public:
-	// constructor and destructor	
-	Port( BOOL synchronous = TRUE );
-	virtual	~Port();
+class Port {
+      public:
+	// constructor and destructor   
+	Port(BOOL synchronous = TRUE);
+	virtual ~ Port();
 
 	// public functions common to all Ports (pure virtual, not implemented by Port)
-	virtual	BOOL		Create( char* port_name = NULL, char* remote_name = NULL, 
-					DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0 ) = 0;
-	virtual BOOL		Connect( char* port_name = NULL, 
-							unsigned short port_number = WELL_KNOWN_TCP_PORT ) = 0;
-	virtual BOOL		Accept() = 0;
-	virtual BOOL		Disconnect() = 0;
-	virtual BOOL		Close() = 0;
-	virtual DWORDLONG	Receive( LPVOID data, DWORD size = MESSAGE_SIZE ) = 0;
-	virtual DWORDLONG	Send( LPVOID data, DWORD size = MESSAGE_SIZE ) = 0;
-	virtual DWORD		Peek() = 0;
+	virtual BOOL Create(char *port_name = NULL, char *remote_name = NULL,
+			    DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0) = 0;
+	virtual BOOL Connect(char *port_name = NULL, unsigned short port_number = WELL_KNOWN_TCP_PORT) = 0;
+	virtual BOOL Accept() = 0;
+	virtual BOOL Disconnect() = 0;
+	virtual BOOL Close() = 0;
+	virtual DWORDLONG Receive(LPVOID data, DWORD size = MESSAGE_SIZE) = 0;
+	virtual DWORDLONG Send(LPVOID data, DWORD size = MESSAGE_SIZE) = 0;
+	virtual DWORD Peek() = 0;
 
 	// public functions common to all asynchronous Ports
 	//     (implemented by Port)
-	virtual BOOL		IsAcceptComplete();
-	virtual BOOL		IsReceiveComplete();
-	virtual BOOL		IsSendComplete();
+	virtual BOOL IsAcceptComplete();
+	virtual BOOL IsReceiveComplete();
+	virtual BOOL IsSendComplete();
 	//     (pure virtual, not implemented by Port)
-	virtual BOOL		GetAcceptResult() = 0;
-	virtual DWORDLONG	GetReceiveResult() = 0;
-	virtual DWORDLONG	GetSendResult() = 0;
+	virtual BOOL GetAcceptResult() = 0;
+	virtual DWORDLONG GetReceiveResult() = 0;
+	virtual DWORDLONG GetSendResult() = 0;
 
 	// public data members common to all Ports
-	char				network_name[MAX_NETWORK_NAME];
-	unsigned short		network_port;	// used only by PortTCP (was ignored by PortPipe)
-	int					type; // PORT_TYPE_INVALID or PORT_TYPE_TCP
+	char network_name[MAX_NETWORK_NAME];
+	unsigned short network_port;	// used only by PortTCP (was ignored by PortPipe)
+	int type;		// PORT_TYPE_INVALID or PORT_TYPE_TCP
 
-protected:
+      protected:
 	// private data members common to all Ports
-	BOOL				synchronous;
-	char				name[MAX_NETWORK_NAME];
-	ostringstream			*errmsg;
+	 BOOL synchronous;
+	char name[MAX_NETWORK_NAME];
+	ostringstream *errmsg;
 
 	// private functions common to all Ports (implemented by Port)
-	virtual void		OutputErrMsg();
+	virtual void OutputErrMsg();
 
 	// private functions common to all asynchronous Ports (implemented by Port)
-	virtual BOOL		InitOverlapped( OVERLAPPED *olap );
-	virtual BOOL		IsOperationComplete( OVERLAPPED *olap );
+	virtual BOOL InitOverlapped(OVERLAPPED * olap);
+	virtual BOOL IsOperationComplete(OVERLAPPED * olap);
 
 	// private data members common to all asynchronous Ports
-	OVERLAPPED			accept_overlapped;
-	OVERLAPPED			receive_overlapped;
-	OVERLAPPED			send_overlapped;
+	OVERLAPPED accept_overlapped;
+	OVERLAPPED receive_overlapped;
+	OVERLAPPED send_overlapped;
 };
-
-
 
 #endif

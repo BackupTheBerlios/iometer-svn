@@ -71,11 +71,9 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include <afx.h>
+#include <afx.h>
 #endif
-
 
 #include "Network.h"
 
@@ -93,23 +91,19 @@ Network::~Network()
 	delete errmsg;
 }
 
-
-
 //
 // Utility function: output the "errmsg" message in an appropriate manner for the
 // current environment (Dynamo or Iometer).
 //
 void Network::OutputErrMsg()
 {
-	if ( !errmsg )
-	{
+	if (!errmsg) {
 		errmsg = new ostringstream;
 		*errmsg << "Port::OutputErrMsg() called with invalid errmsg value!" << ends;
 	}
-
 #if defined(_GALILEO_)
 	// Iometer
-	ErrorMessage( errmsg->str().c_str() );
+	ErrorMessage(errmsg->str().c_str());
 #else
 	// Dynamo
 	cout << errmsg->str() << endl;
@@ -117,11 +111,12 @@ void Network::OutputErrMsg()
 
 	// str() returns pointer to buffer and freezes it, we must call freeze(FALSE) to 
 	// unfreeze the buffer before we can delete the object
-        // ---
+	// ---
 	// REMARK: freeze() no longer needed because new are now
-	// using ostringstream instead of ostrstream.	
+	// using ostringstream instead of ostrstream.   
 	//
 	// errmsg->rdbuf()->freeze( FALSE );
 	delete errmsg;
+
 	errmsg = new ostringstream;
 }

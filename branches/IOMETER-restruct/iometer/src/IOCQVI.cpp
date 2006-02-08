@@ -64,19 +64,15 @@
 #include "IOTargetVI.h"
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include <iostream>
- using namespace std;
+#include <iostream>
+using namespace std;
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
- #include <iostream.h>
+#include <iostream.h>
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-
-#define CQVI_DETAILS 0 // Set to 1 for additional debug messages.
-
-
-
+#define CQVI_DETAILS 0		// Set to 1 for additional debug messages.
 
 //
 // Initializing VI completion queue.
@@ -87,35 +83,28 @@ CQVI::CQVI()
 	vi_target = NULL;
 }
 
-
-
 //
 // Creating the CQ on the given VI NIC.
 //
-BOOL CQVI::Create( VINic *vi_nic, TargetVI *target )
+BOOL CQVI::Create(VINic * vi_nic, TargetVI * target)
 {
 	VIP_RETURN result;
-	#if CQVI_DETAILS
-		cout << "Creating VI CQ for VI NIC " 
-			<< vi_nic->nic_attributes.Name << endl;
-	#endif
+
+#if CQVI_DETAILS
+	cout << "Creating VI CQ for VI NIC " << vi_nic->nic_attributes.Name << endl;
+#endif
 
 	// Create a completion queue for the NIC.  The completion queue must be
 	// able to handle the specified number of oustanding I/Os.
-	if ( (result = vipl.VipCreateCQ( vi_nic->nic, target->outstanding_ios,
-		&completion_queue )) != VIP_SUCCESS )
-	{
-		cout << "*** Unable to create VI completion queue: " << vipl.Error( result ) << endl;
+	if ((result = vipl.VipCreateCQ(vi_nic->nic, target->outstanding_ios, &completion_queue)) != VIP_SUCCESS) {
+		cout << "*** Unable to create VI completion queue: " << vipl.Error(result) << endl;
 		return FALSE;
 	}
-
 	// Record which target this completion is associated with.
 	vi_target = target;
 
 	return TRUE;
 }
-
-
 
 //
 // Destroying the CQ.
@@ -124,16 +113,15 @@ BOOL CQVI::Destroy()
 {
 	VIP_RETURN result;
 
-	#if CQVI_DETAILS
-		cout << "Destroying VI CQ." << endl;
-	#endif
+#if CQVI_DETAILS
+	cout << "Destroying VI CQ." << endl;
+#endif
 
 	// Destroy the completion queue.
-	result = vipl.VipDestroyCQ( completion_queue );
+	result = vipl.VipDestroyCQ(completion_queue);
 
-	if ( result != VIP_SUCCESS )
-	{
-		cout << "*** Unable to VI completion queue: " << vipl.Error( result ) << endl; 
+	if (result != VIP_SUCCESS) {
+		cout << "*** Unable to VI completion queue: " << vipl.Error(result) << endl;
 		return FALSE;
 	}
 
@@ -142,72 +130,65 @@ BOOL CQVI::Destroy()
 	return TRUE;
 }
 
-
-
 //
 // Getting and returning that status of any completed I/O calls.
 //
-ReturnVal CQVI::GetStatus( int *bytes, int *data, int delay )
+ReturnVal CQVI::GetStatus(int *bytes, int *data, int delay)
 {
-	VIP_VI_HANDLE	vi;
-	VIP_BOOLEAN		receive_done;
-	VIP_DESCRIPTOR	*descriptor;
-	VIP_RETURN		result;
+	VIP_VI_HANDLE vi;
+	VIP_BOOLEAN receive_done;
+	VIP_DESCRIPTOR *descriptor;
+	VIP_RETURN result;
 
-	#if CQVI_DETAILS
-		cout << "Checking VI completion queue." << endl;
-	#endif
+#if CQVI_DETAILS
+	cout << "Checking VI completion queue." << endl;
+#endif
 
 	// Verify that completion queue exists.  If not, it needs to be created
 	// and then it can be retried.  This happens when testing connection rate.
-	if ( !completion_queue )
+	if (!completion_queue)
 		return ReturnRetry;
 
 	// Check completion queue for completed I/Os.
-	if ( delay )
-		result = vipl.VipCQWait( completion_queue, delay, &vi, &receive_done );
+	if (delay)
+		result = vipl.VipCQWait(completion_queue, delay, &vi, &receive_done);
 	else
-		result = vipl.VipCQDone( completion_queue, &vi, &receive_done );
+		result = vipl.VipCQDone(completion_queue, &vi, &receive_done);
 
-	switch( result )
-	{
-	// An I/O has completed, process it.
+	switch (result) {
+		// An I/O has completed, process it.
 	case VIP_SUCCESS:
-		#if CQVI_DETAILS
-			cout << "   I/O has been posted to VI completion queue." << endl;
-		#endif
+#if CQVI_DETAILS
+		cout << "   I/O has been posted to VI completion queue." << endl;
+#endif
 
-		if ( receive_done == VIP_TRUE )
-		{
+		if (receive_done == VIP_TRUE) {
 			// Getting the completed receive.
-			if ( vipl.VipRecvDone( vi, &descriptor ) != VIP_SUCCESS )
-			{
+			if (vipl.VipRecvDone(vi, &descriptor) != VIP_SUCCESS) {
 				cout << "*** Unable to successfully complete receive." << endl;
 				return ReturnError;
 			}
-		}
-		else
-		{
+		} else {
 			// Getting the completed send.
-			if ( vipl.VipSendDone( vi, &descriptor ) != VIP_SUCCESS )
-			{
+			if (vipl.VipSendDone(vi, &descriptor) != VIP_SUCCESS) {
 				cout << "*** Unable to successfully complete send." << endl;
 				return ReturnError;
 			}
 		}
 		break;
 
-	// No I/O is done yet.
-	case VIP_NOT_DONE: case VIP_TIMEOUT:
-		#if CQVI_DETAILS
-			cout << "   no completions posted within the timeout period." << endl;
-		#endif
+		// No I/O is done yet.
+	case VIP_NOT_DONE:
+	case VIP_TIMEOUT:
+#if CQVI_DETAILS
+		cout << "   no completions posted within the timeout period." << endl;
+#endif
 		return ReturnTimeout;
 
 	default:
-		#if CQVI_DETAILS
-			cout << "   error checking completion queue: " << vipl.Error( result ) << endl;
-		#endif
+#if CQVI_DETAILS
+		cout << "   error checking completion queue: " << vipl.Error(result) << endl;
+#endif
 		return ReturnError;
 	}
 
@@ -216,17 +197,15 @@ ReturnVal CQVI::GetStatus( int *bytes, int *data, int delay )
 	*data = descriptor->CS.ImmediateData;
 
 	// See if the completion was for an I/O request or control data.
-	if ( *data != CONTROL_MESSAGE )
-	{
+	if (*data != CONTROL_MESSAGE) {
 		// It was for an I/O request.
-		#if CQVI_DETAILS
-			cout << "   completed " << (receive_done ? "receive":"send") 
-				<< " for transaction " << *data << endl;
-		#endif
+#if CQVI_DETAILS
+		cout << "   completed " << (receive_done ? "receive" : "send")
+		    << " for transaction " << *data << endl;
+#endif
 
 		// Perform additional processing on completed receives.
-		if ( receive_done == VIP_TRUE )
-		{
+		if (receive_done == VIP_TRUE) {
 			// Increment the number of available receives.
 			vi_target->available_receives++;
 
@@ -236,29 +215,27 @@ ReturnVal CQVI::GetStatus( int *bytes, int *data, int delay )
 			// because the receives are pre-posted.)  In this case, signal a
 			// retry to indicate that the I/O should not be processed as
 			// complete until after it's been requested.
-			if ( vi_target->requested_receives-- <= 0 )
-			{
-				#if CQVI_DETAILS
-					cout << "   receive has not been requested yet." << endl;
-				#endif
+			if (vi_target->requested_receives-- <= 0) {
+#if CQVI_DETAILS
+				cout << "   receive has not been requested yet." << endl;
+#endif
 				return ReturnRetry;
 			}
 		}
 
 		return ReturnSuccess;
 	}
-
 	//
 	// Message contains information needed to maintain pre-posting receive
 	// requirements.  Intercept these and update the VI connection management
 	// information.
 	//
-	#if CQVI_DETAILS
-		cout << "   completion is for maintaining flow control." << endl;
-	#endif
+#if CQVI_DETAILS
+	cout << "   completion is for maintaining flow control." << endl;
+#endif
 
 	// If we received a control message, update that more sends are available.
-	if ( receive_done != VIP_FALSE )
+	if (receive_done != VIP_FALSE)
 		vi_target->more_sends_available = TRUE;
 
 	// Return that no data messages completed, but we may not have waited

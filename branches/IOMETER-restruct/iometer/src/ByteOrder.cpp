@@ -72,22 +72,17 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "IOCommon.h"
 #include "IOTest.h"
 #include "IOMessage.h"
 
-
-
 inline void rotate(char *ptr, int size);
-template <class T> inline void reorder(T&);
-inline void reorder(CPU_Results&, int);
-inline void reorder(Net_Results&, int);
-inline void reorder(Raw_Result&);
-void reorder(Message&);
-void reorder(Data_Message&, int union_type, int send_recv);
-
-
+template < class T > inline void reorder(T &);
+inline void reorder(CPU_Results &, int);
+inline void reorder(Net_Results &, int);
+inline void reorder(Raw_Result &);
+void reorder(Message &);
+void reorder(Data_Message &, int union_type, int send_recv);
 
 #if defined(_DEBUG)
 void Dump_CPU_Results(struct CPU_Results *res)
@@ -118,7 +113,7 @@ void Dump_Manager_Results(struct Manager_Results *res)
 {
 	if (!res)
 		return;
-	cout << "Dump manager result: "<< endl;
+	cout << "Dump manager result: " << endl;
 	cout << " time_counter = " << res->time_counter << endl;
 	Dump_CPU_Results(&(res->cpu_results));
 	Dump_Net_Results(&(res->net_results));
@@ -128,7 +123,7 @@ void Dump_Raw_Result(struct Raw_Result *res)
 {
 	if (!res)
 		return;
-	cout << "Dump raw result: "<< endl;
+	cout << "Dump raw result: " << endl;
 	cout << "   " << "bytes_read =" << res->bytes_read << endl;
 	cout << "   " << "bytes_written =" << res->bytes_written << endl;
 	cout << "   " << "read_count =" << res->read_count << endl;
@@ -146,15 +141,13 @@ void Dump_Raw_Result(struct Raw_Result *res)
 	cout << "   " << "transaction_latency_sum =" << res->transaction_latency_sum << endl;
 	cout << "   " << "connection_latency_sum =" << res->connection_latency_sum << endl;
 	cout << "   " << "counter_time =" << res->counter_time << endl;
-	cout << "Dump raw result end. "<< endl;
+	cout << "Dump raw result end. " << endl;
 }
 #endif
 
-
-
 #if defined(IOMTR_OS_LINUX) && defined(IOMTR_CPU_XSCALE)
 //
-//	This can be optimized definitely.
+//      This can be optimized definitely.
 //
 /* This is the standard way, leave here for understanding its purpose.
 void double_wordswap(double *d)
@@ -175,7 +168,7 @@ void double_wordswap(double *d)
 void double_wordswap(double *d)
 {
 	unsigned long *c, t;
-	
+
 	c = (unsigned long *)d;
 	t = *c;
 	*c = *(c + 1);
@@ -201,7 +194,7 @@ void Manager_Results_double_swap(struct Manager_Results *p)
 void CPU_Results_double_swap(struct CPU_Results *p)
 {
 	int i, j;
-	
+
 	for (i = 0; i < MAX_CPUS; i++)
 		for (j = 0; j < CPU_RESULTS; j++)
 			double_wordswap(&(p->CPU_utilization[i][j]));
@@ -210,7 +203,7 @@ void CPU_Results_double_swap(struct CPU_Results *p)
 void Net_Results_double_swap(struct Net_Results *p)
 {
 	int i, j;
-	
+
 	for (i = 0; i < TCP_RESULTS; i++)
 		double_wordswap(&(p->tcp_stats[i]));
 	for (i = 0; i < MAX_NUM_INTERFACES; i++)
@@ -219,15 +212,12 @@ void Net_Results_double_swap(struct Net_Results *p)
 }
 #endif
 
-
-
 inline void rotate(char *ptr, int size)
 {
 	int i;
 	int sz = size - 1;
 
-	for (i=0; i<(size/2); i++)
-	{
+	for (i = 0; i < (size / 2); i++) {
 		ptr[i] = ptr[i] ^ ptr[sz - i];
 		ptr[sz - i] = ptr[i] ^ ptr[sz - i];
 		ptr[i] = ptr[i] ^ ptr[sz - i];
@@ -235,21 +225,21 @@ inline void rotate(char *ptr, int size)
 	return;
 }
 
-template <class T> inline void reorder(T& tref)
+template < class T > inline void reorder(T & tref)
 {
 	(void)rotate((char *)&tref, sizeof(T));
 	return;
 }
 
-inline void reorder(CPU_Results& var, int send_recv)
+inline void reorder(CPU_Results & var, int send_recv)
 {
 	int i, j;
 
 	if (send_recv == RECV)
 		reorder(var.count);
 
-	for (i=0; i<var.count; i++)
-		for (j=0; j<CPU_RESULTS; j++)
+	for (i = 0; i < var.count; i++)
+		for (j = 0; j < CPU_RESULTS; j++)
 			reorder(var.CPU_utilization[i][j]);
 
 	if (send_recv == SEND)
@@ -258,18 +248,18 @@ inline void reorder(CPU_Results& var, int send_recv)
 	return;
 }
 
-inline void reorder(Net_Results& var, int send_recv)
+inline void reorder(Net_Results & var, int send_recv)
 {
-	int i,j;
+	int i, j;
 
 	if (send_recv == RECV)
 		reorder(var.ni_count);
 
-	for (i=0; i<TCP_RESULTS; i++)
+	for (i = 0; i < TCP_RESULTS; i++)
 		reorder(var.tcp_stats[i]);
 
-	for (i=0; i<var.ni_count; i++)
-		for (j=0; j<NI_RESULTS; j++)
+	for (i = 0; i < var.ni_count; i++)
+		for (j = 0; j < NI_RESULTS; j++)
 			reorder(var.ni_stats[i][j]);
 
 	if (send_recv == SEND)
@@ -278,7 +268,7 @@ inline void reorder(Net_Results& var, int send_recv)
 	return;
 }
 
-void reorder(Raw_Result& var)
+void reorder(Raw_Result & var)
 {
 	reorder(var.bytes_read);
 	reorder(var.bytes_written);
@@ -305,15 +295,14 @@ void reorder(Raw_Result& var)
 	return;
 }
 
-
-void reorder(Message& var)
+void reorder(Message & var)
 {
 	(void)reorder(var.purpose);
 	(void)reorder(var.data);
 	return;
 }
 
-void reorder(Data_Message &var, int uniontype, int send_recv)
+void reorder(Data_Message & var, int uniontype, int send_recv)
 {
 	int i;
 
@@ -321,8 +310,7 @@ void reorder(Data_Message &var, int uniontype, int send_recv)
 	if (send_recv == RECV)
 		reorder(var.count);
 
-	switch(uniontype)
-	{
+	switch (uniontype) {
 	case 0:
 		return;
 		break;
@@ -342,39 +330,33 @@ void reorder(Data_Message &var, int uniontype, int send_recv)
 #ifdef _DEBUG
 		cout << "Target_Spec count: " << var.count << endl;
 #endif
-		for (i = 0; i < var.count; i++)
-		{
+		for (i = 0; i < var.count; i++) {
 			// must be first after recv.
 			if (send_recv == RECV)
 				reorder(var.data.targets[i].type);
 
 			// Is target Disk/Network/Vi type ?
-			if ( IsType(var.data.targets[i].type, GenericDiskType) )
-			{
+			if (IsType(var.data.targets[i].type, GenericDiskType)) {
 				reorder(var.data.targets[i].disk_info.sector_size);
 				reorder(var.data.targets[i].disk_info.maximum_size);
 				reorder(var.data.targets[i].disk_info.starting_sector);
 			}
 
-			if ( IsType(var.data.targets[i].type, GenericNetType) )
-			{
+			if (IsType(var.data.targets[i].type, GenericNetType)) {
 				reorder(var.data.targets[i].tcp_info.local_port);
 				reorder(var.data.targets[i].tcp_info.remote_port);
 			}
 
-			if ( IsType(var.data.targets[i].type, GenericVIType) )
-			{
+			if (IsType(var.data.targets[i].type, GenericVIType)) {
 #ifdef _DEBUG
 				cerr << "WARNING: VI data marshalling not supported yet." << endl;
 #endif
 			}
-
 			// Now re-order the other stuff.
 			reorder(var.data.targets[i].queue_depth);
 			reorder(var.data.targets[i].test_connection_rate);
 			reorder(var.data.targets[i].trans_per_conn);
 			reorder(var.data.targets[i].random);
-
 
 			// Must be last before send. Else Sparc Solaris will be confused.
 			if (send_recv == SEND)
@@ -388,8 +370,7 @@ void reorder(Data_Message &var, int uniontype, int send_recv)
 		cout << "Test_Spec count: " << var.count << endl;
 #endif
 		reorder(var.data.spec.default_assignment);
-		for (i = 0; i < MAX_ACCESS_SPECS; i++)
-		{
+		for (i = 0; i < MAX_ACCESS_SPECS; i++) {
 			reorder(var.data.spec.access[i].of_size);
 			reorder(var.data.spec.access[i].reads);
 			reorder(var.data.spec.access[i].random);
@@ -421,7 +402,7 @@ void reorder(Data_Message &var, int uniontype, int send_recv)
 		for (i = 0; i < MAX_SNAPSHOTS; i++)
 			reorder(var.data.worker_results.time[i]);
 
-		if (send_recv == RECV)					// never used as of now.
+		if (send_recv == RECV)	// never used as of now.
 			reorder(var.data.worker_results.target_results.count);
 
 		for (i = 0; i < var.data.worker_results.target_results.count; i++)
@@ -434,7 +415,7 @@ void reorder(Data_Message &var, int uniontype, int send_recv)
 	default:
 		return;
 		break;
-	} // end of switch(uniontype)....
+	}			// end of switch(uniontype)....
 
 	// Must be last before send. Else Sparc Solaris will be confused.
 	if (send_recv == SEND)
@@ -442,5 +423,3 @@ void reorder(Data_Message &var, int uniontype, int send_recv)
 
 	return;
 }
-
-

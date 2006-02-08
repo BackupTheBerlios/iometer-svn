@@ -61,66 +61,63 @@
 #ifndef ICFOPENDIALOG_DEFINED
 #define ICFOPENDIALOG_DEFINED
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CICFOpenDialog dialog
 
-class CICFOpenDialog : public CFileDialog
-{
+class CICFOpenDialog:public CFileDialog {
 	DECLARE_DYNAMIC(CICFOpenDialog)
-
 // Construction
-public:
+      public:
 	CICFOpenDialog();
 
 // Dialog Data
 	//{{AFX_DATA(CICFOpenDialog)
 	enum { IDD = IDD_FILEOPEN_OPTS };
-	CButton	m_CkTestSetup;
-	CButton	m_CkResultsDisplay;
-	CButton	m_CkGlobalAccessSpec;
-	CButton	m_CkManagerWorker;
-	CButton	m_CkAssignAccessSpec;
-	CButton	m_CkAssignTargets;
-	CButton	m_RMerge;
-	CButton	m_ROverwrite;
-	BOOL	isCkAssignAccessSpec;
-	BOOL	isCkTestSetup;
-	BOOL	isCkResultsDisplay;
-	BOOL	isCkManagerWorker;
-	BOOL	isCkGlobalAccessSpec;
-	BOOL	isCkAssignTargets;
+	CButton m_CkTestSetup;
+	CButton m_CkResultsDisplay;
+	CButton m_CkGlobalAccessSpec;
+	CButton m_CkManagerWorker;
+	CButton m_CkAssignAccessSpec;
+	CButton m_CkAssignTargets;
+	CButton m_RMerge;
+	CButton m_ROverwrite;
+	BOOL isCkAssignAccessSpec;
+	BOOL isCkTestSetup;
+	BOOL isCkResultsDisplay;
+	BOOL isCkManagerWorker;
+	BOOL isCkGlobalAccessSpec;
+	BOOL isCkAssignTargets;
 	//}}AFX_DATA
 
 	// Once checkboxes are cleared and disabled in response to the
 	// deselection of other checkboxes, their old states are maintained here.
-	BOOL	wasCkAssignAccessSpec;
-	BOOL	wasCkAssignTargets;
+	BOOL wasCkAssignAccessSpec;
+	BOOL wasCkAssignTargets;
 
 	// Tracks radio button state.  (Can't make a radio button state variable?)
-	BOOL	isROverwrite;
+	BOOL isROverwrite;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CICFOpenDialog)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CICFOpenDialog)
-	afx_msg void OnCkManagerWorker();
+	 afx_msg void OnCkManagerWorker();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnAnyCheck();
 	afx_msg void OnROverwrite();
 	afx_msg void OnRMerge();
-	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
+	afx_msg BOOL OnHelpInfo(HELPINFO * pHelpInfo);
 	afx_msg void OnPaint();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}

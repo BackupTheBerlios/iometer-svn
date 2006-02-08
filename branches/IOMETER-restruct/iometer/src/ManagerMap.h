@@ -67,68 +67,57 @@
 #ifndef MANAGERMAP_DEFINED
 #define MANAGERMAP_DEFINED
 
-
 #include "Manager.h"
 #include "WaitingForManagers.h"
 
-
-struct ManagerMapEntry
-{
+struct ManagerMapEntry {
 	CString name;
 	int id;
 	CString address;
 	Manager *mgr;
 };
 
+class ManagerMap {
+      private:
+	CArray < ManagerMapEntry, int >map;
+	CWaitingForManagers waiting_dialog;
 
-class ManagerMap
-{
-private:
-	CArray<ManagerMapEntry, int>	map;
-	CWaitingForManagers				waiting_dialog;
-
-public:
-	ManagerMap();
+      public:
+	 ManagerMap();
 
 	// Prepares the ManagerMap for reuse.
-	void		Reset();
+	void Reset();
 
 	// Add a manager to the list.  (mgr pointer, if unknown, can be NULL)
-	void		Store(				const CString& name,
-									const int id,
-									const CString& address,
-									Manager *mgr	);
+	void Store(const CString & name, const int id, const CString & address, Manager * mgr);
 
 	// Retrieve a manager pointer matching the specified criteria
-	Manager*	Retrieve(			const CString& name,
-									const int id	);
+	Manager *Retrieve(const CString & name, const int id);
 
 	// When a manager logs in, call this function to find the first matching
 	// entry in the map and store the new manager's pointer there.
-	BOOL		ManagerLoggedIn(	const CString& name,
-									const CString& address,
-									Manager *mgr	);
+	BOOL ManagerLoggedIn(const CString & name, const CString & address, Manager * mgr);
 
 	// If there is only one manager in the ManagerMap and it is unassigned
 	// (mgr pointer is NULL), assign it the given manager pointer, return TRUE.
 	// Otherwise, return FALSE.  (Yes, awkward name...)
-	BOOL		SetIfOneManager( Manager *mgr );
+	BOOL SetIfOneManager(Manager * mgr);
 
 	// Find all unassigned managers (mgr ptrs are NULL) with the local
 	// network address and spawn Dynamos with the appropriate names.
-	void		SpawnLocalManagers();
+	void SpawnLocalManagers();
 
 	// Are we waiting for any managers to log in before restoring
 	// the manager configuration from a saved file?
-	BOOL		IsWaitingList();
+	BOOL IsWaitingList();
 
 	// Show the waiting list dialog box, return immediately.
-	void		ShowWaitingList( const CString& infilename, BOOL* flags, BOOL replace );
+	void ShowWaitingList(const CString & infilename, BOOL * flags, BOOL replace);
 
 	// See the manager at this address is found in the manager map.  Used to
 	// determine whether this manager should be kept (TRUE) or disconnected
 	// (FALSE) after the config file manager settings are restored.
-	BOOL		IsThisManagerNeeded( const Manager * const mgr );
+	BOOL IsThisManagerNeeded(const Manager * const mgr);
 };
 
 #endif

@@ -64,10 +64,9 @@
 #ifndef TARGET_DEFINED
 #define TARGET_DEFINED
 
-
 #if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+#endif				// _MSC_VER >= 1000
 
 // Set TARGET_DETAILS to 1 to enable target related debug messages, 0 to disable them.
 // If _DETAILS  is defined and TARGET_DETAILS is set to 0, some messages will
@@ -82,32 +81,31 @@
 #include "IOTest.h"
 #include "IOCQ.h"
 
-class Target  
-{
-public:
+class Target {
+      public:
 
 	Target();
-	virtual ~Target();
+	virtual ~ Target();
 
-	virtual	BOOL	Initialize( Target_Spec *target_info, CQ *cq ) = 0;
-	virtual BOOL	Open( volatile TestState *test_state, int open_flag = 0 ) = 0;
-	virtual BOOL	Close( volatile TestState *test_state ) = 0;
+	virtual BOOL Initialize(Target_Spec * target_info, CQ * cq) = 0;
+	virtual BOOL Open(volatile TestState * test_state, int open_flag = 0) = 0;
+	virtual BOOL Close(volatile TestState * test_state) = 0;
 
-	virtual ReturnVal	Read( LPVOID buffer, Transaction *trans ) = 0;
-	virtual ReturnVal	Write( LPVOID buffer, Transaction *trans ) = 0;
+	virtual ReturnVal Read(LPVOID buffer, Transaction * trans) = 0;
+	virtual ReturnVal Write(LPVOID buffer, Transaction * trans) = 0;
 
-	virtual DWORDLONG	Rand();
+	virtual DWORDLONG Rand();
 
-	Target_Spec	spec;
+	Target_Spec spec;
 
 	// Variables used to control connection rate testing.
-	int			trans_left_in_conn;
-	DWORDLONG	conn_start_time;
-	int			outstanding_ios;
-	BOOL		is_closing;
+	int trans_left_in_conn;
+	DWORDLONG conn_start_time;
+	int outstanding_ios;
+	BOOL is_closing;
 
-private:
+      private:
 
 };
 
-#endif // !defined(TARGET_DEFINED)
+#endif				// !defined(TARGET_DEFINED)

@@ -78,7 +78,6 @@
 #include "Legalbox.h"
 #include "IOPortTCP.h"
 
-
 // Needed for MFC Library support for assisting in finding memory leaks
 //
 // NOTE: Based on the documentation[1] I found, it should be enough to have
@@ -89,32 +88,28 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoApp
 
 BEGIN_MESSAGE_MAP(CGalileoApp, CWinApp)
-	//{{AFX_MSG_MAP(CGalileoApp)
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-	//}}AFX_MSG_MAP
-	// Standard file based document commands
-//	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
-//	ON_COMMAND(ID_FILE_OPEN, CPageAccess::OnFileOpen)
-END_MESSAGE_MAP()
-
+    //{{AFX_MSG_MAP(CGalileoApp)
+    ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+    //}}AFX_MSG_MAP
+    // Standard file based document commands
+//      ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
+//      ON_COMMAND(ID_FILE_OPEN, CPageAccess::OnFileOpen)
+    END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoApp construction/destruction
-
-CGalileoApp::CGalileoApp()
- : m_pVersionString(NULL), m_pVersionStringWithDebug(NULL)
+    CGalileoApp::CGalileoApp()
+:  m_pVersionString(NULL), m_pVersionStringWithDebug(NULL)
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
@@ -149,7 +144,7 @@ BOOL CGalileoApp::InitInstance()
 	//  the specific initialization routines you do not need.
 #if _MSC_VER < 1300
 #ifdef _AFXDLL
-	Enable3dControls();			// Call this when using MFC in a shared DLL
+	Enable3dControls();	// Call this when using MFC in a shared DLL
 #else
 	Enable3dControlsStatic();	// Call this when linking to MFC statically
 #endif
@@ -158,23 +153,23 @@ BOOL CGalileoApp::InitInstance()
 	//init file version strings
 	GetAppFileVersionString(&m_pVersionString, &m_pVersionStringWithDebug);
 
-	SetRegistryKey( "iometer.org" );	// Stores information in the registry under
-						// HKEY_CURRENT_USER\Software\iometer.org
-						// \Iometer\Settings\Version
+	SetRegistryKey("iometer.org");	// Stores information in the registry under
+	// HKEY_CURRENT_USER\Software\iometer.org
+	// \Iometer\Settings\Version
 
-	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
+	LoadStdProfileSettings();	// Load standard INI file options (including MRU)
 
 	//
 	// Check to see if the end user license agreement should be displayed.
 	// If the current version is not stored in the registry, disply the EULA.
 	//
 #ifndef	_DEBUG
-	if ( GetProfileString( "Settings", "Version" ) != m_pVersionString )
-	{
-		CLegalBox legalDlg;					// Display EULA.
-		if ( legalDlg.DoModal() == IDOK )
+	if (GetProfileString("Settings", "Version") != m_pVersionString) {
+		CLegalBox legalDlg;	// Display EULA.
+
+		if (legalDlg.DoModal() == IDOK)
 			// User agrees to terms, so store the version in the registry.
-			WriteProfileString( "Settings", "Version", m_pVersionString );
+			WriteProfileString("Settings", "Version", m_pVersionString);
 		else
 			return FALSE;	// User does not agree to terms so exit.
 	}
@@ -183,12 +178,10 @@ BOOL CGalileoApp::InitInstance()
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
 
-	CSingleDocTemplate* pDocTemplate;
-	pDocTemplate = new CSingleDocTemplate(
-		IDR_MAINFRAME,
-		RUNTIME_CLASS(CGalileoDoc),
-		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
-		RUNTIME_CLASS(CGalileoView));
+	CSingleDocTemplate *pDocTemplate;
+
+	pDocTemplate = new CSingleDocTemplate(IDR_MAINFRAME, RUNTIME_CLASS(CGalileoDoc), RUNTIME_CLASS(CMainFrame),	// main SDI frame window
+					      RUNTIME_CLASS(CGalileoView));
 	AddDocTemplate(pDocTemplate);
 
 	// Enable DDE Execute open
@@ -225,33 +218,30 @@ BOOL CGalileoApp::InitInstance()
 	CWinApp::ParseCommandLine(cmdline);
 
 	// If the command line parser had any trouble, kill the program.
-	if ( cmdline.m_bFail )
+	if (cmdline.m_bFail)
 		return FALSE;
 
-	if ( !OnCmdMsg(ID_FILE_NEW, 0, NULL, NULL) )
-	{
+	if (!OnCmdMsg(ID_FILE_NEW, 0, NULL, NULL)) {
 		OnFileNew();
 	}
-	if (m_pMainWnd == NULL)
-	{
-		ErrorMessage("Error creating application's main frame.  "
-			"Please report this as an Iometer bug.");
+	if (m_pMainWnd == NULL) {
+		ErrorMessage("Error creating application's main frame.  " "Please report this as an Iometer bug.");
 		return FALSE;
 	}
-
 	// Fill in the local address strings.
 	IdentifyLocalAddresses();
 
 	// Set the status bar.
 	CRect rect;
-	m_wndStatusBar.GetWindowRect( &rect );
-	int* widths;
-	widths = (int*)malloc( sizeof(int) * 3 );
+
+	m_wndStatusBar.GetWindowRect(&rect);
+	int *widths;
+	widths = (int *)malloc(sizeof(int) * 3);
 	widths[0] = rect.Width() - 300;
 	widths[1] = rect.Width() - 150;
 	widths[2] = -1;
-	m_wndStatusBar.GetStatusBarCtrl().SetParts( 3, widths );
-	free( widths );
+	m_wndStatusBar.GetStatusBarCtrl().SetParts(3, widths);
+	free(widths);
 
 	// Set status bar text.
 	pView->ClearStatusBar();
@@ -260,92 +250,81 @@ BOOL CGalileoApp::InitInstance()
 	pView->ButtonReset();
 
 	// make sure CGalileoApp::OnIdle() gets called at least once in a while
-	pView->SetTimer( IDLE_TIMER, IDLE_DELAY, NULL );
+	pView->SetTimer(IDLE_TIMER, IDLE_DELAY, NULL);
 
 	// Get the full pathname for Iometer.exe.
-	if ( !GetModuleFileName( NULL, iometer_path, sizeof( iometer_path ) ) )
-	{
-		ErrorMessage( "Could not get Iometer.exe pathname!" );
+	if (!GetModuleFileName(NULL, iometer_path, sizeof(iometer_path))) {
+		ErrorMessage("Could not get Iometer.exe pathname!");
 
 		// Set iometer_path to a null string; this will make NEW_WORKER_COMMAND
 		// search for Dynamo in the current directory and $PATH
 		iometer_path[0] = '\0';
 	}
-
 	// Find the last backslash in the pathname, if any
-	if ( p = strrchr( iometer_path, '\\' ) )
-	{
+	if (p = strrchr(iometer_path, '\\')) {
 		// Terminate the string right after the last backslash, leaving
 		// the full pathname of the directory containing Iometer.exe.
 		p++;
 		*p = '\0';
 	}
-
 	// Build the command line to launch Dynamo.  We must quote the pathname in case it 
 	// contains any spaces, but the "start" command (NEW_WORKER_COMMAND) assumes the
 	// first quoted argument is the window title, so we must provide it twice.
-	new_manager_command_line_format = (CString) NEW_WORKER_COMMAND 
-			+ "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "%s\"" + " "
-			+ "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "\"%s";
+	new_manager_command_line_format = (CString) NEW_WORKER_COMMAND
+	    + "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "%s\"" + " "
+	    + "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "\"%s";
 
-	if ( cmdline.GetConfigFile().IsEmpty() )
-	{
+	if (cmdline.GetConfigFile().IsEmpty()) {
 #ifndef	_DEBUG
 		// If the default config file exists, load it.
-		if ( ::GetFileAttributes(DEFAULT_CONFIG_FILE) != 0xFFFFFFFF )
-		{
+		if (::GetFileAttributes(DEFAULT_CONFIG_FILE) != 0xFFFFFFFF) {
 			OpenDocumentFile(DEFAULT_CONFIG_FILE);
-		}
-		else
-		{
+		} else {
 			// If no config file was specified on the command line
 			// and the default config file doesn't exist, start a
 			// local manager.with no command line options.
 			LaunchDynamo();
 		}
 #endif
-	}
-	else
-	{
+	} else {
 		// If a config file was specified on the command line, open it
-		OpenDocumentFile( cmdline.GetConfigFile() );
+		OpenDocumentFile(cmdline.GetConfigFile());
 	}
 
 	return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//	Function Name:
-//		CGalileoApp::ExitInstance
+//      Function Name:
+//              CGalileoApp::ExitInstance
 //
-//	Syntax:
-//		int ExitInstance()
+//      Syntax:
+//              int ExitInstance()
 //
-//	Processing:
-//		Clean up instance data
+//      Processing:
+//              Clean up instance data
 ///////////////////////////////////////////////////////////////////////////////
 int CGalileoApp::ExitInstance()
 {
-	delete [] m_pVersionString;
-	delete [] m_pVersionStringWithDebug;
+	delete[]m_pVersionString;
+	delete[]m_pVersionStringWithDebug;
 
 	return CWinApp::ExitInstance();
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//	Function Name:
-//		CGalileoApp::GetVersionString
+//      Function Name:
+//              CGalileoApp::GetVersionString
 //
-//	Syntax:
-//		const char*		GetVersionString(BOOL fWithDebugIndicator = FALSE);
+//      Syntax:
+//              const char*             GetVersionString(BOOL fWithDebugIndicator = FALSE);
 //
-//	Processing:
-//		Return version string ptr (m_pVersionString or m_pVersionStringWithDebug).
+//      Processing:
+//              Return version string ptr (m_pVersionString or m_pVersionStringWithDebug).
 ///////////////////////////////////////////////////////////////////////////////
-const char*		CGalileoApp::GetVersionString(BOOL fWithDebugIndicator)
+const char *CGalileoApp::GetVersionString(BOOL fWithDebugIndicator)
 {
-	if (! fWithDebugIndicator)
+	if (!fWithDebugIndicator)
 		return m_pVersionString;
 	else
 		return m_pVersionStringWithDebug;
@@ -361,86 +340,75 @@ const char*		CGalileoApp::GetVersionString(BOOL fWithDebugIndicator)
 //
 void CGalileoApp::IdentifyLocalAddresses()
 {
-	DWORD		namelength = MAX_NETWORK_NAME;
-	WSADATA		wd;
-	char		hostname[128];
-	hostent		*hostinfo;
-	sockaddr_in	sin;
+	DWORD namelength = MAX_NETWORK_NAME;
+	WSADATA wd;
+	char hostname[128];
+	hostent *hostinfo;
+	sockaddr_in sin;
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Get the local machine's NetBIOS address.
 	////////////////////////////////////////////////////////////////////////////////////////
-	::GetComputerName( netbios_hostname.GetBuffer(MAX_NETWORK_NAME), &namelength );
+	::GetComputerName(netbios_hostname.GetBuffer(MAX_NETWORK_NAME), &namelength);
 	netbios_hostname.ReleaseBuffer();
 	netbios_hostname = "\\\\" + netbios_hostname + "\\";
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Assemble a list of all local IP addresses (one for each NIC).
 	////////////////////////////////////////////////////////////////////////////////////////
-	if ( WSAStartup( MAKEWORD(2, 0), &wd ) )
-	{
-		ErrorMessage( "Error initializing WinSock in CGalileoApp::InitInstance()." );
+	if (WSAStartup(MAKEWORD(2, 0), &wd)) {
+		ErrorMessage("Error initializing WinSock in CGalileoApp::InitInstance().");
 		return;
 	}
 
-	if ( gethostname( hostname, sizeof(hostname) ) != SOCKET_ERROR )
-	{
-		hostinfo = gethostbyname( hostname );
-		if ( hostinfo != NULL )
-		{
-			for ( int counter=0; hostinfo->h_addr_list[counter] != NULL; counter++ )
-			{
-//				ip_addresses.Add(counter);
-				memcpy( &sin.sin_addr.s_addr, hostinfo->h_addr_list[counter], hostinfo->h_length );
-//				ip_addresses[counter] = inet_ntoa( sin.sin_addr );
-				ip_addresses.SetAtGrow(counter, inet_ntoa( sin.sin_addr ));
+	if (gethostname(hostname, sizeof(hostname)) != SOCKET_ERROR) {
+		hostinfo = gethostbyname(hostname);
+		if (hostinfo != NULL) {
+			for (int counter = 0; hostinfo->h_addr_list[counter] != NULL; counter++) {
+//                              ip_addresses.Add(counter);
+				memcpy(&sin.sin_addr.s_addr, hostinfo->h_addr_list[counter], hostinfo->h_length);
+//                              ip_addresses[counter] = inet_ntoa( sin.sin_addr );
+				ip_addresses.SetAtGrow(counter, inet_ntoa(sin.sin_addr));
 			}
-		}
-		else
-		{
+		} else {
 			// Non-fatal (might not recognize all local managers as being local, though)
-			ErrorMessage( "Error getting host info (HOSTENT) for \"" + (CString)hostname + "\"." );
+			ErrorMessage("Error getting host info (HOSTENT) for \"" + (CString) hostname + "\".");
 		}
-	}
-	else
-	{
+	} else {
 		// Non-fatal (might not recognize all local managers as being local, though)
-		ErrorMessage( "Error getting local host name in CGalileoApp::InitInstance()." );
+		ErrorMessage("Error getting local host name in CGalileoApp::InitInstance().");
 	}
 
 	WSACleanup();
 }
-
 
 //
 // Determines whether an address is local to the computer Iometer is running on.
 // This address can be a NetBIOS address (the NT name of the machine) or the IP
 // address of any NIC attached to the computer.
 //
-BOOL CGalileoApp::IsAddressLocal( const CString& addr )
+BOOL CGalileoApp::IsAddressLocal(const CString & addr)
 {
-	if ( netbios_hostname.CompareNoCase(addr) == 0 )
+	if (netbios_hostname.CompareNoCase(addr) == 0)
 		return TRUE;
 
-	for (int counter=0; counter<ip_addresses.GetSize(); counter++)
-	{
-		if ( ip_addresses[counter].CompareNoCase(addr) == 0 )
+	for (int counter = 0; counter < ip_addresses.GetSize(); counter++) {
+		if (ip_addresses[counter].CompareNoCase(addr) == 0)
 			return TRUE;
 	}
 
 	return FALSE;
 }
 
-
 //
 // Launch a local Dynamo with the given name.
 //
-void CGalileoApp::LaunchDynamo( const CString& mgr_name /* ="" */ )
+void CGalileoApp::LaunchDynamo(const CString & mgr_name /* ="" */ )
 {
 	CString cmd;
 
 	// Make sure the formatting string was initialized.
-	ASSERT( !theApp.new_manager_command_line_format.IsEmpty() );
+	ASSERT(!theApp.new_manager_command_line_format.IsEmpty());
 
 	// Create a string with the appropriate command line parameters.
 	cmd.Format(new_manager_command_line_format, mgr_name, mgr_name);
@@ -449,29 +417,27 @@ void CGalileoApp::LaunchDynamo( const CString& mgr_name /* ="" */ )
 	system(cmd);
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
-class CAboutDlg : public CDialog
-{
-public:
+class CAboutDlg:public CDialog {
+      public:
 	CAboutDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CAboutDlg)
 	enum { IDD = IDD_ABOUTBOX };
-	CStatic	m_TVersion;
+	CStatic m_TVersion;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAboutDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 	//{{AFX_MSG(CAboutDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBViewEULA();
@@ -479,13 +445,13 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg():CDialog(CAboutDlg::IDD)
 {
 	//{{AFX_DATA_INIT(CAboutDlg)
 	//}}AFX_DATA_INIT
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+void CAboutDlg::DoDataExchange(CDataExchange * pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAboutDlg)
@@ -494,183 +460,165 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	//{{AFX_MSG_MAP(CAboutDlg)
-	ON_BN_CLICKED(BViewEULA, OnBViewEULA)
-	//}}AFX_MSG_MAP
+    //{{AFX_MSG_MAP(CAboutDlg)
+ON_BN_CLICKED(BViewEULA, OnBViewEULA)
+    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
 // App command to run the dialog
 void CGalileoApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
+
 	aboutDlg.DoModal();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoApp commands
 
-
-BOOL CAboutDlg::OnInitDialog() 
+BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
 	// Display correct version information in about box dialog.
 	CString buffer = "Iometer ";
-	buffer += theApp.GetVersionString (TRUE);
-	m_TVersion.SetWindowText( buffer );
-	
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+
+	buffer += theApp.GetVersionString(TRUE);
+	m_TVersion.SetWindowText(buffer);
+
+	return TRUE;		// return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
 }
 
-
-
-void CAboutDlg::OnBViewEULA() 
+void CAboutDlg::OnBViewEULA()
 {
 	CLegalBox legal_dlg;
+
 	legal_dlg.running = TRUE;
 	legal_dlg.DoModal();
 }
 
-
-
 //
 // On Idle handler processes login requests from Dynamos.
 //
-BOOL CGalileoApp::OnIdle(LONG lCount) 
+BOOL CGalileoApp::OnIdle(LONG lCount)
 {
-	static Message		*login_msg;
-	static char			*login_msg_ptr;
-	static DWORD		login_msg_size;
-	static Data_Message	*login_data_msg;
-	static char			*login_data_msg_ptr;
-	static DWORD		login_data_msg_size;
-	DWORDLONG			result;
-	Message				reply_to_dynamo;
-	Manager				*manager;
+	static Message *login_msg;
+	static char *login_msg_ptr;
+	static DWORD login_msg_size;
+	static Data_Message *login_data_msg;
+	static char *login_data_msg_ptr;
+	static DWORD login_data_msg_size;
+	DWORDLONG result;
+	Message reply_to_dynamo;
+	Manager *manager;
 
 	if (CWinApp::OnIdle(lCount))
-		return TRUE;   	
+		return TRUE;
 
-	switch ( login_state )
-	{
+	switch (login_state) {
 	case closed:
 		// create and open the port
 
-		login_port = new PortTCP( FALSE );	// asynchronous port
-		if ( !login_port->Create( NULL, NULL, 0, WELL_KNOWN_TCP_PORT ) )
-		{
+		login_port = new PortTCP(FALSE);	// asynchronous port
+		if (!login_port->Create(NULL, NULL, 0, WELL_KNOWN_TCP_PORT)) {
 			ErrorMessage("Could not create TCP/IP port for Dynamo login!");
 			login_state = failed;
-			return FALSE; // go away and don't come back (for a while)
+			return FALSE;	// go away and don't come back (for a while)
 		}
 
 		login_state = open;
-		return TRUE; // go away and try again later
+		return TRUE;	// go away and try again later
 		break;
 
 	case open:
-		if ( !login_port->Accept() ) // begin accepting...
+		if (!login_port->Accept())	// begin accepting...
 		{
 			ErrorMessage("Accept() failed on Dynamo login port!");
 			login_port->Close();
 			login_state = failed;
-			return FALSE; // go away and don't come back (for a while)
+			return FALSE;	// go away and don't come back (for a while)
 		}
 		login_state = accepting;
-		return TRUE; // go away and try again later
+		return TRUE;	// go away and try again later
 		break;
 
 	case accepting:
 		// has Accept() completed?
-		if ( login_port->IsAcceptComplete() )
-		{
+		if (login_port->IsAcceptComplete()) {
 			// Yes!  Was it successful?
-			if ( login_port->GetAcceptResult() )
-			{
+			if (login_port->GetAcceptResult()) {
 				// Accept() succeeded
 				login_state = waiting;
-				return TRUE; // go away and try again later
-			}
-			else
-			{
+				return TRUE;	// go away and try again later
+			} else {
 				// Accept() failed!
 				ErrorMessage("GetAcceptResult() failed on Dynamo login port!");
 				login_port->Close();
 				login_state = failed;
-				return FALSE; // go away and don't come back (for a while)
+				return FALSE;	// go away and don't come back (for a while)
 			}
-		}
-		else
-		{
+		} else {
 			// Accept() has not yet completed
-			return FALSE; // go away and don't come back (for a while)
+			return FALSE;	// go away and don't come back (for a while)
 		}
 		break;
 
 	case waiting:
-		if ( login_port->Peek() )
-		{
+		if (login_port->Peek()) {
 			// There is data waiting for us!
 			login_msg = new Message;
-			login_msg_ptr = (char *) login_msg;
-			login_msg_size = sizeof( Message );
-			login_port->Receive( login_msg_ptr, login_msg_size ); // begin receiving...
+			login_msg_ptr = (char *)login_msg;
+			login_msg_size = sizeof(Message);
+			login_port->Receive(login_msg_ptr, login_msg_size);	// begin receiving...
 			login_state = receiving;
-			return TRUE; // go away and try again later
-		}
-		else
-		{
+			return TRUE;	// go away and try again later
+		} else {
 			// There is no data for us, go back to waiting
-			return FALSE; // go away and don't come back (for a while)
+			return FALSE;	// go away and don't come back (for a while)
 		}
 		break;
 
 	case receiving:
 		// has Receive() completed?
-		if ( login_port->IsReceiveComplete() )
-		{
+		if (login_port->IsReceiveComplete()) {
 			// Yes!  Have all requested bytes been received?
 			result = login_port->GetReceiveResult();
-			if ( result == login_msg_size )
-			{
+			if (result == login_msg_size) {
 				// All bytes received!  
-				
+
 				// Format our version number into an integer
 				int year, month, day, iometer_version;
 
-				sscanf( m_pVersionString, "%d.%d.%d", &year, &month, &day );
+				sscanf(m_pVersionString, "%d.%d.%d", &year, &month, &day);
 				iometer_version = (year * 10000) + (month * 100) + day;
 
 				// Compare it with Dynamo's version number (will be 0 or uninitialized for 
 				// versions before 1998.09.23)
-				if ( login_msg->data != iometer_version )
-				{
+				if (login_msg->data != iometer_version) {
 					// versions failed to match...  refuse connection
 
 					// tell Dynamo that the connection is being refused
 					reply_to_dynamo.purpose = LOGIN;
 					reply_to_dynamo.data = WRONG_VERSION;
-					login_port->Send( &reply_to_dynamo );
+					login_port->Send(&reply_to_dynamo);
 
 					login_port->Disconnect();
 
 					// give the user a message box explaining the problem
 					char errmsg[2 * MAX_VERSION_LENGTH + 100];
 
-					if ( login_msg->data > 19970101 && login_msg->data < 21001231 )
-					{
-						year = (int) (login_msg->data / 10000);
-						month = (int) (login_msg->data / 100) - (year * 100);
+					if (login_msg->data > 19970101 && login_msg->data < 21001231) {
+						year = (int)(login_msg->data / 10000);
+						month = (int)(login_msg->data / 100) - (year * 100);
 						day = login_msg->data - (month * 100) - (year * 10000);
 
-						sprintf( errmsg, "Iometer %s is not compatible with Dynamo %04d.%02d.%02d",
-							m_pVersionStringWithDebug, year, month, day );
-					}
-					else
-					{
-						sprintf( errmsg, "Iometer %s is not compatible with Dynamo (unknown version number)",
-							m_pVersionStringWithDebug );
+						sprintf(errmsg,
+							"Iometer %s is not compatible with Dynamo %04d.%02d.%02d",
+							m_pVersionStringWithDebug, year, month, day);
+					} else {
+						sprintf(errmsg,
+							"Iometer %s is not compatible with Dynamo (unknown version number)",
+							m_pVersionStringWithDebug);
 					}
 
 					ErrorMessage(errmsg);
@@ -678,66 +626,56 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 					// Receive() completed and processed, go back to Accept().
 					login_state = open;
 					delete login_msg;
+
 					return TRUE;	// go away and try again later
 				}
-
 				// we are through with login_msg
 				delete login_msg;
+
 				// Now wait for data message...
 				login_state = waiting_for_data;
-				return TRUE; // go away and try again later
-			}
-			else if ( result > 0 )
-			{
+				return TRUE;	// go away and try again later
+			} else if (result > 0) {
 				// Some bytes (but not all) received, post another receive for the rest of the message
 				login_msg_size -= (DWORD) result;
 				login_msg_ptr += result;
-				login_port->Receive( login_msg_ptr, login_msg_size ); // begin receiving...
+				login_port->Receive(login_msg_ptr, login_msg_size);	// begin receiving...
 				login_state = receiving;
-				return TRUE; // go away and try again later
-			}
-			else
-			{
+				return TRUE;	// go away and try again later
+			} else {
 				// Receive() failed!
 				ErrorMessage("GetReceiveResult() failed on Dynamo login port!");
 				login_port->Close();
 				login_state = failed;
-				return FALSE; // go away and don't come back (for a while)
+				return FALSE;	// go away and don't come back (for a while)
 			}
-		}
-		else
-		{
+		} else {
 			// Receive() has not yet completed
-			return TRUE; // go away and try again later
+			return TRUE;	// go away and try again later
 		}
 		break;
 
 	case waiting_for_data:
-		if ( login_port->Peek() )
-		{
+		if (login_port->Peek()) {
 			// There is data waiting for us!
 			login_data_msg = new Data_Message;
-			login_data_msg_ptr = (char *) login_data_msg;
-			login_data_msg_size = sizeof( Data_Message );
-			login_port->Receive( login_data_msg_ptr, login_data_msg_size ); // begin receiving...
+			login_data_msg_ptr = (char *)login_data_msg;
+			login_data_msg_size = sizeof(Data_Message);
+			login_port->Receive(login_data_msg_ptr, login_data_msg_size);	// begin receiving...
 			login_state = receiving_data;
-			return TRUE; // go away and try again later
-		}
-		else
-		{
+			return TRUE;	// go away and try again later
+		} else {
 			// There is no data for us, go back to waiting
-			return FALSE; // go away and don't come back (for a while)
+			return FALSE;	// go away and don't come back (for a while)
 		}
 		break;
 
 	case receiving_data:
 		// has Receive() completed?
-		if ( login_port->IsReceiveComplete() )
-		{
+		if (login_port->IsReceiveComplete()) {
 			// Yes!  Have all requested bytes been received?
 			result = login_port->GetReceiveResult();
-			if ( result == login_data_msg_size )
-			{
+			if (result == login_data_msg_size) {
 				// Keep track of whether this manager is logging in during
 				// a file restore operation.  Once the manager is added to
 				// the manager list, this state of this variable determines
@@ -753,29 +691,27 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 				// Tell Dynamo that the connection is being accepted
 				reply_to_dynamo.purpose = LOGIN;
 				reply_to_dynamo.data = LOGIN_OK;
-				login_port->Send( &reply_to_dynamo );
+				login_port->Send(&reply_to_dynamo);
 
 				// Receive succeeded, so contents of login_data_msg are valid...
-				manager = manager_list.AddManager( &(login_data_msg->data.manager_info) );
+				manager = manager_list.AddManager(&(login_data_msg->data.manager_info));
 
 				// We are all through with login_data_msg
 				delete login_data_msg;
 
 				// In certain situations, ::AddManager() may return a null, we have to at least 
 				// check for it.
-				if (manager == NULL)
-				{
+				if (manager == NULL) {
 					ErrorMessage("AddManager() failed to add manager to manager list!");
 					login_port->Close();
 					login_state = failed;
-					return FALSE; 
+					return FALSE;
 				}
-
 				// Get the manager's list of available targets.
 				manager->UpdateTargetLists();
 
 				// Add new manager to the end of the manager list.
-				pView->AddManager( manager );
+				pView->AddManager(manager);
 
 				// Add the default workers (specified in Test Setup page)
 				// ONLY if there is not a file restore operation happening.
@@ -784,44 +720,38 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 				// were added when merging a saved manager configuration, the
 				// default workers would never be deleted when the saved workers
 				// were restored.
-				if ( !wasWaitingList )
-					pView->AddDefaultWorkers( manager );
+				if (!wasWaitingList)
+					pView->AddDefaultWorkers(manager);
 
 				// Notify worker of successful login, then disconnect them.
 				login_port->Disconnect();
 
 				// Receive() completed and processed, go back to Accept().
 				login_state = open;
-				return TRUE; // go away and try again later
-			}
-			else if ( result > 0 )
-			{
+				return TRUE;	// go away and try again later
+			} else if (result > 0) {
 				// Some bytes (but not all) received, post another receive for the rest of the message
 				login_data_msg_size -= (DWORD) result;
 				login_data_msg_ptr += result;
-				login_port->Receive( login_data_msg_ptr, login_data_msg_size ); // begin receiving...
+				login_port->Receive(login_data_msg_ptr, login_data_msg_size);	// begin receiving...
 				login_state = receiving_data;
-				return TRUE; // go away and try again later
-			}
-			else
-			{
+				return TRUE;	// go away and try again later
+			} else {
 				// Receive() failed!
 				ErrorMessage("GetReceiveResult() failed on Dynamo login port!");
 				login_port->Close();
 				login_state = failed;
-				return FALSE; // go away and don't come back (for a while)
+				return FALSE;	// go away and don't come back (for a while)
 			}
-		}
-		else
-		{
+		} else {
 			// Receive() has not yet completed
-			return TRUE; // go away and try again later
+			return TRUE;	// go away and try again later
 		}
 		break;
 
 	case failed:
 		// we've suffered a fatal error, do nothing
-		return FALSE; // go away and don't come back (for a while)
+		return FALSE;	// go away and don't come back (for a while)
 		break;
 	}
 
@@ -829,11 +759,10 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 	return FALSE;
 }
 
-
 //
 // Handle an "open document" request (e.g. from a command line argument)
 //
-CDocument* CGalileoApp::OpenDocumentFile(LPCTSTR lpszFileName) 
+CDocument *CGalileoApp::OpenDocumentFile(LPCTSTR lpszFileName)
 {
 	CDocument *theDoc;
 	BOOL flags[NumICFFlags], replace;
@@ -848,11 +777,9 @@ CDocument* CGalileoApp::OpenDocumentFile(LPCTSTR lpszFileName)
 
 	// Create a CDocument object by calling the parent method
 	// (this also initializes the pView member)
-	if ( theDoc = CWinApp::OpenDocumentFile(lpszFileName) )
-	{
+	if (theDoc = CWinApp::OpenDocumentFile(lpszFileName)) {
 		// Attempt to open the file as a configuration file
-		if ( !pView->PrepareToOpenConfigFile( lpszFileName, flags, replace ) )
-		{
+		if (!pView->PrepareToOpenConfigFile(lpszFileName, flags, replace)) {
 			// The file could not be opened!  Indicate failure.
 			theDoc = NULL;
 		}
@@ -861,7 +788,6 @@ CDocument* CGalileoApp::OpenDocumentFile(LPCTSTR lpszFileName)
 	return theDoc;
 }
 
-
 //
 // See if Iometer is in batch mode.
 //
@@ -869,7 +795,6 @@ BOOL CGalileoApp::IsBatchMode()
 {
 	return cmdline.IsBatchMode();
 }
-
 
 //
 // Take the application out of batch mode.

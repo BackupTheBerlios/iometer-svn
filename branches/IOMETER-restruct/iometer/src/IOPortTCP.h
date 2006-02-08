@@ -83,89 +83,84 @@
 #ifndef PORTTCP_DEFINED
 #define PORTTCP_DEFINED
 
-
 #if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+#endif				// _MSC_VER >= 1000
 
 #include "IOPort.h"
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
- #include <sys/socket.h>
- #include <netinet/in.h>
- #include <netdb.h>
- #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
- #include "winsock2.h"
+#include "winsock2.h"
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
- #define SOCKET	int
+#define SOCKET	int
 #endif
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
  // nop
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #define socklen_t int  
+#define socklen_t int
 #elif defined(IOMTR_OS_NETWARE)
- #define socklen_t unsigned int
+#define socklen_t unsigned int
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-
-
-class PortTCP : public Port  
-{
-public:
-	// constructor and destructor	
-	PortTCP( BOOL synchronous = TRUE );
-	virtual	~PortTCP();
+class PortTCP:public Port {
+      public:
+	// constructor and destructor   
+	PortTCP(BOOL synchronous = TRUE);
+	virtual ~ PortTCP();
 
 	// public functions common to all Ports (implemented here, pure virtual in Port)
-	virtual	BOOL		Create( char* port_name = NULL, char* remote_name = NULL, 
-							DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0 );
-	virtual BOOL		Connect( char* port_name = NULL, 
-							unsigned short port_number = WELL_KNOWN_TCP_PORT );
-	virtual BOOL		Accept();
-	virtual BOOL		Disconnect();
-	virtual BOOL		Close();
-	virtual DWORDLONG	Receive( LPVOID data, DWORD size = MESSAGE_SIZE );
-	virtual DWORDLONG	Send( LPVOID data, DWORD size = MESSAGE_SIZE );
-	virtual DWORD		Peek();
+	virtual BOOL Create(char *port_name = NULL, char *remote_name = NULL,
+			    DWORD size = MESSAGE_PORT_SIZE, unsigned short port_number = 0);
+	virtual BOOL Connect(char *port_name = NULL, unsigned short port_number = WELL_KNOWN_TCP_PORT);
+	virtual BOOL Accept();
+	virtual BOOL Disconnect();
+	virtual BOOL Close();
+	virtual DWORDLONG Receive(LPVOID data, DWORD size = MESSAGE_SIZE);
+	virtual DWORDLONG Send(LPVOID data, DWORD size = MESSAGE_SIZE);
+	virtual DWORD Peek();
 
 	// public functions common to all asynchronous Ports (implemented here, pure virtual in Port)
-	virtual BOOL		GetAcceptResult();
-	virtual DWORDLONG	GetReceiveResult();
-	virtual DWORDLONG	GetSendResult();
+	virtual BOOL GetAcceptResult();
+	virtual DWORDLONG GetReceiveResult();
+	virtual DWORDLONG GetSendResult();
 
-protected:
+      protected:
 	// private data members used only by PortTCP
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	int 				server_socket;
-	int 				client_socket;
+	int server_socket;
+	int client_socket;
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
-	SOCKET				server_socket;
-	SOCKET				client_socket;
+	 SOCKET server_socket;
+	SOCKET client_socket;
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 	// private data members used only by asynchronous PortTCP's
-	char				*accept_ex_buffer;
+	char *accept_ex_buffer;
 
 	// static private data members shared by all PortTCP's
-	static unsigned int		sockets_in_use;
+	static unsigned int sockets_in_use;
 
 	// private functions used only by PortTCP
-	BOOL				CloseSocket( SOCKET *s, char *socket_name ); // utility function
-	DWORDLONG			SynchReceive( LPVOID data, DWORD size = MESSAGE_SIZE );
-	DWORDLONG			SynchSend( LPVOID data, DWORD size = MESSAGE_SIZE );
+	BOOL CloseSocket(SOCKET * s, char *socket_name);	// utility function
+	DWORDLONG SynchReceive(LPVOID data, DWORD size = MESSAGE_SIZE);
+	DWORDLONG SynchSend(LPVOID data, DWORD size = MESSAGE_SIZE);
 
 	// private functions used only by asynchronous PortTCP's
-	DWORDLONG			AsynchReceive( LPVOID data, DWORD size = MESSAGE_SIZE );
-	DWORDLONG			AsynchSend( LPVOID data, DWORD size = MESSAGE_SIZE );
+	DWORDLONG AsynchReceive(LPVOID data, DWORD size = MESSAGE_SIZE);
+	DWORDLONG AsynchSend(LPVOID data, DWORD size = MESSAGE_SIZE);
 };
 
 #if defined(USING_DDK)
@@ -183,23 +178,16 @@ protected:
 extern "C" {
 #endif
 
-BOOL
-PASCAL FAR
-AcceptEx (
-    IN SOCKET sListenSocket,
-    IN SOCKET sAcceptSocket,
-    IN PVOID lpOutputBuffer,
-    IN DWORD dwReceiveDataLength,
-    IN DWORD dwLocalAddressLength,
-    IN DWORD dwRemoteAddressLength,
-    OUT LPDWORD lpdwBytesReceived,
-    IN LPOVERLAPPED lpOverlapped
-    );
+	BOOL PASCAL FAR
+	    AcceptEx(IN SOCKET sListenSocket,
+		     IN SOCKET sAcceptSocket,
+		     IN PVOID lpOutputBuffer,
+		     IN DWORD dwReceiveDataLength,
+		     IN DWORD dwLocalAddressLength,
+		     IN DWORD dwRemoteAddressLength, OUT LPDWORD lpdwBytesReceived, IN LPOVERLAPPED lpOverlapped);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif
-
-#endif // PORTTCP_DEFINED
+#endif				// PORTTCP_DEFINED

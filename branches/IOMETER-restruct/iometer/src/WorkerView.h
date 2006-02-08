@@ -60,10 +60,9 @@
 #ifndef	WORKER_VIEW_DEFINED
 #define WORKER_VIEW_DEFINED
 
-
 #if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+#endif				// _MSC_VER >= 1000
 // WorkerView.h : header file
 //
 
@@ -71,7 +70,7 @@
 
 // Info for Workers image list
 #define WORKER_ICON_SIZE					16
-#define WORKER_ICON_EXPAND					10 // number of icons to add to ImageList when expanding
+#define WORKER_ICON_EXPAND					10	// number of icons to add to ImageList when expanding
 #define WORKER_ICON_BGCOLOR					0x00ff00ff
 
 // Icons for Worker pane (position of icon in bitmap)
@@ -84,75 +83,74 @@
 /////////////////////////////////////////////////////////////////////////////
 // CWorkerView dialog
 
-class CWorkerView : public CDialog
-{
+class CWorkerView:public CDialog {
 // Construction
-public:
-	CWorkerView(CWnd* pParent = NULL);   // standard constructor
+      public:
+	CWorkerView(CWnd * pParent = NULL);	// standard constructor
 
-	TargetType	GetSelectedWorkerType();
+	TargetType GetSelectedWorkerType();
 
-	void		AddManager( Manager *manager );
-	void		AddWorker( Worker *worker );
+	void AddManager(Manager * manager);
+	void AddWorker(Worker * worker);
 
-	void		Initialize();
-	void		Reset();
+	void Initialize();
+	void Reset();
 
-	void		RemoveSelectedItem();
-	void		RemoveManager( Manager *manager );
-	void		RemoveWorker( Worker *worker );
+	void RemoveSelectedItem();
+	void RemoveManager(Manager * manager);
+	void RemoveWorker(Worker * worker);
 
-	Manager*	GetSelectedManager();
-	Worker*		GetSelectedWorker();
-	int			GetSelectedManagerIndex();
-	int			GetSelectedWorkerIndex();
-	int			GetSelectedType();
+	Manager *GetSelectedManager();
+	Worker *GetSelectedWorker();
+	int GetSelectedManagerIndex();
+	int GetSelectedWorkerIndex();
+	int GetSelectedType();
 
-	void		SelectItem( Manager *mgr, Worker *wkr );
+	void SelectItem(Manager * mgr, Worker * wkr);
 
 // Dialog Data
 	//{{AFX_DATA(CWorkerView)
 	enum { IDD = IDD_MANAGER_VIEW };
-	CTreeCtrl	m_TWorkers;
+	CTreeCtrl m_TWorkers;
 	//}}AFX_DATA
-	CImageList	m_ImageList;
+	CImageList m_ImageList;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CWorkerView)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+      protected:
+	 virtual BOOL PreTranslateMessage(MSG * pMsg);
 
 	// The OK and Cancel buttons do not exist, but are called when the enter
 	// and escape key are pressed.  Use these functions to trap on these keys.
 	virtual void OnOK();
 	virtual void OnCancel();
 
-	HTREEITEM	GetManager( Manager* manager );
-	HTREEITEM	GetWorker( Worker* worker );
+	HTREEITEM GetManager(Manager * manager);
+	HTREEITEM GetWorker(Worker * worker);
 
-	HTREEITEM	hall_managers;
-	int			selected_type;
+	HTREEITEM hall_managers;
+	int selected_type;
 
-	BOOL		editing_label;
-	CString		*old_label_name;
+	BOOL editing_label;
+	CString *old_label_name;
 
 	// Generated message map functions
 	//{{AFX_MSG(CWorkerView)
-	afx_msg void OnSelchangedTWorkers(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSelchangingTWorkers(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnEndlabeleditTWorkers(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnBegindragTWorkers(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnRclickTWorkers(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnBeginlabeleditTWorkers(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnSelchangedTWorkers(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnSelchangingTWorkers(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnEndlabeleditTWorkers(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnBegindragTWorkers(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnRclickTWorkers(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnBeginlabeleditTWorkers(NMHDR * pNMHDR, LRESULT * pResult);
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}

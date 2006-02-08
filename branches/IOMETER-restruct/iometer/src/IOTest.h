@@ -71,102 +71,85 @@
 #ifndef TEST_SPEC_DEFINED
 #define TEST_SPEC_DEFINED
 
-
-
 #include "IOAccess.h"
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
- #include "IOCommon.h"
+#include "IOCommon.h"
 #endif
 #include "vipl.h"
 
-
 #define PHYSICAL_DRIVE_PREFIX	"PHYSICALDRIVE:"
-
 
 //
 // Specifications for a single test for one worker.
 //
-struct Test_Spec
-{
-	char			name[MAX_WORKER_NAME];
-	int 			default_assignment;
-	Access_Spec		access[MAX_ACCESS_SPECS];
+struct Test_Spec {
+	char name[MAX_WORKER_NAME];
+	int default_assignment;
+	Access_Spec access[MAX_ACCESS_SPECS];
 };
-
-
 
 //
 // Different type of I/O targets and workers.
 //
-enum TargetType
-{
-	// Valid...		0xX0000000
-	GenericType =		0x80000000,
-	ActiveType =		0x40000000,
+enum TargetType {
+	// Valid...             0xX0000000
+	GenericType = 0x80000000,
+	ActiveType = 0x40000000,
 
-	// Disk...		0x-X000000
-	GenericDiskType =	0x88000000,
-	PhysicalDiskType =	0x8C000000,
-	LogicalDiskType =	0x8A000000,
+	// Disk...              0x-X000000
+	GenericDiskType = 0x88000000,
+	PhysicalDiskType = 0x8C000000,
+	LogicalDiskType = 0x8A000000,
 
-	// Network...		0x-00X0000
-	GenericNetType =	0x80080000,
-	GenericServerType =	0x800C0000,
-	GenericClientType =	0x800A0000,
+	// Network...           0x-00X0000
+	GenericNetType = 0x80080000,
+	GenericServerType = 0x800C0000,
+	GenericClientType = 0x800A0000,
 
-	// TCP...		0x-00-X000
-	GenericTCPType =	0x80088000,
-	TCPServerType =		0x800C8000,
-	TCPClientType =		0x800A8000,
+	// TCP...               0x-00-X000
+	GenericTCPType = 0x80088000,
+	TCPServerType = 0x800C8000,
+	TCPClientType = 0x800A8000,
 
-	// VI...		0x-00-0X00
-	GenericVIType =		0x80080800,
-	VIServerType =		0x800C0800,
-	VIClientType =		0x800A0800,
+	// VI...                0x-00-0X00
+	GenericVIType = 0x80080800,
+	VIServerType = 0x800C0800,
+	VIClientType = 0x800A0800,
 
-	// Invalid...		0xX0000000
-	InvalidType =		0x00000000
+	// Invalid...           0xX0000000
+	InvalidType = 0x00000000
 };
-
 
 #define IsType(src, chk) ((src & chk) == chk)
 
 // Allows comparing two types for worker compatibility.
-const int WORKER_COMPATIBILITY_MASK
-		= GenericDiskType | GenericServerType | GenericClientType;
+const int WORKER_COMPATIBILITY_MASK = GenericDiskType | GenericServerType | GenericClientType;
 
 // Allows comparing a server/client pair for compatibility.
-const int NETWORK_COMPATIBILITY_MASK
-		= GenericTCPType | GenericVIType;
+const int NETWORK_COMPATIBILITY_MASK = GenericTCPType | GenericVIType;
 
 //
 // Disk specific specifications for drives accessed during a test.
 //
-struct Disk_Spec
-{
-	BOOL		ready;
-	
-	int		sector_size;
-	int		maximum_size;
+struct Disk_Spec {
+	BOOL ready;
 
-	int		starting_sector;
+	int sector_size;
+	int maximum_size;
+
+	int starting_sector;
 };
-
-
 
 //
 // TCP specific specifications for TCP networks accessed during a test.
 //
-struct TCP_Spec
-{
+struct TCP_Spec {
 	// Address of local and remote TCP connection.
-	unsigned short	local_port;
+	unsigned short local_port;
 
-	char		remote_address[MAX_NAME];
-	unsigned short	remote_port;
+	char remote_address[MAX_NAME];
+	unsigned short remote_port;
 };
-
-
 
 #define VI_ADDRESS_SIZE				16
 // (Note that current VI hardware only supports a 4 byte 
@@ -176,61 +159,54 @@ struct TCP_Spec
 //
 // VI specific specifications for VI networks accessed during a test.
 //
-struct VI_Spec
-{
+struct VI_Spec {
 	// Name and address of local and remote VI NICs to connect.
 	// Since the VIP_NET_ADDRESS can be variable length, we use fill bytes to ensure
 	// that there's enough room to store the entire address.  The total number of bytes
 	// available for the address and discriminator is VI_ADDRESS_SIZE + VI_DISCRIMINATOR_SIZE.
-	VIP_NET_ADDRESS	local_address;
-	char			local_address_fill_bytes[VI_ADDRESS_SIZE + VI_DISCRIMINATOR_SIZE - 1];
+	VIP_NET_ADDRESS local_address;
+	char local_address_fill_bytes[VI_ADDRESS_SIZE + VI_DISCRIMINATOR_SIZE - 1];
 
-	char			remote_nic_name[MAX_NAME];
-	VIP_NET_ADDRESS	remote_address;
-	char			remote_address_fill_bytes[VI_ADDRESS_SIZE + VI_DISCRIMINATOR_SIZE - 1];
+	char remote_nic_name[MAX_NAME];
+	VIP_NET_ADDRESS remote_address;
+	char remote_address_fill_bytes[VI_ADDRESS_SIZE + VI_DISCRIMINATOR_SIZE - 1];
 
 	// VI specific limitations.
-	int			max_transfer_size;
-	int			max_connections;
-	int			outstanding_ios;
-	#if defined(IOMTR_OSFAMILY_NETWARE)
-	 char padnw[2]; // this has to keep changing and I do not know why
-	 				// orginally it was none, had to make it 4 to work with NetWare now 2??
-	 				// somebodies data size is changing on me and I don't know whose  or why
-	#endif
+	int max_transfer_size;
+	int max_connections;
+	int outstanding_ios;
+#if defined(IOMTR_OSFAMILY_NETWARE)
+	char padnw[2];		// this has to keep changing and I do not know why
+	// orginally it was none, had to make it 4 to work with NetWare now 2??
+	// somebodies data size is changing on me and I don't know whose  or why
+#endif
 
 };
-
-
 
 //
 // Possible specifications for a generic target to have.
 //
-struct Target_Spec
-{
+struct Target_Spec {
 	// Name and type of target.
-	char		name[MAX_NAME];
-	TargetType	type;
+	char name[MAX_NAME];
+	TargetType type;
 
 	// Target type specific specifications.
-	union
-	{
-		Disk_Spec	disk_info;
-		TCP_Spec	tcp_info;
-		VI_Spec		vi_info;
+	union {
+		Disk_Spec disk_info;
+		TCP_Spec tcp_info;
+		VI_Spec vi_info;
 	};
 
 	// Target independent test specifications.
-	int		queue_depth;
-	BOOL		test_connection_rate;
-	int		trans_per_conn;
+	int queue_depth;
+	BOOL test_connection_rate;
+	int trans_per_conn;
 
-	char		padding[4];	// xscale and ia32 arch difference. need this padding.
-	
+	char padding[4];	// xscale and ia32 arch difference. need this padding.
+
 	// Random value used to keep connections in synch.
-	DWORDLONG	random;
+	DWORDLONG random;
 };
-
-
 
 #endif

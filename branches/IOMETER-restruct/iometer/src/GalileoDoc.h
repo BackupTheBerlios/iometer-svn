@@ -59,46 +59,41 @@
 #ifndef DOC_DEFINED
 #define DOC_DEFINED
 
-
 #include "GalileoApp.h"
 
-
-class CGalileoDoc : public CDocument
-{
-protected: // create from serialization only
+class CGalileoDoc:public CDocument {
+      protected:		// create from serialization only
 	CGalileoDoc();
 	DECLARE_DYNCREATE(CGalileoDoc)
-
 // Attributes
 // Operations
-public:
+      public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGalileoDoc)
-	public:
+      public:
 	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
+	virtual void Serialize(CArchive & ar);
 	//}}AFX_VIRTUAL
 
 // Implementation
-public:
-	virtual ~CGalileoDoc();
+      public:
+	 virtual ~ CGalileoDoc();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void Dump(CDumpContext & dc) const;
 #endif
 
 // Generated message map functions
-protected:
+      protected:
 	//{{AFX_MSG(CGalileoDoc)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
+	// NOTE - the ClassWizard will add and remove member functions here.
+	//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
 
 #endif

@@ -60,13 +60,11 @@
 #ifndef	PAGESETUP_DEFINED
 #define PAGESETUP_DEFINED
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CPageSetup dialog
 
 #include "GalileoApp.h"
 #include "IOTest.h"
-
 
 enum {
 	CyclingTargets = 1,
@@ -78,102 +76,93 @@ enum {
 	CyclingQueueTargets
 };
 
-
 // Used to determine cycling step incrementing.
 enum {
 	StepLinear = 0,
 	StepExponential
 };
 
-
 // Information needed by the page to display cycling information.
-struct Cycling_Info
-{
-	BOOL		selected;	// if selected test type uses this cycling
+struct Cycling_Info {
+	BOOL selected;		// if selected test type uses this cycling
 
-	int			start;		// starting cycle value (e.g. 1)	1-100, step 10
-	int			end;		// ending cycle value (e.g. 100)
-	int			step;		// step of cycle value (e.g. 10)
-	int			step_type;	// indicates linear or exponential stepping
+	int start;		// starting cycle value (e.g. 1)        1-100, step 10
+	int end;		// ending cycle value (e.g. 100)
+	int step;		// step of cycle value (e.g. 10)
+	int step_type;		// indicates linear or exponential stepping
 
-	int			step_text;	// ID of text describing stepping option
+	int step_text;		// ID of text describing stepping option
 
-	CEdit		start_box;	// GUI edit boxes for above values
-	CEdit		end_box;
-	CEdit		step_box;
+	CEdit start_box;	// GUI edit boxes for above values
+	CEdit end_box;
+	CEdit step_box;
 
-	CComboBox	step_sel_box;	// drop down list of stepping options
+	CComboBox step_sel_box;	// drop down list of stepping options
 };
 
-
-
-class CPageSetup : public CPropertyPage
-{
+class CPageSetup:public CPropertyPage {
 	DECLARE_DYNCREATE(CPageSetup)
-
 // Construction
-public:
+      public:
 	CPageSetup();
 	~CPageSetup();
 
-	void	EnableWindow( BOOL enable );	// enable or disable the display
+	void EnableWindow(BOOL enable);	// enable or disable the display
 
 	// Functions that take data from the display and put it in a variable,
 	// or take the data from a variable and display it.
-	void	UpdateData( BOOL save_from_window = TRUE );	// Updates to or from the display.
-	void	CheckData( UINT item_id, int* var, BOOL no_zero = FALSE );	// Updates a value given text, and 
-																		// makes sure it is not 0 if 
-																		// no_zero is TRUE.
-	void	Killfocus( int edit_ID, int* value );		// Reverts to the previous value if left blank.
+	void UpdateData(BOOL save_from_window = TRUE);	// Updates to or from the display.
+	void CheckData(UINT item_id, int *var, BOOL no_zero = FALSE);	// Updates a value given text, and 
+	// makes sure it is not 0 if 
+	// no_zero is TRUE.
+	void Killfocus(int edit_ID, int *value);	// Reverts to the previous value if left blank.
 
+	int GetRunTime();	// Converts the run time from hh:mm:ss to seconds.
+	void SaveResults(ostream * file);	// Saves the setup data to the result file.     
+	BOOL SaveConfig(ostream & outfile);	// Save test setup to a file.
+	BOOL LoadConfig(const CString & infilename);	// Load test setup from a file.
 
-	int		GetRunTime();								// Converts the run time from hh:mm:ss to seconds.
-	void	SaveResults( ostream* file );				// Saves the setup data to the result file.	
-	BOOL	SaveConfig( ostream& outfile );		// Save test setup to a file.
-	BOOL	LoadConfig( const CString& infilename );		// Load test setup from a file.
+	int minutes;		// Test run length.
+	int seconds;		// Test run length.
+	int hours;		// Test run length.
+	int ramp_time;		// Time from when all the workers are running to when recording starts.
+	CString test_name;	// Text field for entering a test description.
+	int disk_worker_count;	// Number of disk workers to spawn for every new manager.
+	int net_worker_count;	// Number of network workers to spawn for every new manager.
+	int test_type;		// Identifies whether to cycle or not.
 
-	int		minutes;		// Test run length.
-	int		seconds;		// Test run length.
-	int		hours;			// Test run length.
-	int		ramp_time;		// Time from when all the workers are running to when recording starts.
-	CString	test_name;		// Text field for entering a test description.
-	int		disk_worker_count;	// Number of disk workers to spawn for every new manager.
-	int		net_worker_count;	// Number of network workers to spawn for every new manager.
-	int		test_type;		// Identifies whether to cycle or not.
+	Cycling_Info worker_cycling;
+	Cycling_Info target_cycling;
+	Cycling_Info queue_cycling;
 
-	Cycling_Info	worker_cycling;
-	Cycling_Info	target_cycling;
-	Cycling_Info	queue_cycling;
-
-	int		result_type;
+	int result_type;
 
 // Dialog Data
 	//{{AFX_DATA(CPageSetup)
 	enum { IDD = IDD_SETUP };
-	CComboBox	m_CResultType;
-	CEdit	m_EDiskWorkerCount;
-	CEdit	m_ENetWorkerCount;
-	CEdit	m_ETestName;
-	CEdit	m_ERunTimeSeconds;
-	CEdit	m_ERunTimeMinutes;
-	CEdit	m_ERunTimeHours;
-	CEdit	m_ERampTime;
-	CComboBox	m_CTestType;
+	CComboBox m_CResultType;
+	CEdit m_EDiskWorkerCount;
+	CEdit m_ENetWorkerCount;
+	CEdit m_ETestName;
+	CEdit m_ERunTimeSeconds;
+	CEdit m_ERunTimeMinutes;
+	CEdit m_ERunTimeHours;
+	CEdit m_ERampTime;
+	CComboBox m_CTestType;
 	//}}AFX_DATA
-
 
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPageSetup)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 	// Generated message map functions
 	//{{AFX_MSG(CPageSetup)
-	virtual BOOL OnInitDialog();
+	 virtual BOOL OnInitDialog();
 	afx_msg void OnChangeEDiskWorkerCount();
 	afx_msg void OnChangeENetWorkerCount();
 	afx_msg void OnSelchangeCDStepType();
@@ -199,18 +188,16 @@ protected:
 	afx_msg void OnRNetSpawnCPUs();
 	afx_msg void OnRNetSpawnUser();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-	void SetStepTypeLabel( int text_id, int step_type );
+	 DECLARE_MESSAGE_MAP()
+	void SetStepTypeLabel(int text_id, int step_type);
 
-private:
+      private:
 
 	// Update cycling values.
-	void	SetCyclingInfo( Cycling_Info *cycle_info, BOOL selected, 
-				int start, int end, int step, int cycle_type);
+	void SetCyclingInfo(Cycling_Info * cycle_info, BOOL selected, int start, int end, int step, int cycle_type);
 
 	// Enable/Disable cycling information.
-	void	EnableCyclingInfo( Cycling_Info *cycling_info, BOOL enable );
+	void EnableCyclingInfo(Cycling_Info * cycling_info, BOOL enable);
 };
-
 
 #endif

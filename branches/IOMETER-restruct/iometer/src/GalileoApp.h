@@ -61,20 +61,19 @@
 #ifndef GALILEO_DEFINED
 #define GALILEO_DEFINED
 
-
 #include "GalileoDefs.h"
 #ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
+#error include 'stdafx.h' before including this file for PCH
 #endif
 
-#include "resource.h"       // main symbols
+#include "resource.h"		// main symbols
 #include "IOCommon.h"
 #include "AccessSpecList.h"
 #include "ManagerList.h"
 #include "BigMeter.h"
 #include "GalileoCmdLine.h"
 
-class CGalileoView; // forward declaration
+class CGalileoView;		// forward declaration
 class ManagerList;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -82,31 +81,30 @@ class ManagerList;
 // See GalileoApp.cpp for the implementation of this class
 //
 
-class CGalileoApp : public CWinApp
-{
-public:
+class CGalileoApp:public CWinApp {
+      public:
 	CGalileoApp();
 	~CGalileoApp();
 
-	const char* GetVersionString(BOOL fWithDebugIndicator = FALSE);
+	const char *GetVersionString(BOOL fWithDebugIndicator = FALSE);
 
 	// Is Iometer running in batch mode?
 	BOOL IsBatchMode();
 	// Turns off batch mode.  (Does no harm if Iometer isn't in batch mode.)
 	void OverrideBatchMode();
 	// Determines whether the given address is a local to this machine.
-	BOOL IsAddressLocal( const CString& addr );
+	BOOL IsAddressLocal(const CString & addr);
 	// Launch a local Dynamo with the given name.
-	void LaunchDynamo( const CString& mgr_name = "" );
+	void LaunchDynamo(const CString & mgr_name = "");
 
-	CGalileoView*	pView;
-	CToolBar		m_wndToolBar;
-	CStatusBar		m_wndStatusBar;
+	CGalileoView *pView;
+	CToolBar m_wndToolBar;
+	CStatusBar m_wndStatusBar;
 
-	AccessSpecList	access_spec_list;	// Global access spec list.
-	ManagerList		manager_list;		// Global manager list.
+	AccessSpecList access_spec_list;	// Global access spec list.
+	ManagerList manager_list;	// Global manager list.
 
-	Port			*login_port;
+	Port *login_port;
 
 	enum {
 		closed,
@@ -117,9 +115,9 @@ public:
 		waiting_for_data,
 		receiving_data,
 		failed
-	}				login_state;
+	} login_state;
 
-	TestState		test_state;
+	TestState test_state;
 
 	// Command line parser.  (Also retains parameters.)
 	CGalileoCmdLine cmdline;
@@ -127,11 +125,11 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGalileoApp)
-public:
-	virtual BOOL InitInstance();
-	virtual	int	 ExitInstance();
+      public:
+	 virtual BOOL InitInstance();
+	virtual int ExitInstance();
 	virtual BOOL OnIdle(LONG lCount);
-	virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName);
+	virtual CDocument *OpenDocumentFile(LPCTSTR lpszFileName);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -139,30 +137,25 @@ public:
 	//{{AFX_MSG(CGalileoApp)
 	afx_msg void OnAppAbout();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 
-protected:
+      protected:
 	void IdentifyLocalAddresses();
 
-	CStringArray			ip_addresses;
-	CString					netbios_hostname;
+	CStringArray ip_addresses;
+	CString netbios_hostname;
 
 	// Formatting string for launching a new Dynamo.
 	// This is not the actual command line string.
 	// It is used by CGalileoApp::LaunchDynamo().
-	CString		new_manager_command_line_format;
-private:
-	char				   *m_pVersionString;
-	char				   *m_pVersionStringWithDebug;
+	CString new_manager_command_line_format;
+      private:
+	char *m_pVersionString;
+	char *m_pVersionStringWithDebug;
 };
 
 extern CGalileoApp theApp;
 
 /////////////////////////////////////////////////////////////////////////////
 
-
 #endif
-
-
-
-

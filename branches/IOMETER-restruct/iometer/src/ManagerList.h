@@ -75,160 +75,144 @@
 #ifndef MANAGER_LIST_DEFINED
 #define MANAGER_LIST_DEFINED
 
-
 #include "IOCommon.h"
 #include "Manager.h"
 #include "ManagerMap.h"
 #include "WaitingForManagers.h"
 
-
 // Class information for a list of managers.
-class	ManagerList
-{
-public:
+class ManagerList {
+      public:
 	ManagerList();
 	~ManagerList();
-	void		Reset();
+	void Reset();
 
 	///////////////////////////////////////////////////////////////////////////
 	// Information about the manager list instance.
 	//
-	char		name[MAX_WORKER_NAME];		// Displayable name of list.
+	char name[MAX_WORKER_NAME];	// Displayable name of list.
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Managing list of managers.
 	//
-	Manager*	GetManager( int index, TargetType type = GenericType );
-	Manager*	GetManagerByName( const char *mgr_name, const int mgr_id );
+	Manager *GetManager(int index, TargetType type = GenericType);
+	Manager *GetManagerByName(const char *mgr_name, const int mgr_id);
 	//
 	// Updating worker information.
-	Manager*	AddManager( Manager_Info *manager_info );
-	BOOL		RemoveManager( int index, int purpose = EXIT );
-	void		RemoveAllManagers( int purpose = EXIT );
+	Manager *AddManager(Manager_Info * manager_info);
+	BOOL RemoveManager(int index, int purpose = EXIT);
+	void RemoveAllManagers(int purpose = EXIT);
 	//
-	int			TargetCount( TargetType type = GenericType );
-	int			WorkerCount( TargetType type = GenericType );
-	int			ManagerCount( TargetType type = GenericType );
+	int TargetCount(TargetType type = GenericType);
+	int WorkerCount(TargetType type = GenericType);
+	int ManagerCount(TargetType type = GenericType);
 	//
 	// Disambiguate same-named managers.  This allows managers
 	// to be uniquely identified in saved files and other places.
 	// This should be called any time managers are added, removed, or renamed.
-	void		IndexManagers();
+	void IndexManagers();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Managing targets of manager's workers.
-	void		ClearActiveTargets();
-	BOOL		SetTargets();
+	void ClearActiveTargets();
+	BOOL SetTargets();
 	//
-	BOOL		ActiveInCurrentTest();
-	BOOL		HasActiveCurrentSpec();
-	BOOL		HasIdleCurrentSpec();
+	BOOL ActiveInCurrentTest();
+	BOOL HasActiveCurrentSpec();
+	BOOL HasIdleCurrentSpec();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Managing communication with corresponding Dynamos.
-	void		SendManagers( Message* msg, int recipient = MANAGER );
-	void		SendManagers( int purpose, int recipient = MANAGER );
-	DWORDLONG	Send( int manager_index, int purpose, int recipient = MANAGER );
-	DWORDLONG	Send( int manager_index, Message* msg, int recipient = MANAGER );
-	BOOL		SendActiveManagers( int purpose );
-	DWORDLONG	ReceiveManager( int index, Message* msg );
-	void		ReceiveManagers();
+	void SendManagers(Message * msg, int recipient = MANAGER);
+	void SendManagers(int purpose, int recipient = MANAGER);
+	DWORDLONG Send(int manager_index, int purpose, int recipient = MANAGER);
+	DWORDLONG Send(int manager_index, Message * msg, int recipient = MANAGER);
+	BOOL SendActiveManagers(int purpose);
+	DWORDLONG ReceiveManager(int index, Message * msg);
+	void ReceiveManagers();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Functions to set/retrieve worker target information
-	int			GetConnectionRate( TargetType type );
-	int			GetDiskStart( TargetType type );
-	int			GetDiskSize( TargetType type );
-	int			GetQueueDepth( TargetType type );
-	int			GetMaxSends( TargetType type );
-	int			GetTransPerConn( TargetType type );
+	int GetConnectionRate(TargetType type);
+	int GetDiskStart(TargetType type);
+	int GetDiskSize(TargetType type);
+	int GetQueueDepth(TargetType type);
+	int GetMaxSends(TargetType type);
+	int GetTransPerConn(TargetType type);
 	//
-	void		SetConnectionRate( BOOL connection_rate, TargetType type );
-	void		SetDiskSize( int disk_size );
-	void		SetDiskStart( int disk_start );
-	void		SetQueueDepth( int queue_size, TargetType type );
-	void		SetMaxSends( int max_sends );
-	void		SetTransPerConn( int trans_per_conn, TargetType type );
+	void SetConnectionRate(BOOL connection_rate, TargetType type);
+	void SetDiskSize(int disk_size);
+	void SetDiskStart(int disk_start);
+	void SetQueueDepth(int queue_size, TargetType type);
+	void SetMaxSends(int max_sends);
+	void SetTransPerConn(int trans_per_conn, TargetType type);
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Functions to deal with access specs.
 	//
-	BOOL		InsertAccessSpec( Test_Spec* spec, int before_index );
-	void		RemoveAccessSpec( Test_Spec* spec );
-	void		RemoveAccessSpecAt( int index );
-	void		RemoveAllAccessSpecs();
+	BOOL InsertAccessSpec(Test_Spec * spec, int before_index);
+	void RemoveAccessSpec(Test_Spec * spec);
+	void RemoveAccessSpecAt(int index);
+	void RemoveAllAccessSpecs();
 	//
-	void		MoveAccessSpec( int index, int before_index );
-	void		DownAccessSpec( int index );
-	void		UpAccessSpec( int index );
+	void MoveAccessSpec(int index, int before_index);
+	void DownAccessSpec(int index);
+	void UpAccessSpec(int index);
 	//
-	BOOL		SetAccess( int spec_index );
-	BOOL		InvalidSetup( BOOL &invalidSpecOK );
-	int		GetMaxAccessSpecCount();
-	void		AssignDefaultAccessSpecs();
+	BOOL SetAccess(int spec_index);
+	BOOL InvalidSetup(BOOL & invalidSpecOK);
+	int GetMaxAccessSpecCount();
+	void AssignDefaultAccessSpecs();
 	//
 	// Returns TRUE if all of the workers (on all managers) have
 	// the same access specification list.
-	BOOL		AreAccessSpecsIdentical();
+	BOOL AreAccessSpecsIdentical();
 	//
 	// Gets the name of the current access spec for all workers.
-	char*		GetCommonAccessSpec( int spec_index, char * const specname );
+	char *GetCommonAccessSpec(int spec_index, char *const specname);
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Results from a test.
 	//
 	// Functions to deal with results.
- 	void		ResetResults( int which_perf );
- 	void		ResetAllResults();
-	void		SaveResults( ostream* file, int access_index, int result_type );
-	void		UpdateResults( int which_perf );
+	void ResetResults(int which_perf);
+	void ResetAllResults();
+	void SaveResults(ostream * file, int access_index, int result_type);
+	void UpdateResults(int which_perf);
 	//
 	// Results for the last run test.
-	Results		results[MAX_PERF];
+	Results results[MAX_PERF];
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-	
 	///////////////////////////////////////////////////////////////////////////
 	// Saving and loading of Iometer Configuration Files (ICF's)
 	//
-	ManagerMap	loadmap;
-	BOOL		SaveConfig( ostream& outfile, BOOL save_aspecs, BOOL save_targets );
-	BOOL		LoadConfigPreprocess(	const CString& infilename,
-										BOOL* flags,
-										BOOL replace );
-	BOOL		LoadConfig(				const CString &infilename,
-										BOOL save_aspecs, BOOL save_targets,
-										BOOL replace );
-private:
-	BOOL		GetManagerInfo(	ICF_ifstream& infile, CString& manager_name,
-								int& id, CString& network_name );
+	ManagerMap loadmap;
+	BOOL SaveConfig(ostream & outfile, BOOL save_aspecs, BOOL save_targets);
+	BOOL LoadConfigPreprocess(const CString & infilename, BOOL * flags, BOOL replace);
+	BOOL LoadConfig(const CString & infilename, BOOL save_aspecs, BOOL save_targets, BOOL replace);
+      private:
+	 BOOL GetManagerInfo(ICF_ifstream & infile, CString & manager_name, int &id, CString & network_name);
 	//
 	///////////////////////////////////////////////////////////////////////////
 
+      protected:
+	 BOOL CompareNames(char *net_name1, char *net_name2);
 
-protected:
-	BOOL		CompareNames( char* net_name1, char* net_name2 );
-
-	CTypedPtrArray<CPtrArray, Manager*>		managers;
+	 CTypedPtrArray < CPtrArray, Manager * >managers;
 };
 
 #endif

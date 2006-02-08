@@ -66,27 +66,24 @@
 #ifndef WAITING_FOR_MANAGERS_DEFINED
 #define WAITING_FOR_MANAGERS_DEFINED
 
-
 #include <afxtempl.h>
 #include "resource.h"
 #include "GalileoDefs.h"
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CWaitingForManagers dialog
 
-class CWaitingForManagers : public CDialog
-{
+class CWaitingForManagers:public CDialog {
 // Construction
-public:
-	CWaitingForManagers();   // standard constructor
+      public:
+	CWaitingForManagers();	// standard constructor
 
 	// Create CWaitingForManagers as a modeless dialog
-	BOOL Create( const CString& infilename, BOOL* flags, BOOL replace );
+	BOOL Create(const CString & infilename, BOOL * flags, BOOL replace);
 
 	// Add or remove managers from the waiting list
-	void AddWaitingManager(const CString& name, const CString& address);
-	BOOL RemoveWaitingManager(const CString& name, const CString& address);
+	void AddWaitingManager(const CString & name, const CString & address);
+	BOOL RemoveWaitingManager(const CString & name, const CString & address);
 
 	// Prepares the waiting list dialog for reuse.
 	void Reset();
@@ -94,20 +91,19 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CWaitingForManagers)
 	enum { IDD = IDD_WAITING_FOR_MANAGERS };
-	CListCtrl	m_LManagers;
-	CString	m_TCountdown;
+	CListCtrl m_LManagers;
+	CString m_TCountdown;
 	//}}AFX_DATA
-
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CWaitingForManagers)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 
 	// Update the GUI waiting list to reflect the state of the names and addresses arrays
 	void DisplayManagers();
@@ -124,10 +120,10 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 
 	int remaining_seconds;	// The remaining seconds before automatic abort.
-							// Reinitialized in OnInitDialog from theApp.cmdline.m_iTimeout.
+	// Reinitialized in OnInitDialog from theApp.cmdline.m_iTimeout.
 
 	// The parameters for the callback to the function which will
 	// receive notification when this dialog is finished
@@ -138,11 +134,11 @@ protected:
 	// How many times a second to see whether the waiting list is empty
 	static const int polling_frequency;
 
-	CStringArray			names;
-	CStringArray			addresses;
+	CStringArray names;
+	CStringArray addresses;
 };
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif	// WAITING_FOR_MANAGERS_DEFINED
+#endif				// WAITING_FOR_MANAGERS_DEFINED

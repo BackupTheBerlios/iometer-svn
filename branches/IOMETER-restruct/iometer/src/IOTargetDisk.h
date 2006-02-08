@@ -67,26 +67,24 @@
 #ifndef TARGET_DISK_DEFINED
 #define TARGET_DISK_DEFINED
 
-
 #include "IOCommon.h"
 #include "IOTarget.h"
 #include "IOTest.h"
 #include "IOCQAIO.h"
 
-
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
- #ifndef _LP64
- #define _LP64 /* to get at the 64 bit max long. */
- #define _LP64_DEFINED
- #endif /* _LP64 */
- #define MAX_DISK_SIZE	LONG_MAX
- #ifdef _LP64_DEFINED
- #undef _LP64
- #endif /* _LP64_DEFINED */
+#ifndef _LP64
+#define _LP64			/* to get at the 64 bit max long. */
+#define _LP64_DEFINED
+#endif				/* _LP64 */
+#define MAX_DISK_SIZE	LONG_MAX
+#ifdef _LP64_DEFINED
+#undef _LP64
+#endif				/* _LP64_DEFINED */
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
- #define MAX_DISK_SIZE	_I64_MAX
+#define MAX_DISK_SIZE	_I64_MAX
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 #define MAX_PARTITIONS	26
@@ -97,114 +95,110 @@
 #define TEST_FILE		"iobw.tst"
 
 #if defined(IOMTR_OSFAMILY_UNIX)
- #define ERROR_DISK_FULL					ENOSPC
- #define SECTOR_SIZE						512
- #if defined(IOMTR_OS_SOLARIS)
-  #define RAW_DEVICE_DIR					"/dev/rdsk"
- #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX)
-  #define RAW_DEVICE_DIR					"/dev"
- #else
-  #warning ===> WARNING: You have to do some coding here to get the port done! 
- #endif
-#elif defined(IOMTR_OSFAMILY_NETWARE)
- #define ERROR_DISK_FULL					1
- #define SECTOR_SIZE						512
- LONG NWalertroutine(unsigned long, unsigned long, unsigned long, unsigned long);
+#define ERROR_DISK_FULL					ENOSPC
+#define SECTOR_SIZE						512
+#if defined(IOMTR_OS_SOLARIS)
+#define RAW_DEVICE_DIR					"/dev/rdsk"
+#elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX)
+#define RAW_DEVICE_DIR					"/dev"
+#else
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-
+#elif defined(IOMTR_OSFAMILY_NETWARE)
+#define ERROR_DISK_FULL					1
+#define SECTOR_SIZE						512
+LONG NWalertroutine(unsigned long, unsigned long, unsigned long, unsigned long);
+#endif
 
 //
 // Logical or physical disk drives.
 //
-class TargetDisk : public Target
-{
-public:
-	
+class TargetDisk:public Target {
+      public:
+
 	TargetDisk();
 	~TargetDisk();
 
-	BOOL		Initialize( Target_Spec *target_info, CQ *cq );
+	BOOL Initialize(Target_Spec * target_info, CQ * cq);
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Initialize logical disks (e.g. C:, D:, E:, etc.).
-	BOOL		Init_Logical( char drive );
+	BOOL Init_Logical(char drive);
 	// Initialize physical (system) disks (e.g. physicaldisk0, physicaldisk1, etc.).
-	BOOL		Init_Physical( int drive );
+	BOOL Init_Physical(int drive);
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
-	BOOL		Init_Logical( char *drive );
-	BOOL		Init_Physical( char *drive );
+	BOOL Init_Logical(char *drive);
+	BOOL Init_Physical(char *drive);
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-	void		Set_Size( int maximum_size = 0 );
-	void		Set_Starting_Sector( int starting_sector = 0 );
+	void Set_Size(int maximum_size = 0);
+	void Set_Starting_Sector(int starting_sector = 0);
 
-	BOOL		Prepare( void *buffer, DWORDLONG *prepare_offset, DWORD bytes, volatile TestState *test_state );
+	BOOL Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, volatile TestState * test_state);
 
-	BOOL		Open( volatile TestState *test_state, int open_flag = 0 );
-	BOOL		Close( volatile TestState *test_state );
+	BOOL Open(volatile TestState * test_state, int open_flag = 0);
+	BOOL Close(volatile TestState * test_state);
 
-	ReturnVal	Read( LPVOID buffer, Transaction *trans );
-	ReturnVal	Write( LPVOID buffer, Transaction *trans );
+	ReturnVal Read(LPVOID buffer, Transaction * trans);
+	ReturnVal Write(LPVOID buffer, Transaction * trans);
 
 	// Set the offset to the next position on the disk (random or sequential).
-	void		Seek( BOOL random, DWORD request_size, DWORD user_alignment, DWORDLONG user_align_mask );
+	void Seek(BOOL random, DWORD request_size, DWORD user_alignment, DWORDLONG user_align_mask);
 
-	char		file_name[MAX_NAME];
+	char file_name[MAX_NAME];
 
-protected:
+      protected:
 
-	BOOL		Set_Sizes( BOOL open_disk = TRUE );	// Get physical drive dimensions.
-	void		Set_Sector_Info();
+	 BOOL Set_Sizes(BOOL open_disk = TRUE);	// Get physical drive dimensions.
+	void Set_Sector_Info();
 
-private:
+      private:
 
-	CQAIO		*io_cq;
-	HANDLE		disk_file;
+	 CQAIO * io_cq;
+	HANDLE disk_file;
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	struct File	file_handle;
+	struct File file_handle;
 #endif
 
-	DWORDLONG	size;				// Size of the disk in bytes.
-	DWORD		alignment;			// Alignment I/Os on this address.
-	DWORDLONG	sector_align_mask;		// Bit mask to align requests to sector sizes.
-							// This only works for sectors a power of 2.
-							// Set to NOT_POWER_OF_TWO otherwise.
-	DWORDLONG	starting_position;		// First bytes where transfers occur.
-	DWORDLONG	ending_position;		// Last byte where transfers can occur.
-	DWORDLONG	offset;
-	DWORD		bytes_transferred;		// Number of bytes successfully transferred to the disk.
+	DWORDLONG size;		// Size of the disk in bytes.
+	DWORD alignment;	// Alignment I/Os on this address.
+	DWORDLONG sector_align_mask;	// Bit mask to align requests to sector sizes.
+	// This only works for sectors a power of 2.
+	// Set to NOT_POWER_OF_TWO otherwise.
+	DWORDLONG starting_position;	// First bytes where transfers occur.
+	DWORDLONG ending_position;	// Last byte where transfers can occur.
+	DWORDLONG offset;
+	DWORD bytes_transferred;	// Number of bytes successfully transferred to the disk.
 
 #if defined(IOMTR_OSFAMILY_NETWARE)
- 	LONG mmAppTag;
- 	HNDL reservationHandle;
+	LONG mmAppTag;
+	HNDL reservationHandle;
 	HNDL applicationHandle;
 	OBID objectid;
 	LONG reservationmode;
 	LONG alerttoken;
-	struct ApplicationRegistrationDef1
-	{															
-	   	LONG   classobjectsignature;
-   		BYTE  *name;
-	   	LONG (*controlroutine)(LONG token,LONG _function,LONG p1,LONG p2,LONG p3,LONG bufferlength,void *buffer );
-	   	LONG   privilegedapplicationkey;
-	   	LONG   type;
-	   	LONG   token;
-	   	LONG   identifier;
+	struct ApplicationRegistrationDef1 {
+		LONG classobjectsignature;
+		BYTE *name;
+		 LONG(*controlroutine) (LONG token, LONG _function, LONG p1, LONG p2, LONG p3, LONG bufferlength,
+					void *buffer);
+		LONG privilegedapplicationkey;
+		LONG type;
+		LONG token;
+		LONG identifier;
 	} appDef;
-public:
+      public:
 	int NWOpenDevice(LONG device, LONG mode);
 	int NWCloseDevice(HNDL handle);
 #endif
 #if defined(IOMTR_OS_SOLARIS)
-	BOOL		Look_For_Partitions();			// private member function to look for partitions on disk.
-	DWORDLONG	Get_Partition_Size(char *, int);	// private member function to get the partition size.
-	DWORDLONG	Get_Slice_Size(char *, int);		// private member function to get the slice size.
+	BOOL Look_For_Partitions();	// private member function to look for partitions on disk.
+	DWORDLONG Get_Partition_Size(char *, int);	// private member function to get the partition size.
+	DWORDLONG Get_Slice_Size(char *, int);	// private member function to get the slice size.
 #endif
 };
-
-
 
 #endif

@@ -71,119 +71,100 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "IOCQAIO.h"
-
-
 
 CQAIO::CQAIO()
 {
-	completion_queue = CreateIoCompletionPort( INVALID_HANDLE_VALUE, 
-		NULL, 0, 1 );
+	completion_queue = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1);
 
-	if ( completion_queue == INVALID_HANDLE_VALUE )
-	{
-		cout << "*** Unable to create I/O completion port for asynchronous "
-			<< "I/O operations." << endl;
+	if (completion_queue == INVALID_HANDLE_VALUE) {
+		cout << "*** Unable to create I/O completion port for asynchronous " << "I/O operations." << endl;
 	}
 }
-
-
 
 //
 // Getting and returning that status of any completed I/O calls.
 //
-ReturnVal CQAIO::GetStatus( int *bytes, int *data, int delay )
+ReturnVal CQAIO::GetStatus(int *bytes, int *data, int delay)
 {
-	Transaction	*transaction = NULL;
-#if defined(IOMTR_OSFAMILY_WINDOWS)
-	ULONG_PTR	temp;
-#elif defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	DWORD		temp;
-#else
-	#error ===> ERROR: You have to do some coding here to get the port done!
-#endif
-	BOOL		result;
-	DWORD		error_no;
+	Transaction *transaction = NULL;
 
-	result = GetQueuedCompletionStatus( completion_queue, (DWORD*) bytes, 
-		&temp, (LPOVERLAPPED*) &transaction, delay );
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+	ULONG_PTR temp;
+#elif defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
+	DWORD temp;
+#else
+#error ===> ERROR: You have to do some coding here to get the port done!
+#endif
+	BOOL result;
+	DWORD error_no;
+
+	result = GetQueuedCompletionStatus(completion_queue, (DWORD *) bytes,
+					   &temp, (LPOVERLAPPED *) & transaction, delay);
 
 	// Set the return data to the transaction id that completed or failed.
-	if ( result )
-	{
+	if (result) {
 		// I/O completed successfully.
 		*data = transaction->request_number;
 		return ReturnSuccess;
 	}
-
 	// See if the request timed out - i.e. nothing completed to the queue 
 	// within the specified time.
-	if ( (error_no = GetLastError()) == WAIT_TIMEOUT )
+	if ((error_no = GetLastError()) == WAIT_TIMEOUT)
 		return ReturnTimeout;
 
 	// If an I/O failed, but we know which one, abort.
-	if ( transaction )
-	{
+	if (transaction) {
 		*data = transaction->request_number;
 		return ReturnAbort;
 	}
-
 	// Unknown error occurred.
-	cout << "*** Error " << error_no << " occurred while getting queued "
-		<< "completion status." << endl;
+	cout << "*** Error " << error_no << " occurred while getting queued " << "completion status." << endl;
 	return ReturnError;
 }
-
-
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 BOOL CQAIO::SetQueueSize(int size)
 {
-    struct IOCQ *this_cqid = (struct IOCQ *)completion_queue;
+	struct IOCQ *this_cqid = (struct IOCQ *)completion_queue;
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
-    this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element) * size);
+	this_cqid->element_list = (struct CQ_Element *)malloc(sizeof(CQ_Element) * size);
 #elif defined(IOMTR_OS_NETWARE)
-    this_cqid->element_list = (struct CQ_Element *)NXMemAlloc(sizeof(CQ_Element) * size, 1);
+	this_cqid->element_list = (struct CQ_Element *)NXMemAlloc(sizeof(CQ_Element) * size, 1);
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-    if (this_cqid->element_list == NULL)
-    {
-        cout << "memory allocation failed." << endl;
-        return(FALSE);
-    }
+	if (this_cqid->element_list == NULL) {
+		cout << "memory allocation failed." << endl;
+		return (FALSE);
+	}
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
-    this_cqid->aiocb_list = (struct aiocb64 **)malloc(sizeof(struct aiocb64 *) * size);
+	this_cqid->aiocb_list = (struct aiocb64 **)malloc(sizeof(struct aiocb64 *) * size);
 #elif defined(IOMTR_OS_NETWARE)
-    this_cqid->aiocb_list = (struct aiocb64 **)NXMemAlloc(sizeof(struct aiocb64 *) * size, 1);
+	this_cqid->aiocb_list = (struct aiocb64 **)NXMemAlloc(sizeof(struct aiocb64 *) * size, 1);
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-    if (this_cqid->aiocb_list == NULL)
-    {
-        cout << "memory allocation failed." << endl;
+	if (this_cqid->aiocb_list == NULL) {
+		cout << "memory allocation failed." << endl;
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
-        free(this_cqid->element_list);
+		free(this_cqid->element_list);
 #elif defined(IOMTR_OS_NETWARE)
-        NXMemFree(this_cqid->element_list);
+		NXMemFree(this_cqid->element_list);
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-		return(FALSE);
-    }
+		return (FALSE);
+	}
 
-    this_cqid->size = size;
-    memset(this_cqid->aiocb_list, 0, sizeof(struct aiocb64 *) * size);
+	this_cqid->size = size;
+	memset(this_cqid->aiocb_list, 0, sizeof(struct aiocb64 *) * size);
 	memset(this_cqid->element_list, 0, sizeof(struct CQ_Element) * size);
 
-    #ifdef _DEBUG
-    cout << "allocated a completion queue of size " << size << " for handle : "
-        << this_cqid << endl;
-    #endif
-    return(TRUE);
+#ifdef _DEBUG
+	cout << "allocated a completion queue of size " << size << " for handle : " << this_cqid << endl;
+#endif
+	return (TRUE);
 }
 #endif
-
-

@@ -63,19 +63,15 @@
 #ifndef MESSAGE_DEFINED
 #define MESSAGE_DEFINED
 
-
-
 #include "IOCommon.h"
 #include "IOTest.h"
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Message purposes.
 //
 // The following messages require an immediate reply.
 //
-#define REPLY_FILTER		0x10000000		// DO NOT CHANGE!!!
+#define REPLY_FILTER		0x10000000	// DO NOT CHANGE!!!
 #define LOGIN			REPLY_FILTER + 1	// DO NOT CHANGE!!!
 #define ADD_WORKERS		REPLY_FILTER + 2
 #define REPORT_TARGETS		REPLY_FILTER + 3
@@ -102,17 +98,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-
 //
 // The following messages require a reply, but not immediately.
 //
-#define DELAY_REPLY_FILTER	0x00100000			// DO NOT CHANGE!!!
+#define DELAY_REPLY_FILTER	0x00100000	// DO NOT CHANGE!!!
 #define PREP_DISKS		DELAY_REPLY_FILTER + 1
 
 //
 // A reply is NOT expected (or wanted) for the following messages.
 //
-#define	NO_REPLY_FILTER		0x01000000			// DO NOT CHANGE!!!
+#define	NO_REPLY_FILTER		0x01000000	// DO NOT CHANGE!!!
 #define READY			NO_REPLY_FILTER + 1
 #define RECORD_ON		NO_REPLY_FILTER + 2
 #define RESET			NO_REPLY_FILTER + 3
@@ -120,56 +115,48 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
 // Different data a message can contain.
-union Message_Data
-{
-	Manager_Info	manager_info;
+union Message_Data {
+	Manager_Info manager_info;
 
 	//
 	// Specifications used to access specific targets.
 	//
-	Target_Spec	targets[MAX_TARGETS];
+	Target_Spec targets[MAX_TARGETS];
 
 	// Access specifications for a test.
-	Test_Spec	spec;
+	Test_Spec spec;
 
 	// 
 	// Test results for Dynamo, including CPU utilization.
 	//
-	Manager_Results	manager_results;
+	Manager_Results manager_results;
 	// Results for worker threads, including target results.
-	Worker_Results	worker_results;
+	Worker_Results worker_results;
 };
-
 
 // Format of informative and data messages.
-struct Message
-{
-	int		purpose;	// Reason message was sent.  See constants above.
-	int		data;		// Brief amount of data sent with the message.
+struct Message {
+	int purpose;		// Reason message was sent.  See constants above.
+	int data;		// Brief amount of data sent with the message.
 };
 
-struct Data_Message
-{
-	int		count;		// Number of data items in the message.
-	char		pad[4];		// coz of Solaris - NT differences
-	Message_Data	data;		// Detailed data sent with the data message.
+struct Data_Message {
+	int count;		// Number of data items in the message.
+	char pad[4];		// coz of Solaris - NT differences
+	Message_Data data;	// Detailed data sent with the data message.
 };
 
 #define MESSAGE_SIZE		sizeof( Message )
 #define DATA_MESSAGE_SIZE	sizeof( Data_Message )
 
-void reorder(Message&);
-void reorder(Data_Message&, int union_type, int send_recv);
+void reorder(Message &);
+void reorder(Data_Message &, int union_type, int send_recv);
 
 #define DATA_MESSAGE_MANAGER_INFO	1
 #define DATA_MESSAGE_TARGET_SPEC	2
 #define DATA_MESSAGE_TEST_SPEC		3
 #define DATA_MESSAGE_MANAGER_RESULTS	4
 #define DATA_MESSAGE_WORKER_RESULTS	5
-
-
 
 #endif

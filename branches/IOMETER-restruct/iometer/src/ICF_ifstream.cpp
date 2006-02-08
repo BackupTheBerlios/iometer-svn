@@ -67,11 +67,9 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "GalileoApp.h"
 #include "ICF_ifstream.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -83,13 +81,12 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
+#endif
 
 //
 // Reads the version header from the file,
@@ -107,40 +104,34 @@ long ICF_ifstream::GetVersion()
 	long version;
 
 	version_string = GetNextLine();
-	if (version_string.IsEmpty())
-	{
+	if (version_string.IsEmpty()) {
 		ErrorMessage("File is improperly formatted.  Empty line found "
-			"where file version information was expected.");
+			     "where file version information was expected.");
 		return -1;
 	}
 
 	if (!ExtractFirstIntVersion(version_string, major)
-		|| !ExtractFirstIntVersion(version_string, middle)
-		|| !ExtractFirstIntVersion(version_string, minor))
-	{
-		ErrorMessage("File is improperly formatted.  "
-			"Error retrieving file version information.");
+	    || !ExtractFirstIntVersion(version_string, middle)
+	    || !ExtractFirstIntVersion(version_string, minor)) {
+		ErrorMessage("File is improperly formatted.  " "Error retrieving file version information.");
 		return -1;
 	}
 
-	version = (long) major * 10000 + middle * 100 + minor;
+	version = (long)major *10000 + middle * 100 + minor;
 
 	// Special case test for ancient version "3.26.97" OLTP.txt
 	// file distributed with 1998.01.05.
-	if ( version == 32697 )
+	if (version == 32697)
 		version = 19980105;
 
-	if ( version < 19980105 )
-	{
-		ErrorMessage( "Error restoring file.  "
-			"Version number earlier than 1998.01.05 or incorrectly formatted." );
+	if (version < 19980105) {
+		ErrorMessage("Error restoring file.  "
+			     "Version number earlier than 1998.01.05 or incorrectly formatted.");
 		return -1;
 	}
 
 	return version;
 }
-
-
 
 //
 // Looks through the whole stream for the given identifier on a line
@@ -161,9 +152,8 @@ BOOL ICF_ifstream::SkipTo(CString identifier)
 
 	identifier.TrimLeft();
 	identifier.TrimRight();
-	
-	do
-	{
+
+	do {
 		if (eof())
 			return FALSE;
 
@@ -172,14 +162,12 @@ BOOL ICF_ifstream::SkipTo(CString identifier)
 		curline.TrimLeft();
 		curline.TrimRight();
 	}
-	while ( identifier.CompareNoCase(curline.Left(identifier.GetLength())) != 0 );
+	while (identifier.CompareNoCase(curline.Left(identifier.GetLength())) != 0);
 	// Loop until the identifier is matched.  (Ignore the rest of the line when
 	// comparing.)
 
 	return TRUE;
 }
-
-
 
 //
 // Duplicates the functionality of istream's getline(), but does so using
@@ -194,11 +182,10 @@ CString ICF_ifstream::GetNextLine()
 {
 	CString curline;
 
-	if (!is_open())
-	{
+	if (!is_open()) {
 		// This should never happen.  This indicates an Iometer bug.
 		ErrorMessage("A call was made to ICF_ifstream::GetNextLine() "
-			"with a closed file!  Please report this as an Iometer bug.");
+			     "with a closed file!  Please report this as an Iometer bug.");
 		curline.Empty();
 		return curline;
 	}
@@ -211,8 +198,6 @@ CString ICF_ifstream::GetNextLine()
 
 	return curline;
 }
-
-
 
 //
 // Use GetPair retrieve the next comment and corresponding value from the
@@ -228,19 +213,17 @@ CString ICF_ifstream::GetNextLine()
 // Return value of FALSE indicates an error.  The calling function
 // should report a specific error.
 //
-BOOL ICF_ifstream::GetPair(CString& key, CString& value)
+BOOL ICF_ifstream::GetPair(CString & key, CString & value)
 {
 	streampos placeholder;
 	CString tempstring;
 
-	if (!is_open())
-	{
+	if (!is_open()) {
 		// This should never happen.  This indicates an Iometer bug.
 		ErrorMessage("A call was made to ICF_ifstream::GetPair() "
-			"with a closed file!  Please report this as an Iometer bug.");
+			     "with a closed file!  Please report this as an Iometer bug.");
 		return FALSE;
 	}
-
 	// If EOF, let the caller report an error.
 	if (rdstate())
 		return FALSE;
@@ -258,49 +241,41 @@ BOOL ICF_ifstream::GetPair(CString& key, CString& value)
 	// Note that strlen is used (instead of a constant) to make the
 	// connection between the string and its length obvious to someone
 	// making changes to the code.
-	if ( key.Left((int)(strlen("'End"))).CompareNoCase("'End") == 0
-		|| key.Left((int)(strlen("'Version"))).CompareNoCase("'Version") == 0)
-	{
+	if (key.Left((int)(strlen("'End"))).CompareNoCase("'End") == 0
+	    || key.Left((int)(strlen("'Version"))).CompareNoCase("'Version") == 0) {
 		value.Empty();
 		return TRUE;
 	}
-
 	// Skip any extra comment lines before the data.
-	while (peek() == '\'')
-	{
+	while (peek() == '\'') {
 		placeholder = tellg();
 		tempstring = GetNextLine();
 
-		if ( tempstring.Left((int)(strlen("'End"))).CompareNoCase("'End") == 0
-			|| tempstring.Left((int)(strlen("'Version"))).CompareNoCase("'Version") == 0)
-		{
+		if (tempstring.Left((int)(strlen("'End"))).CompareNoCase("'End") == 0
+		    || tempstring.Left((int)(strlen("'Version"))).CompareNoCase("'Version") == 0) {
 			// This only happens when there is an empty section, like:
-			//	'Worker
-			//	'End worker
+			//      'Worker
+			//      'End worker
 			// Worker name is normally expected after the "'Worker" header,
 			// but in this case, it's only an "'End worker" header.  The
 			// "'End..." header must be returned in the NEXT call to GetPair.
 
-			seekg( placeholder );	// back up the file pointer
+			seekg(placeholder);	// back up the file pointer
 			value.Empty();
-			return TRUE;			// NOT an error condition
+			return TRUE;	// NOT an error condition
 		}
 	}
 
 	// If EOF, let the caller report an error.
-	if (rdstate())
-	{
+	if (rdstate()) {
 		value.Empty();
 		return FALSE;
 	}
-
 	// Get the data corresponding to the above key.
 	value = GetNextLine();
 
 	return TRUE;
 }
-
-
 
 //
 // Extract the first integer in a CString and remove it from the CString.
@@ -312,7 +287,7 @@ BOOL ICF_ifstream::GetPair(CString& key, CString& value)
 // Return value of FALSE indicates an error.  The calling function
 // should report a specific error.
 //
-BOOL ICF_ifstream::ExtractFirstInt(CString& string, int& number)
+BOOL ICF_ifstream::ExtractFirstInt(CString & string, int &number)
 {
 	const CString backup_string = string;
 	CString substring;
@@ -320,29 +295,25 @@ BOOL ICF_ifstream::ExtractFirstInt(CString& string, int& number)
 
 	number = 0;
 
-	if ((pos = string.FindOneOf("-1234567890")) == -1)
-	{
-		ErrorMessage("File is improperly formatted.  Expected an "
-			"integer value.");
+	if ((pos = string.FindOneOf("-1234567890")) == -1) {
+		ErrorMessage("File is improperly formatted.  Expected an " "integer value.");
 		return FALSE;
 	}
-
 	// Cleave off everything before the first number.
 	string = string.Right(string.GetLength() - pos);
 
-	substring = string.SpanIncluding("-1234567890"); // get the int as a string
+	substring = string.SpanIncluding("-1234567890");	// get the int as a string
 	string = string.Right(string.GetLength() - substring.GetLength());
 
 	// If there are any negative signs after the first character, fail.
-	if (substring.Right(substring.GetLength() - 1).Find('-') != -1)
-	{
+	if (substring.Right(substring.GetLength() - 1).Find('-') != -1) {
 		ErrorMessage("File is improperly formatted.  An integer value "
-			"has a negative sign in the middle or on the end of it.");
+			     "has a negative sign in the middle or on the end of it.");
 		string = backup_string;	// restore string's old value
 		return FALSE;
 	}
 
-	number = atoi( (LPCTSTR)substring );
+	number = atoi((LPCTSTR) substring);
 
 	// Prepare string for further processing.  Eat whitespace.
 	string.TrimLeft();
@@ -357,7 +328,7 @@ BOOL ICF_ifstream::ExtractFirstInt(CString& string, int& number)
 	return TRUE;
 }
 
-BOOL ICF_ifstream::ExtractFirstIntVersion(CString& string, int& number)
+BOOL ICF_ifstream::ExtractFirstIntVersion(CString & string, int &number)
 {
 	const CString backup_string = string;
 	CString substring;
@@ -365,20 +336,17 @@ BOOL ICF_ifstream::ExtractFirstIntVersion(CString& string, int& number)
 
 	number = 0;
 
-	if ((pos = string.FindOneOf("1234567890")) == -1)
-	{
-		ErrorMessage("File is improperly formatted.  Expected an "
-			"integer value.");
+	if ((pos = string.FindOneOf("1234567890")) == -1) {
+		ErrorMessage("File is improperly formatted.  Expected an " "integer value.");
 		return FALSE;
 	}
-
 	// Cleave off everything before the first number.
 	string = string.Right(string.GetLength() - pos);
 
-	substring = string.SpanIncluding("1234567890"); // get the int as a string
+	substring = string.SpanIncluding("1234567890");	// get the int as a string
 	string = string.Right(string.GetLength() - substring.GetLength());
 
-	number = atoi( (LPCTSTR)substring );
+	number = atoi((LPCTSTR) substring);
 
 	// Prepare string for further processing.  Eat whitespace.
 	string.TrimLeft();
@@ -392,8 +360,6 @@ BOOL ICF_ifstream::ExtractFirstIntVersion(CString& string, int& number)
 
 	return TRUE;
 }
-
-
 
 //
 // Extracts the first solid series of letters, numbers, underscores, and
@@ -406,21 +372,17 @@ BOOL ICF_ifstream::ExtractFirstIntVersion(CString& string, int& number)
 // Error condition is not reported.  If returned string is empty (IsEmpty)
 // and an empty string is not expected, the caller should report an error.
 //
-CString ICF_ifstream::ExtractFirstToken(CString& string, BOOL spaces/*=FALSE*/)
+CString ICF_ifstream::ExtractFirstToken(CString & string, BOOL spaces /*=FALSE*/ )
 {
 	CString substring;
 	int pos;
 	CString token_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-							"abcdefghijklmnopqrstuvwxyz"
-							"1234567890"
-							"`~!@#$%^&*()-_=+[]{}\\:;\"'./<>?";
-
+	    "abcdefghijklmnopqrstuvwxyz" "1234567890" "`~!@#$%^&*()-_=+[]{}\\:;\"'./<>?";
 
 	if (spaces)
 		token_chars += " ";
 
-	if ((pos = string.FindOneOf(token_chars)) == -1)
-	{
+	if ((pos = string.FindOneOf(token_chars)) == -1) {
 		substring.Empty();
 		return substring;
 	}

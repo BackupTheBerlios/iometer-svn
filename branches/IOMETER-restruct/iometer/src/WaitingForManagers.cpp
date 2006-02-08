@@ -67,12 +67,10 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "IOCommon.h"
 #include "WaitingForManagers.h"
 #include "GalileoView.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -84,13 +82,12 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
+#endif
 
 enum { TIMER_COUNTDOWN = 1 };
 
@@ -101,7 +98,7 @@ const int CWaitingForManagers::polling_frequency = 2;
 // CWaitingForManagers dialog
 
 CWaitingForManagers::CWaitingForManagers()
-	: CDialog(CWaitingForManagers::IDD)
+:  CDialog(CWaitingForManagers::IDD)
 {
 	//{{AFX_DATA_INIT(CWaitingForManagers)
 	m_TCountdown = _T("");
@@ -110,8 +107,7 @@ CWaitingForManagers::CWaitingForManagers()
 	Reset();
 }
 
-
-void CWaitingForManagers::DoDataExchange(CDataExchange* pDX)
+void CWaitingForManagers::DoDataExchange(CDataExchange * pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CWaitingForManagers)
@@ -120,13 +116,11 @@ void CWaitingForManagers::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CWaitingForManagers, CDialog)
-	//{{AFX_MSG_MAP(CWaitingForManagers)
-	ON_WM_TIMER()
-	//}}AFX_MSG_MAP
+    //{{AFX_MSG_MAP(CWaitingForManagers)
+ON_WM_TIMER()
+    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
 
 //
 // Prepares the waiting list dialog for reuse.
@@ -137,7 +131,6 @@ void CWaitingForManagers::Reset()
 	names.RemoveAll();
 	addresses.RemoveAll();
 }
-
 
 //
 // Overrides the base class Create function for modeless dialog boxes.
@@ -151,75 +144,66 @@ void CWaitingForManagers::Reset()
 //
 // If the dialog is aborted or not all managers log in, no callback will occur.
 //
-BOOL CWaitingForManagers::Create( const CString& infilename, BOOL* flags, BOOL replace )
+BOOL CWaitingForManagers::Create(const CString & infilename, BOOL * flags, BOOL replace)
 {
 	// Store the parameters to the callback function (CGalileoView::OpenConfigFile())
 	callback_infilename = infilename;
 	callback_replace = replace;
-	for (int counter=0; counter<NumICFFlags; counter++)
+	for (int counter = 0; counter < NumICFFlags; counter++)
 		callback_flags[counter] = flags[counter];
 
 	// Create the dialog (modeless)
-	if (!CDialog::Create(IDD_WAITING_FOR_MANAGERS))
-	{
-		ErrorMessage("Couldn't create CWaitingForManagers dialog.  "
-			"Please report this as an Iometer bug.");
+	if (!CDialog::Create(IDD_WAITING_FOR_MANAGERS)) {
+		ErrorMessage("Couldn't create CWaitingForManagers dialog.  " "Please report this as an Iometer bug.");
 		return FALSE;
 	}
-
 	// Disable the Iometer main frame
-	GetParent()->EnableWindow( FALSE );
+	GetParent()->EnableWindow(FALSE);
 	// Enable this dialog, specifically (it was disabled by the main frame disable call)
-	EnableWindow( TRUE );
+	EnableWindow(TRUE);
 	// *** Make sure the main frame is always re-enabled!
 
 	return TRUE;
 }
-
 
 //
 // Called to remove the OS resources (timer and window).
 //
 BOOL CWaitingForManagers::Close()
 {
-	if ( !KillTimer(TIMER_COUNTDOWN) )
-	{
+	if (!KillTimer(TIMER_COUNTDOWN)) {
 		ErrorMessage("Couldn't kill the CWaitingForManagers TIMER_COUNTDOWN "
-						"timer.  Please report this as an Iometer bug.");
+			     "timer.  Please report this as an Iometer bug.");
 		return FALSE;
 	}
-
 	// Re-enable the Iometer main frame.
-	GetParent()->EnableWindow( TRUE );
+	GetParent()->EnableWindow(TRUE);
 
-	if ( !DestroyWindow() )
-	{
+	if (!DestroyWindow()) {
 		ErrorMessage("Couldn't close the CWaitingForManagers window.  "
-						"Please report this as an Iometer bug.");
+			     "Please report this as an Iometer bug.");
 		return FALSE;
 	}
 
 	return TRUE;
 }
 
-
 //
 // Abort button handler (there is no Cancel button)
 // Triggered when the user clicks Abort, presses Alt-F4, or closes the window.
 // NOT triggered when countdown reaches zero.
 //
-void CWaitingForManagers::OnCancel() 
+void CWaitingForManagers::OnCancel()
 {
 	// The user performed some mouse or keyboard action to abort
 	// the dialog, so make sure Iometer goes to interactive mode.
 	theApp.OverrideBatchMode();
 
-	(void) Close();
+	(void)Close();
 
 	// Clear the manager map and the CWaitingForManagers waiting list.
 	theApp.manager_list.loadmap.Reset();
 }
-
 
 //
 // Called when Dialog first appears.
@@ -237,75 +221,66 @@ BOOL CWaitingForManagers::OnInitDialog()
 
 	// Tell Windows to call OnTimer every xxxx ms to check
 	// for an empty list and to decrement the countdown.
-	SetTimer(TIMER_COUNTDOWN, 1000/polling_frequency, NULL);
+	SetTimer(TIMER_COUNTDOWN, 1000 / polling_frequency, NULL);
 
 	// Figure out the width of the waiting manager list control
-	m_LManagers.GetWindowRect( &rect );
+	m_LManagers.GetWindowRect(&rect);
 	width = rect.right - rect.left + 1;
-	width -= 5;	// necessary to avoid seeing a scrollbar (for some reason?)
+	width -= 5;		// necessary to avoid seeing a scrollbar (for some reason?)
 
 	// Initialize the manager waiting list CListCtrl
-	m_LManagers.InsertColumn(0, "Name", LVCFMT_LEFT, width/2);
-	m_LManagers.InsertColumn(1, "Address", LVCFMT_LEFT, width/2, 1);
+	m_LManagers.InsertColumn(0, "Name", LVCFMT_LEFT, width / 2);
+	m_LManagers.InsertColumn(1, "Address", LVCFMT_LEFT, width / 2, 1);
 
 	// Update the waiting list
 	DisplayManagers();
 
-	return TRUE;  // return TRUE unless you set the focus to a control
+	return TRUE;		// return TRUE unless you set the focus to a control
 }
-
 
 //
 // Timer handler -- decrements countdown every second.
 //
-void CWaitingForManagers::OnTimer(UINT nIDEvent) 
+void CWaitingForManagers::OnTimer(UINT nIDEvent)
 {
 	static int accumulator = 0;
 
-	switch (nIDEvent)
-	{
+	switch (nIDEvent) {
 	case TIMER_COUNTDOWN:
-		accumulator += 1000/polling_frequency;
+		accumulator += 1000 / polling_frequency;
 
 		// Has a second gone by?
-		if (accumulator >= 1000)
-		{
+		if (accumulator >= 1000) {
 			accumulator -= 1000;
 			remaining_seconds--;
 			UpdateCountdown();
 		}
 
-		if (names.GetSize() == 0)
-		{
-			theApp.pView->OpenConfigFile(	callback_infilename,
-											callback_flags,
-											callback_replace );
-			(void) Close();
+		if (names.GetSize() == 0) {
+			theApp.pView->OpenConfigFile(callback_infilename, callback_flags, callback_replace);
+			(void)Close();
 
 			// If we are in batch mode, start the test.
 			// (In batch mode, this dialog will always appear.)
-			if ( theApp.IsBatchMode() )
+			if (theApp.IsBatchMode())
 				theApp.pView->Go();
-		}
-		else if (remaining_seconds <= 0)
-		{
+		} else if (remaining_seconds <= 0) {
 			// theApp.OverrideBatchMode();
 
-			if(theApp.IsBatchMode()) {
+			if (theApp.IsBatchMode()) {
 				exit(1);
 			}
 
-			(void) Close();
+			(void)Close();
 
 			ErrorMessage("Time expired.  Not all managers specified in the config file "
-				"were available in Iometer, so loading was aborted.");
+				     "were available in Iometer, so loading was aborted.");
 		}
 		break;
 	default:
 		CDialog::OnTimer(nIDEvent);
 	}
 }
-
 
 //
 // Displays the countdown notice.
@@ -314,17 +289,16 @@ void CWaitingForManagers::UpdateCountdown()
 {
 	char string[10];	// assuming no delay will be longer than 10 digits long
 
-	_itoa( remaining_seconds, string, 10 );
+	_itoa(remaining_seconds, string, 10);
 
-	m_TCountdown = "Automatically aborting in " + (CString)string + " seconds...";
+	m_TCountdown = "Automatically aborting in " + (CString) string + " seconds...";
 	UpdateData(FALSE);	// update the GUI
 }
-
 
 //
 // Add a manager's entry to the waiting list.
 //
-void CWaitingForManagers::AddWaitingManager(const CString& name, const CString& address)
+void CWaitingForManagers::AddWaitingManager(const CString & name, const CString & address)
 {
 	names.SetSize(names.GetSize() + 1);
 	addresses.SetSize(addresses.GetSize() + 1);
@@ -332,20 +306,16 @@ void CWaitingForManagers::AddWaitingManager(const CString& name, const CString& 
 	addresses[addresses.GetSize() - 1] = address;
 }
 
-
 //
 // Remove a manager's entry from the waiting list.
 //
-BOOL CWaitingForManagers::RemoveWaitingManager(const CString& name, const CString& address)
+BOOL CWaitingForManagers::RemoveWaitingManager(const CString & name, const CString & address)
 {
-	for (int counter=0; counter<names.GetSize(); counter++)
-	{
+	for (int counter = 0; counter < names.GetSize(); counter++) {
 		// Do these managers match?
-		if ( (name.CompareNoCase(names[counter]) == 0
-			  && address.CompareNoCase(addresses[counter]) == 0)
-			|| ( (addresses[counter] == "") // "special local host" case
-		  && (names[counter].Compare(HOSTNAME_LOCAL) == 0 ) ) )
-		{
+		if ((name.CompareNoCase(names[counter]) == 0 && address.CompareNoCase(addresses[counter]) == 0)
+		    || ((addresses[counter] == "")	// "special local host" case
+			&& (names[counter].Compare(HOSTNAME_LOCAL) == 0))) {
 			// Remove this entry from the waiting list
 			names.RemoveAt(counter);
 			addresses.RemoveAt(counter);
@@ -365,7 +335,6 @@ BOOL CWaitingForManagers::RemoveWaitingManager(const CString& name, const CStrin
 	return FALSE;
 }
 
-
 //
 // Fills in the m_LManagers CListCtrl with the contents of the name and address CArrays
 //
@@ -376,24 +345,20 @@ void CWaitingForManagers::DisplayManagers()
 	// Clear the manager waiting list CListCtrl.
 	m_LManagers.DeleteAllItems();
 
-	for (int counter=0; counter<names.GetSize(); counter++)
-	{
+	for (int counter = 0; counter < names.GetSize(); counter++) {
 		// Insert a row into the list
-		m_LManagers.InsertItem( counter, NULL );
+		m_LManagers.InsertItem(counter, NULL);
 
 		// Fill in the manager name
-		if ( !m_LManagers.SetItemText( counter, 0, names[counter] ) )
-		{
+		if (!m_LManagers.SetItemText(counter, 0, names[counter])) {
 			ErrorMessage("Couldn't SetItemText for the name column in the CListCtrl.  "
-				"Please report this as an Iometer bug.");
+				     "Please report this as an Iometer bug.");
 			return;
 		}
-
 		// Fill in the address
-		if ( !m_LManagers.SetItemText( counter, 1, addresses[counter] ) )
-		{
+		if (!m_LManagers.SetItemText(counter, 1, addresses[counter])) {
 			ErrorMessage("Couldn't SetItemText for the address column in the CListCtrl.  "
-				"Please report this as an Iometer bug.");
+				     "Please report this as an Iometer bug.");
 			return;
 		}
 	}

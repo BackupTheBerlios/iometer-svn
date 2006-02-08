@@ -60,10 +60,9 @@
 #ifndef PAGENETWORK_DEFINED
 #define PAGENETWORK_DEFINED
 
-
 #if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+#endif				// _MSC_VER >= 1000
 
 /////////////////////////////////////////////////////////////////////////////
 // CPageNetwork dialog
@@ -71,93 +70,90 @@
 #include "GalileoApp.h"
 #include "PageTarget.h"
 
-class CPageNetwork : public CPropertyPage
-{
+class CPageNetwork:public CPropertyPage {
 	DECLARE_DYNCREATE(CPageNetwork)
-
 // Construction
-public:
+      public:
 	CPageNetwork();
 	~CPageNetwork();
 
-	void	EnableWindow( BOOL enable = TRUE );
-	void	AddManager( Manager *manager );
-	void	RemoveManager( Manager *manager );
-	void	ShowData();
-	void	ShowTargets();
-	void	Reset();
+	void EnableWindow(BOOL enable = TRUE);
+	void AddManager(Manager * manager);
+	void RemoveManager(Manager * manager);
+	void ShowData();
+	void ShowTargets();
+	void Reset();
 
 // Dialog Data
 	//{{AFX_DATA(CPageNetwork)
 	enum { IDD = IDD_NETWORKS };
-	CEdit	m_EMaxSends;
-	CButton	m_CConnectionRate;
-	CComboBox	m_DInterface;
-	CEdit	m_EConnectionRate;
-	CSpinButtonCtrl	m_SConnectionRate;
-	CTreeCtrl	m_TTargets;
+	CEdit m_EMaxSends;
+	CButton m_CConnectionRate;
+	CComboBox m_DInterface;
+	CEdit m_EConnectionRate;
+	CSpinButtonCtrl m_SConnectionRate;
+	CTreeCtrl m_TTargets;
 	//}}AFX_DATA
 
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPageNetwork)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
-	void	StoreTargetSelection();
+      protected:
+	void StoreTargetSelection();
 
-	void	ShowTargetSelection();
-	void	ShowFocus();
-	void	ShowConnectionRate();
-	void	ShowInterface();
-	void	ShowSettings();
+	void ShowTargetSelection();
+	void ShowFocus();
+	void ShowConnectionRate();
+	void ShowInterface();
+	void ShowSettings();
 
 	// Functions that move the highlight.
-	void	SetFocusUp();
-	void	SetFocusDown();
-	void	SetFocusHome();
-	void	SetFocusEnd();
+	void SetFocusUp();
+	void SetFocusDown();
+	void SetFocusHome();
+	void SetFocusEnd();
 
-	void	SelectRange( HTREEITEM hstart, HTREEITEM hend, BOOL replace = TRUE, 
-						TargetSelType state = TargetChecked );
-	void	SetSelectionCheck( HTREEITEM hitem, TargetSelType selection );
-	TargetSelType	GetSelectionCheck( HTREEITEM hitem );
-	void	SetAllCheck( TargetSelType selection );
-	void	CheckInterface( HTREEITEM hmanager, char *net_address = NULL );
-	void	KeySingleSel( WORD wVKey );	// Single selection keyboard handler
-	void	KeyMultiSel( WORD wVKey );	// Multi selection keyboard handler
+	void SelectRange(HTREEITEM hstart, HTREEITEM hend, BOOL replace = TRUE, TargetSelType state = TargetChecked);
+	void SetSelectionCheck(HTREEITEM hitem, TargetSelType selection);
+	TargetSelType GetSelectionCheck(HTREEITEM hitem);
+	void SetAllCheck(TargetSelType selection);
+	void CheckInterface(HTREEITEM hmanager, char *net_address = NULL);
+	void KeySingleSel(WORD wVKey);	// Single selection keyboard handler
+	void KeyMultiSel(WORD wVKey);	// Multi selection keyboard handler
 
-	void	EditSetfocus( CEdit* edit );
+	void EditSetfocus(CEdit * edit);
 
-	CImageList	m_ImageList;
-	HTREEITEM	selected;		// The last selected item, or NULL if the 
-								// selection has not changed.
-	HTREEITEM	highlighted;	// The current selection when using the keyboard.
+	CImageList m_ImageList;
+	HTREEITEM selected;	// The last selected item, or NULL if the 
+	// selection has not changed.
+	HTREEITEM highlighted;	// The current selection when using the keyboard.
 
 	// Generated message map functions
 	//{{AFX_MSG(CPageNetwork)
-	afx_msg void OnClickTTargets(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnClickTTargets(NMHDR * pNMHDR, LRESULT * pResult);
 	afx_msg void OnCConnectionRate();
-	afx_msg void OnDeltaposSConnectionRate(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDeltaposSConnectionRate(NMHDR * pNMHDR, LRESULT * pResult);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSetfocusEConnectionRate();
-	afx_msg void OnSelchangingTTargets(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnSelchangingTTargets(NMHDR * pNMHDR, LRESULT * pResult);
 	afx_msg void OnSelchangeDInterface();
 	afx_msg void OnKillfocusEConnectionRate();
-	afx_msg void OnKeydownTTargets(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnDblclkTTargets(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSetfocusTTargets(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKeydownTTargets(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnDblclkTTargets(NMHDR * pNMHDR, LRESULT * pResult);
+	afx_msg void OnSetfocusTTargets(NMHDR * pNMHDR, LRESULT * pResult);
 	afx_msg void OnKillfocusEMaxSends();
 	afx_msg void OnSetfocusEMaxSends();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 
 };
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-#endif // !defined(PAGENETWORK_DEFINED)
+#endif				// !defined(PAGENETWORK_DEFINED)

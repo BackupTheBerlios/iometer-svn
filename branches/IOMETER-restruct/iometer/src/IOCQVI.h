@@ -61,14 +61,10 @@
 #ifndef	CQVI_DEFINED
 #define	CQVI_DEFINED
 
-
-
 #include "IOCQ.h"
 #include "VINic.h"
 
-class TargetVI;		// forward declaration
-
-
+class TargetVI;			// forward declaration
 
 ///////////////////////////////////////////////////////////////////////////////
 // Completion queues used by VI targets.  Note that although a VI completion 
@@ -79,36 +75,33 @@ class TargetVI;		// forward declaration
 // this class.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class CQVI : public CQ
-{
-public:
+class CQVI:public CQ {
+      public:
 
 	CQVI();
-	virtual ~CQVI() {}
+	virtual ~ CQVI() {
+	}
+	///////////////////////////////////////////////////////////////////////////// Each completion queue is directly associated with a single VI NIC.
+	    BOOL Create(VINic * vi_nic, TargetVI * target);
+	BOOL Destroy();
 
-	///////////////////////////////////////////////////////////////////////////
-	// Each completion queue is directly associated with a single VI NIC.
-	BOOL		Create( VINic *vi_nic, TargetVI *target );
-	BOOL		Destroy();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Attach VI connections with this completion queue.
-	ReturnVal		GetStatus( int *bytes, int *data, int delay );
-	VIP_CQ_HANDLE	completion_queue;
+	ReturnVal GetStatus(int *bytes, int *data, int delay);
+	VIP_CQ_HANDLE completion_queue;
+
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-private:
+      private:
 
 	// Pointer to data use to manage and maintain the VI connection.
-	TargetVI	*vi_target;
+	TargetVI * vi_target;
 
-	VIPL	vipl;
+	VIPL vipl;
 };
 
-
-
-#endif // CQVI_DEFINED
+#endif				// CQVI_DEFINED

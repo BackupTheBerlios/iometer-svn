@@ -80,12 +80,10 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include "GalileoApp.h"
+#include "GalileoApp.h"
 #endif
 #include "IOPort.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -97,19 +95,18 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
+#endif
 
 //
 // Constructor and destructor.
 //
 
-Port::Port( BOOL synch )
+Port::Port(BOOL synch)
 {
 	synchronous = synch;
 	name[0] = '\0';
@@ -123,40 +120,37 @@ Port::Port( BOOL synch )
 Port::~Port()
 {
 	delete errmsg;
-	if ( accept_overlapped.hEvent )
-		CloseHandle( accept_overlapped.hEvent );
-	if ( receive_overlapped.hEvent )
-		CloseHandle( receive_overlapped.hEvent );
-	if ( send_overlapped.hEvent )
-		CloseHandle( send_overlapped.hEvent );
-}
 
+	if (accept_overlapped.hEvent)
+		CloseHandle(accept_overlapped.hEvent);
+	if (receive_overlapped.hEvent)
+		CloseHandle(receive_overlapped.hEvent);
+	if (send_overlapped.hEvent)
+		CloseHandle(send_overlapped.hEvent);
+}
 
 // 
 // Determine if an asynchronous operation has completed yet (TRUE = yes, FALSE = no).  Does not block.
 // Utility function called by IsAcceptComplete(), IsReceiveComplete(), and IsSendComplete().
 //
-BOOL Port::IsOperationComplete( OVERLAPPED *olap )
+BOOL Port::IsOperationComplete(OVERLAPPED * olap)
 {
-	if ( synchronous )
-	{
+	if (synchronous) {
 		return TRUE;
 	}
 
-	if ( olap->hEvent )
-	{
+	if (olap->hEvent) {
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		cout << "Async Port objects not supported on UNIX or NetWare" << endl;
 		return FALSE;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-		DWORD d = WaitForSingleObject ( olap->hEvent, 0 );
-		return ( d == WAIT_OBJECT_0 );
+		DWORD d = WaitForSingleObject(olap->hEvent, 0);
+
+		return (d == WAIT_OBJECT_0);
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-	}
-	else
-	{
+	} else {
 		return FALSE;
 	}
 }
@@ -166,7 +160,7 @@ BOOL Port::IsOperationComplete( OVERLAPPED *olap )
 //
 BOOL Port::IsAcceptComplete()
 {
-	return ( IsOperationComplete( &accept_overlapped ) );
+	return (IsOperationComplete(&accept_overlapped));
 }
 
 // 
@@ -174,7 +168,7 @@ BOOL Port::IsAcceptComplete()
 //
 BOOL Port::IsReceiveComplete()
 {
-	return ( IsOperationComplete( &receive_overlapped ) );
+	return (IsOperationComplete(&receive_overlapped));
 }
 
 // 
@@ -182,7 +176,7 @@ BOOL Port::IsReceiveComplete()
 //
 BOOL Port::IsSendComplete()
 {
-	return ( IsOperationComplete( &send_overlapped ) );
+	return (IsOperationComplete(&send_overlapped));
 }
 
 //
@@ -191,27 +185,25 @@ BOOL Port::IsSendComplete()
 // 
 BOOL Port::InitOverlapped(OVERLAPPED * olap)
 {
-	if ( synchronous )
-	{
+	if (synchronous) {
 		return FALSE;
 	}
 
-	if ( olap->hEvent )
-		CloseHandle( olap->hEvent );
+	if (olap->hEvent)
+		CloseHandle(olap->hEvent);
 
 	// specify the file pointer (meaningless for a pipe or socket, but must be set!)
 	olap->Offset = 0;
 	olap->OffsetHigh = 0;
 
 	// create a manual-reset event object for the OVERLAPPED structure
-	olap->hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+	olap->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	if ( olap->hEvent == NULL )
+	if (olap->hEvent == NULL)
 		return FALSE;
 	else
 		return TRUE;
 }
-
 
 //
 // Utility function: output the "errmsg" message in an appropriate manner for the
@@ -219,15 +211,13 @@ BOOL Port::InitOverlapped(OVERLAPPED * olap)
 //
 void Port::OutputErrMsg()
 {
-	if ( !errmsg )
-	{
+	if (!errmsg) {
 		errmsg = new ostringstream;
 		*errmsg << "Port::OutputErrMsg() called with invalid errmsg value!" << ends;
 	}
-
 #if defined(_GALILEO_)
 	// Iometer
-	ErrorMessage( errmsg->str().c_str() );
+	ErrorMessage(errmsg->str().c_str());
 #else
 	// Dynamo
 	cout << errmsg->str() << endl;
@@ -235,12 +225,13 @@ void Port::OutputErrMsg()
 
 	// str() returns pointer to buffer and freezes it, we must call freeze(FALSE) to 
 	// unfreeze the buffer before we can delete the object
-        // ---
+	// ---
 	// REMARK: freeze() no longer needed because new are now
 	// using ostringstream instead of ostrstream.
 	//
 	// errmsg->rdbuf()->freeze( FALSE );
-	
+
 	delete errmsg;
+
 	errmsg = new ostringstream;
 }

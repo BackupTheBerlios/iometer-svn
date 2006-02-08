@@ -64,60 +64,51 @@
 #ifndef IO_TRANSFERS_DEFINED
 #define IO_TRANSFERS_DEFINED
 
-
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
- #include "IOCommon.h"
+#include "IOCommon.h"
 #endif
 #include "vipl.h"
-
-
 
 //
 // Generic structure to hold information that may be passed to a thread.
 //
-struct Thread_Info
-{
-	int		id;			// Thread's identification.  Used by thread to
-						// determine what work it is to do, such as which disk to access.
-	void*	parent;		// Pointer used to get parent object.
+struct Thread_Info {
+	int id;			// Thread's identification.  Used by thread to
+	// determine what work it is to do, such as which disk to access.
+	void *parent;		// Pointer used to get parent object.
 };
-
-
 
 //
 // Information about a single transaction performed by a thread.  Note that a 
 // worker has at most one I/O outstanding at a time for a given transaction.
 //
-struct Transaction
-{
+struct Transaction {
 	// NOTE!  This must be the first member of this structure!
-	OVERLAPPED		asynchronous_io;
+	OVERLAPPED asynchronous_io;
 
 	// Target to use for current transaction.
-	int				target_id;
+	int target_id;
 	//
-	int				request_number;		// each trans. holds its own index in the Transaction array
+	int request_number;	// each trans. holds its own index in the Transaction array
 	//
 	// these are set when a new transaction is started in a transaction slot
-	DWORD			request_size;		// size of request posting
-	DWORD			reply_size;			// size of reply posting
-	DWORDLONG		start_transaction;	// starting time of entire transaction
+	DWORD request_size;	// size of request posting
+	DWORD reply_size;	// size of reply posting
+	DWORDLONG start_transaction;	// starting time of entire transaction
 	//
 	// these are changed when the transaction's REQUESTs have
 	// all been completed and replies are about to be queued
-	BOOL			is_read;			// is this I/O a read (TRUE) or a write (FALSE)?
+	BOOL is_read;		// is this I/O a read (TRUE) or a write (FALSE)?
 	//
 	// these change per I/O within the transaction
 	// ("size" must also be changed in the event of a partial I/O)
-	DWORD			size;				// number of bytes to be transferred in the current request
-	DWORDLONG		start_IO;			// time I/O request was made
+	DWORD size;		// number of bytes to be transferred in the current request
+	DWORDLONG start_IO;	// time I/O request was made
 	//
 	// these two values are decremented when a request or reply I/O is completed,
 	// not when it is queued
-	int				remaining_requests;	// PING (number of requests remaining in this transaction)
-	int				remaining_replies;	// PONG (number of replies remaining in this transaction)
+	int remaining_requests;	// PING (number of requests remaining in this transaction)
+	int remaining_replies;	// PONG (number of replies remaining in this transaction)
 };
-
-
 
 #endif

@@ -76,15 +76,12 @@
 #ifndef _IOVERSION
 #define _IOVERSION
 
-
 #if defined(IOMTR_OSFAMILY_WINDOWS)
- #include <winver.h>
-#endif /* !UNIX */
-
+#include <winver.h>
+#endif				/* !UNIX */
 
 // The maximum size allowed for the version string.
 #define MAX_VERSION_LENGTH 80
-
 
 // Note that the DEBUG version should have an identical version string as the release version,
 // with an added " DEBUG" - the Dynamo/Iometer version comparison in CGalileoApp::OnIdle() ignores
@@ -95,10 +92,8 @@
 #define		VERSION_DEBUG	""
 #endif
 
-
 #if defined (__cplusplus)
-extern "C"
-{
+extern "C" {
 #endif
 
 // Iometer has been using date stamps as the version strings, and currently
@@ -106,44 +101,42 @@ extern "C"
 // The last "official" version was "2001.07.19", which is the version
 // you will find in iometer-initial.tar.gz at the Sourceforge page
 // (http://sourceforge.net/projects/iometer).
-//#define IOVER_FILEVERSION				"2003.02.15\0"
-//#define IOVER_FILEVERSION				"2003.02.15-post\0"
-//#define IOVER_FILEVERSION				"2003.05.10\0"
-//#define IOVER_FILEVERSION				"2003.05.10-post\0"
-//#define IOVER_FILEVERSION				"2003.12.16\0"
-//#define IOVER_FILEVERSION				"2003.12.16-post\0"
-//#define IOVER_FILEVERSION				"2004.07.30-RC1\0"
-//#define IOVER_FILEVERSION				"2004.07.30\0"
-//#define IOVER_FILEVERSION				"2003.12.16-post\0"
-//#define IOVER_FILEVERSION				"2004.07.30\0"   // => Has never been active; see IOMETER1 branch!
+//#define IOVER_FILEVERSION                             "2003.02.15\0"
+//#define IOVER_FILEVERSION                             "2003.02.15-post\0"
+//#define IOVER_FILEVERSION                             "2003.05.10\0"
+//#define IOVER_FILEVERSION                             "2003.05.10-post\0"
+//#define IOVER_FILEVERSION                             "2003.12.16\0"
+//#define IOVER_FILEVERSION                             "2003.12.16-post\0"
+//#define IOVER_FILEVERSION                             "2004.07.30-RC1\0"
+//#define IOVER_FILEVERSION                             "2004.07.30\0"
+//#define IOVER_FILEVERSION                             "2003.12.16-post\0"
+//#define IOVER_FILEVERSION                             "2004.07.30\0"   // => Has never been active; see IOMETER1 branch!
 #define IOVER_FILEVERSION				"2004.07.30-post\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
 
-
-
 #if defined(IOMTR_OSFAMILY_WINDOWS)
 
-#define IOVER_LEGALCOPYRIGHT			"Copyright © 1996-2001 Intel Corporation\0"
+
 #define IOVER_LEGALTRADEMARKS			"\0"
 #define IOVER_COMPANYNAME			"Intel Corporation\0"
 
 #ifdef _DEBUG
- #if defined(IOMTR_OS_WIN64)
-  #define IOVER_PRODUCT_NAME			"Iometer 64-bit (DEBUG)\0"
- #elif defined(IOMTR_OS_WIN32)
-  #define IOVER_PRODUCT_NAME			"Iometer (DEBUG)\0"
- #else
-  #warning ===> WARNING: You have to do some coding here to get the port done! 
- #endif
+#if defined(IOMTR_OS_WIN64)
+#define IOVER_PRODUCT_NAME			"Iometer 64-bit (DEBUG)\0"
+#elif defined(IOMTR_OS_WIN32)
+#define IOVER_PRODUCT_NAME			"Iometer (DEBUG)\0"
 #else
- #if defined(IOMTR_OS_WIN64)
-  #define IOVER_PRODUCT_NAME			"Iometer 64-bit\0"
- #elif defined(IOMTR_OS_WIN32)
-  #define IOVER_PRODUCT_NAME			"Iometer\0"
- #else
-  #warning ===> WARNING: You have to do some coding here to get the port done! 
- #endif
-#endif // _DEBUG
+#warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+#else
+#if defined(IOMTR_OS_WIN64)
+#define IOVER_PRODUCT_NAME			"Iometer 64-bit\0"
+#elif defined(IOMTR_OS_WIN32)
+#define IOVER_PRODUCT_NAME			"Iometer\0"
+#else
+#warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+#endif				// _DEBUG
 
 ////////
 // The following are based on unique (for each component) resource variables
@@ -155,11 +148,11 @@ extern "C"
 #define IOVER_INTERNAL_NAME		"Galileo\0"
 #define IOVER_ORIGINAL_FILE_NAME	"Iometer.exe\0"
 #if defined(IOMTR_OS_WIN64)
- #define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI (64-bit)\0"
+#define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI (64-bit)\0"
 #elif defined(IOMTR_OS_WIN32)
- #define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI\0"
+#define IOVER_FILE_DESCRIPTION		"Iometer Control/GUI\0"
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 #define IOVER_COMMENTS			"\0"
 #endif
@@ -169,23 +162,18 @@ extern "C"
 #define IOVER_INTERNAL_NAME		"Pulsar\0"
 #define IOVER_ORIGINAL_FILE_NAME	"Dynamo.exe\0"
 #if defined(IOMTR_OS_WIN64)
- #define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator (64-bit)\0"
+#define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator (64-bit)\0"
 #elif defined(IOMTR_OS_WIN32)
- #define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator\0"
+#define IOVER_FILE_DESCRIPTION		"Iometer Workload Generator\0"
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 #define IOVER_COMMENTS			"\0"
 #endif
 
 #endif
 
-
 #if defined (__cplusplus)
 }
 #endif
-
-
-#endif // _IOVERSION
-
-
+#endif				// _IOVERSION

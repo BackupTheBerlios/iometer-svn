@@ -85,7 +85,6 @@
 /* ######################################################################### */
 #if defined(IOMTR_OS_LINUX)
 
-
 #include "IOManager.h"
 #include "IOTargetDisk.h"
 #include <dirent.h>
@@ -116,15 +115,17 @@ static int compareRawDiskNames(const void *a, const void *b);
 // of disks found.  Drives are reported in order so that Iometer does not
 // need to sort them.
 //
-int Manager::Report_Disks( Target_Spec* disk_spec )
+int Manager::Report_Disks(Target_Spec * disk_spec)
 {
-	TargetDisk	d;
-	int		count = 0;
+	TargetDisk d;
+	int count = 0;
 	char usedDevs[USED_DEVS_MAX_SIZE + 1];
+
 	usedDevs[0] = '\0';
 
 	FILE *sfile;
 	char *swapbuf = NULL;
+
 	// prepare swap buffer which contains content of /proc/swaps
 	if ((sfile = fopen("/proc/swaps", "r")) == NULL)
 		swapbuf = NULL;
@@ -142,7 +143,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	}
 
 	cout << "Reporting drive information..." << endl;
-	
+
 	// *********************************************************************************
 	// DEVELOPER NOTES
 	// ---------------
@@ -156,39 +157,36 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	//    that are in mtab.
 	//
 	// **********************************************************************************
-	
+
 	//
 	// First find all virtual disks by inspecting the mount table. Then search for
 	// physical disks that aren't mounted.
 	//
 
-
 	if ((mnttab = getenv("MNTTAB")) == NULL)
 		mnttab = _PATH_MOUNTED;
 
 	FILE *file;
-	if ((file = fopen(mnttab, "r")) == NULL)
-	{
+
+	if ((file = fopen(mnttab, "r")) == NULL) {
 		cout << "open (mount tab) file " << mnttab << " failed with error " << errno << endl;
 		cout << "Set environment variable MNTTAB to correct pathname" << endl;
 		exit(1);
 	}
-	
+
 	struct mntent *ment;
 
 	int length;
 	char disk_name[MAX_NAME];
 
-	while ((ment = getmntent(file)) != NULL)
-	{
+	while ((ment = getmntent(file)) != NULL) {
 #ifdef _DEBUG
 		cout << "*** File system found: " << ment->mnt_fsname << "\n";
 #endif
 		if (!strncmp(ment->mnt_fsname, "/dev/", 5)) {
 			// This is a real disk. Add it to our list of disks not to use as
 			// physical devices.
-			if (strlen(usedDevs) + 2 + strlen(ment->mnt_fsname + 5) >=
-					USED_DEVS_MAX_SIZE) {
+			if (strlen(usedDevs) + 2 + strlen(ment->mnt_fsname + 5) >= USED_DEVS_MAX_SIZE) {
 				cerr << "Too many devices for our list! Aborting.\n";
 				exit(1);
 			}
@@ -196,7 +194,6 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			strcat(usedDevs, ment->mnt_fsname + 5);
 			strcat(usedDevs, " ");
 		}
-
 		// see if the current file sys is an excluded file system type for dynamo.
 		if (strstr(exclude_filesys, ment->mnt_type) != NULL) {
 #ifdef _DEBUG
@@ -213,16 +210,15 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		strncpy(disk_name, ment->mnt_dir, length);
 		disk_name[length] = 0;
 
-		if ( ! d.Init_Logical( disk_name ) ) {
+		if (!d.Init_Logical(disk_name)) {
 #ifdef _DEBUG
 			cout << "*** " << __FUNCTION__ << ": Init_Logical failed.\n";
 #endif
 			continue;
 		}
-
 		// Drive exists and ready for use.
 		d.spec.type = LogicalDiskType;
-		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
+		memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
 
 		disk_spec[count].name[length] = 0;
 		// and TargetDisk::Init_Logical().
@@ -231,7 +227,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		strcat(disk_spec[count].name, "]");
 
 #ifdef _DEBUG
-			cout << "   Found " << disk_spec[count].name << "." << endl << flush;
+		cout << "   Found " << disk_spec[count].name << "." << endl << flush;
 #endif
 		count++;
 		if (count >= MAX_TARGETS)
@@ -243,8 +239,9 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		return count;
 
 	cout << "  Physical drives (raw devices)..." << endl;
-	
+
 	int i, valid_devcnt;
+
 	for (i = 0; i < MAX_TARGETS; i++) {
 		if (blkdevlist[i][0] == 0) {
 			break;
@@ -257,7 +254,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		}
 	}
 	valid_devcnt = i;
-	
+
 	// Now reporting physical drives (raw devices). Data from /proc/partitions.
 	// Example output from /proc/partitions:
 	//////////////////////////////////////////////////////////////////////
@@ -270,11 +267,10 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	//////////////////////////////////////////////////////////////////////
 	// Note: In the above example, "hdc" is a CD-ROM, and "sda1" and "sda2" are
 	// two partitions on the disk represented by "sda".
-		
+
 	file = fopen("/proc/partitions", "r");
 	if (file == NULL) {
-		cerr << "Open \"/proc/partitions\" failed (errno " << errno <<"). "
-			"Cannot locate physical disks.\n";
+		cerr << "Open \"/proc/partitions\" failed (errno " << errno << "). " "Cannot locate physical disks.\n";
 		exit(1);
 	}
 	//
@@ -282,23 +278,25 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// is blank, but fscanf will skip that automatically.
 	//
 	int c;
+
 	do {
 		c = getc(file);
 	} while ((c != '\n') && (c != EOF));
 
-	char devName[MAX_NAME], paddedDevName[MAX_NAME+2];
+	char devName[MAX_NAME], paddedDevName[MAX_NAME + 2];
+
 #if MAX_NAME != 80
- #warning ===> WARNING: You have to keep the fscanf() and MAX_NAME in sync!
- // "fscanf(... %<nn>s)" has to be "MAX_NAME - 1"
+#warning ===> WARNING: You have to keep the fscanf() and MAX_NAME in sync!
+	// "fscanf(... %<nn>s)" has to be "MAX_NAME - 1"
 #endif
-	while ((count < MAX_TARGETS) &&
-				 (fscanf(file, "%*d %*d %*d %79s", devName) == 1)) {
+	while ((count < MAX_TARGETS) && (fscanf(file, "%*d %*d %*d %79s", devName) == 1)) {
 		sprintf(paddedDevName, " %s ", devName);
 #ifdef _DEBUG
 		cout << __FUNCTION__ << ": Found device " << devName << "\n";
 #endif
 		if (strstr(usedDevs, paddedDevName) == NULL) {
 			int skip;
+
 			// Nobody has mounted this device. Try to open it for reading; if we can,
 			// then add it to our list of physical devices.
 #ifdef _DEBUG
@@ -307,7 +305,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			skip = 0;
 			for (i = 0; i < valid_devcnt; i++) {
 				if ((devName[0] == '/' && !strcmp(devName, blkdevlist[i])) ||
-					(devName[0] != '/' && !strcmp(devName, blkdevlist[i] + strlen("/dev/")))) {
+				    (devName[0] != '/' && !strcmp(devName, blkdevlist[i] + strlen("/dev/")))) {
 #ifdef _DEBUG
 					cout << "Find duplicate device " << devName << ", Ignoring." << endl;
 #endif
@@ -326,7 +324,8 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 					tmp[i - 2] = ' ';
 					if (strstr(swapbuf, tmp) != NULL) {
 #ifdef _DEBUG
-					cout << __FUNCTION__ << ": Device " << devName << " is a swap device, Ignoring." << endl;
+						cout << __FUNCTION__ << ": Device " << devName <<
+						    " is a swap device, Ignoring." << endl;
 #endif
 						skip = 1;
 					}
@@ -357,23 +356,21 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		free(swapbuf);
 	}
 	qsort(disk_spec, count, sizeof(Target_Spec), compareRawDiskNames);
-	return(count);
+	return (count);
 }
-
-
 
 //
 // This function compares two disk names. It just uses strcmp. I'm lazy.
 //
-static int compareRawDiskNames(const void *a, const void *b) {
+static int compareRawDiskNames(const void *a, const void *b)
+{
 	const Target_Spec *at = (const Target_Spec *)a;
 	const Target_Spec *bt = (const Target_Spec *)b;
-	return(strcmp(at->name, bt->name));
+
+	return (strcmp(at->name, bt->name));
 }
 
-
-
-int Manager::Report_TCP( Target_Spec *tcp_spec )
+int Manager::Report_TCP(Target_Spec * tcp_spec)
 {
 	int c, scanCount, i, skfd, count = 0;
 	char ifname[32];
@@ -381,7 +378,7 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 	struct ifreq ifr;
 
 	cout << "Reporting TCP network information..." << endl;
-	
+
 	netInfo = fopen("/proc/net/dev", "r");
 	assert(netInfo != NULL);
 	skfd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -389,7 +386,6 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		cerr << "Can not create socket in Manager::Report_TCP" << endl;
 		return -1;
 	}
-
 	// Pull out the first two lines of the file. These two lines contain
 	// labels for the columns.
 	for (i = 0; i < 2; ++i) {
@@ -412,16 +408,15 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 		strcpy(ifr.ifr_name, ifname);
 		ifr.ifr_addr.sa_family = AF_INET;
 		if (ioctl(skfd, SIOCGIFADDR, &ifr) == 0) {
-			strncpy ( tcp_spec[count].name, inet_ntoa(((struct sockaddr_in *)&(ifr.ifr_addr))->sin_addr), 
-					sizeof(tcp_spec[count].name) - 1 );
+			strncpy(tcp_spec[count].name, inet_ntoa(((struct sockaddr_in *)&(ifr.ifr_addr))->sin_addr),
+				sizeof(tcp_spec[count].name) - 1);
 			tcp_spec[count].type = TCPClientType;	// interface to access a client
 
-			#if _DEBUG
-				cout << "   Found " << tcp_spec[count].name << "." << endl;
-			#endif
+#if _DEBUG
+			cout << "   Found " << tcp_spec[count].name << "." << endl;
+#endif
 			count++;
-		}
-		else {
+		} else {
 #if _DEBUG
 			cerr << "ioctl fail in Manager::Report_TCP()" << endl;
 #endif
@@ -438,4 +433,4 @@ int Manager::Report_TCP( Target_Spec *tcp_spec )
 	return count;
 }
 
-#endif // IOMTR_OS_LINUX
+#endif				// IOMTR_OS_LINUX

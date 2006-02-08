@@ -60,10 +60,8 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "GalileoDoc.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -75,31 +73,27 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoDoc
 
 IMPLEMENT_DYNCREATE(CGalileoDoc, CDocument)
 
-BEGIN_MESSAGE_MAP(CGalileoDoc, CDocument)
-	//{{AFX_MSG_MAP(CGalileoDoc)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
+    BEGIN_MESSAGE_MAP(CGalileoDoc, CDocument)
+    //{{AFX_MSG_MAP(CGalileoDoc)
+    // NOTE - the ClassWizard will add and remove mapping macros here.
+    //    DO NOT EDIT what you see in these blocks of generated code!
+    //}}AFX_MSG_MAP
+    END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoDoc construction/destruction
-
-CGalileoDoc::CGalileoDoc()
+    CGalileoDoc::CGalileoDoc()
 {
 	// TODO: add one-time construction code here
 }
@@ -115,7 +109,7 @@ BOOL CGalileoDoc::OnNewDocument()
 
 	// TODO: add reinitialization code here
 	// (SDI documents will reuse this document)
-	SetTitle( NULL );
+	SetTitle(NULL);
 
 	return TRUE;
 }
@@ -123,14 +117,11 @@ BOOL CGalileoDoc::OnNewDocument()
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoDoc serialization
 
-void CGalileoDoc::Serialize(CArchive& ar)
+void CGalileoDoc::Serialize(CArchive & ar)
 {
-	if (ar.IsStoring())
-	{
+	if (ar.IsStoring()) {
 		// TODO: add storing code here
-	}
-	else
-	{
+	} else {
 		// TODO: add loading code here
 	}
 }
@@ -139,17 +130,16 @@ void CGalileoDoc::Serialize(CArchive& ar)
 // CGalileoDoc diagnostics
 
 #ifdef _DEBUG
-void CGalileoDoc::AssertValid() const
+void CGalileoDoc::AssertValid() const const
 {
 	CDocument::AssertValid();
 }
 
-void CGalileoDoc::Dump(CDumpContext& dc) const
+void CGalileoDoc::Dump(CDumpContext & dc) const const
 {
 	CDocument::Dump(dc);
 }
-#endif //_DEBUG
+#endif				//_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
 // CGalileoDoc commands
-

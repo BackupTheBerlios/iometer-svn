@@ -66,7 +66,6 @@
 
 #include "IOTarget.h"
 
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -86,8 +85,6 @@ Target::~Target()
 
 }
 
-
-
 //
 // Return a 64-bit random number, using the following random function and conditions.
 //
@@ -98,16 +95,16 @@ Target::~Target()
 // b is odd
 //
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
- #define A 136204069LL		// 3x7x11x13x17x23x29x4 + 1
- #define B 28500701229LL	// 3x7x11x13x17x23x27x29x31
+#define A 136204069LL		// 3x7x11x13x17x23x29x4 + 1
+#define B 28500701229LL		// 3x7x11x13x17x23x27x29x31
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #define A 136204069		// 3x7x11x13x17x23x29x4 + 1
- #define B 28500701229		// 3x7x11x13x17x23x27x29x31
+#define A 136204069		// 3x7x11x13x17x23x29x4 + 1
+#define B 28500701229		// 3x7x11x13x17x23x27x29x31
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-DWORDLONG Target::Rand( void )
+DWORDLONG Target::Rand(void)
 {
-	return( spec.random = A * spec.random + B );
+	return (spec.random = A * spec.random + B);
 }

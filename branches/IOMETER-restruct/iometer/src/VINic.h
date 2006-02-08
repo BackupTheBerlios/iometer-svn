@@ -60,55 +60,45 @@
 #ifndef	VINIC_DEFINED
 #define	VINIC_DEFINED
 
-
-
 #include "IOVIPL.h"
 
-
-
-class VINic
-{
-public:
+class VINic {
+      public:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Open and close the VI NIC.
 	//
-	BOOL	Open( const char *nic_name );
-	BOOL	Close();
+	BOOL Open(const char *nic_name);
+	BOOL Close();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Register memory with VI hardware for virtual to physical address
 	// translation.  The data buffer needs to be supplied to this class.
 	//
-	BOOL	RegisterMemory( void *buffer, DWORD size, VIP_MEM_HANDLE *mem );
-	BOOL	DeregisterMemory( void *buffer, VIP_MEM_HANDLE mem );
+	BOOL RegisterMemory(void *buffer, DWORD size, VIP_MEM_HANDLE * mem);
+	BOOL DeregisterMemory(void *buffer, VIP_MEM_HANDLE mem);
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Attributes of the VI NIC
 	//
-	VIP_NIC_HANDLE		nic;
-	VIP_NIC_ATTRIBUTES	nic_attributes;
-	VIP_MEM_ATTRIBUTES	nic_mem_attributes;
+	VIP_NIC_HANDLE nic;
+	VIP_NIC_ATTRIBUTES nic_attributes;
+	VIP_MEM_ATTRIBUTES nic_mem_attributes;
 	//
-	VIP_NET_ADDRESS		*nic_address;
-	int					nic_address_length;
+	VIP_NET_ADDRESS *nic_address;
+	int nic_address_length;
 	//
 	///////////////////////////////////////////////////////////////////////////
-	
 
-private:
-	VIPL	vipl;		// Dynamically linked library.
+      private:
+	 VIPL vipl;		// Dynamically linked library.
 
 	// Network addresses of VI's to connect together.
-	BOOL	GetLocalAddress();
+	BOOL GetLocalAddress();
 };
 
-
-
-#endif // VINIC_DEFINED
+#endif				// VINIC_DEFINED

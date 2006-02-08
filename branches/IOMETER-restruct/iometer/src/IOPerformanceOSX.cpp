@@ -56,7 +56,7 @@
 /* ##                - Created                                            ## */
 /* ##                                                                     ## */
 /* ######################################################################### */
- 
+
 #if defined(IOMTR_OS_OSX)
 
 #include "IOPerformance.h"
@@ -83,13 +83,12 @@ Performance::Performance()
 	// performance calls succeed.  Then, set the correct number of interfaces.
 	network_interfaces = 0;
 
-	if ( !processor_speed || !processor_count )
-	{
+	if (!processor_speed || !processor_count) {
 		cout << "*** Unable to initialize needed performance data." << endl
-			<< "This error may indicate that you are trying to run on an unsupported" << endl
-			<< "processor or OS.  See the Iometer User's Guide for information on" << endl
-			<< "supported platforms." << endl;
-		exit( 1 );
+		    << "This error may indicate that you are trying to run on an unsupported" << endl
+		    << "processor or OS.  See the Iometer User's Guide for information on" << endl
+		    << "supported platforms." << endl;
+		exit(1);
 	}
 
 	char *sysctlData = NULL, *sysctlDataEnd, *sysctlDataCurrent;
@@ -122,9 +121,9 @@ Performance::Performance()
 		ifmsg = (struct if_msghdr *)sysctlDataCurrent;
 		if (ifmsg->ifm_type == RTM_IFINFO) {
 			if (!(ifmsg->ifm_flags & IFF_LOOPBACK)) {
-				sdl = (struct sockaddr_dl *)(ifmsg+1);
+				sdl = (struct sockaddr_dl *)(ifmsg + 1);
 				if (sdl->sdl_family == AF_LINK && ifmsg->ifm_flags & IFF_UP) {
-					strncpy(nic_names[network_interfaces],sdl->sdl_data,sdl->sdl_nlen);
+					strncpy(nic_names[network_interfaces], sdl->sdl_data, sdl->sdl_nlen);
 					nic_names[network_interfaces][sdl->sdl_nlen] = '\0';
 					network_interfaces++;
 				}
@@ -150,10 +149,10 @@ int Performance::Get_Processor_Count()
 {
 	int i;
 	size_t intsize = sizeof(int);
-	sysctlbyname("hw.ncpu",&i,&intsize,NULL,0);
+
+	sysctlbyname("hw.ncpu", &i, &intsize, NULL, 0);
 	return i;
 }
-
 
 #define SPEED_VALUE_COUNT 117
 //
@@ -167,63 +166,55 @@ double Performance::Get_Processor_Speed()
 		3060, 3000, 2930, 2900, 2800, 2700, 2660, 2600, 2530,
 		2500, 2400, 2300, 2260, 2200, 2000, 1900, 1800, 1700,
 		1600, 1500, 1400, 1300, 1260, 1200, 1130, 1100, 1060,
-		1000,  980,  975,  966,  950,  940,  933,  920,  910,
-	 	 900,  880,  875,  866,  850,  840,  833,  820,  810,
-		 800,  780,  775,  766,  750,  740,  733,  720,  710,
-		 700,  680,  675,  666,  650,  640,  633,  620,  610,
-		 600,  580,  575,  566,  550,  540,  533,  520,  510,
-		 500,  480,  475,  466,  450,  440,  433,  420,  410,
-		 400,  380,  375,  366,  350,  340,  333,  320,  310,
-		 300,  280,  275,  266,  250,  240,  233,  220,  210,
-		 200,  180,  175,  166,  150,  140,  133,  120,  110,
-		 100,   80,   75,   66,   50,   40,   33,   25,   20 };
+		1000, 980, 975, 966, 950, 940, 933, 920, 910,
+		900, 880, 875, 866, 850, 840, 833, 820, 810,
+		800, 780, 775, 766, 750, 740, 733, 720, 710,
+		700, 680, 675, 666, 650, 640, 633, 620, 610,
+		600, 580, 575, 566, 550, 540, 533, 520, 510,
+		500, 480, 475, 466, 450, 440, 433, 420, 410,
+		400, 380, 375, 366, 350, 340, 333, 320, 310,
+		300, 280, 275, 266, 250, 240, 233, 220, 210,
+		200, 180, 175, 166, 150, 140, 133, 120, 110,
+		100, 80, 75, 66, 50, 40, 33, 25, 20
+	};
 	DWORD speed;
 
 	quad_t freq;
 	size_t intsize = sizeof(quad_t);
 
-	sysctlbyname("hw.cpufrequency",&freq,&intsize,NULL,0);
+	sysctlbyname("hw.cpufrequency", &freq, &intsize, NULL, 0);
 
 	// hw.cpufrequency is in Hz, convert to MHz
 	speed = freq / 1000000;
 
-	for ( int i = 0; i < SPEED_VALUE_COUNT; i++ )
-	{
+	for (int i = 0; i < SPEED_VALUE_COUNT; i++) {
 		// Try to match estimated speed with a known one.
-		if ( ( (int)speed > speed_values[i] - 5 ) && ( (int)speed < speed_values[i] + 5 ) )
-		{
+		if (((int)speed > speed_values[i] - 5) && ((int)speed < speed_values[i] + 5)) {
 			speed = speed_values[i];
-			if ( speed < 1000 )
-			{
+			if (speed < 1000) {
 				cout << "Processor speed: " << speed << " MHz." << endl;
-			}
-			else
-			{
+			} else {
 				cout << "Processor speed: " << speed / 1000.0 << " GHz." << endl;
 			}
-			return (double) (speed * 1000000);
+			return (double)(speed * 1000000);
 		}
 	}
 	// Round the registry value to the nearest 10
-	speed = ( ( speed + 5 ) / 10 ) * 10;
-	if ( speed < 1000 )
-	{
+	speed = ((speed + 5) / 10) * 10;
+	if (speed < 1000) {
 		cout << "Processor speed: " << speed << " MHz." << endl;
-	}
-	else
-	{
+	} else {
 		cout << "Processor speed: " << speed / 1000.0 << " GHz." << endl;
 	}
-	return (double) (speed * 1000000);
+	return (double)(speed * 1000000);
 }
 
-
-void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
+void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 {
 	// Get the performance data stored by the system.
-	#if _DEBUG
-		cout << "   Getting system performance data." << endl << flush;
-	#endif
+#if _DEBUG
+	cout << "   Getting system performance data." << endl << flush;
+#endif
 
 	AbsoluteTime blah;
 	Nanoseconds s;
@@ -238,10 +229,11 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 
 	if (snapshot == LAST_SNAPSHOT)
 		// Calculate time diff in clock ticks..
-		timediff = ((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]) * clock_tick / (double) 1000000000;
+		timediff =
+		    ((double)time_counter[LAST_SNAPSHOT] -
+		     time_counter[FIRST_SNAPSHOT]) * clock_tick / (double)1000000000;
 
-	switch(perf_data_type)
-	{
+	switch (perf_data_type) {
 	case PERF_PROCESSOR:
 		Get_CPU_Counters(snapshot);
 		break;
@@ -256,46 +248,39 @@ void Performance::Get_Perf_Data( DWORD perf_data_type, int snapshot )
 	}
 }
 
-
 //
 // Calculating CPU statistics based on snapshots of performance counters.
 //
-void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
+void Performance::Calculate_CPU_Stats(CPU_Results * cpu_results)
 {
-	int		cpu, stat;		// Loop control variables.
+	int cpu, stat;		// Loop control variables.
 
 	// Loop though all CPUs and determine various utilization statistics.
 	cpu_results->count = processor_count;
-	for ( cpu = 0; cpu < processor_count; cpu++ )
-	{
+	for (cpu = 0; cpu < processor_count; cpu++) {
 		// Loop through the counters and calculate performance.
-		for ( stat = 0; stat < CPU_RESULTS; stat++ )
-		{
-			#if PERFORMANCE_DETAILS
-				cout << "Calculating stat " << stat << " for CPU " << cpu << endl;
-			#endif
+		for (stat = 0; stat < CPU_RESULTS; stat++) {
+#if PERFORMANCE_DETAILS
+			cout << "Calculating stat " << stat << " for CPU " << cpu << endl;
+#endif
 
 			double result;
-			if (stat == CPU_IRQ)
-			{
+
+			if (stat == CPU_IRQ) {
 				// we have to calculate Interrupts/sec.
 				// This is similar to calculating Network packets per second
 				// but we are more fortunate here.
 				// See the corresponding Notes at the end of this file for a description.
 				//
-				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
-						 - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * 
-						 clock_tick / timediff;
-				cpu_results->CPU_utilization[cpu][stat] = result;	
-			}
-			else
-			{
+				result = ((double)raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
+					  - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) * clock_tick / timediff;
+				cpu_results->CPU_utilization[cpu][stat] = result;
+			} else {
 				// All other CPU statistics.
-				result = ((double) raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
-							- raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
+				result = ((double)raw_cpu_data[cpu][stat][LAST_SNAPSHOT]
+					  - raw_cpu_data[cpu][stat][FIRST_SNAPSHOT]) / timediff;
 
-				if (result < 0.0) 
-				{
+				if (result < 0.0) {
 					result = 0.0;
 					//
 					// CPU Utilization figures are outside valid range far too often.
@@ -305,95 +290,81 @@ void Performance::Calculate_CPU_Stats( CPU_Results *cpu_results )
 					//
 					// cout << "***** Error : CPU utilization outside valid range 0% - 100% *****" << endl;
 				}
-				if  (result > 1.0)
-				{
+				if (result > 1.0) {
 					result = 1.0;
 				}
 
 				cpu_results->CPU_utilization[cpu][stat] = (result * 100);
 			}
 
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "CPU " << cpu << " recorded stat " << stat << " = " 
-					<< cpu_results->CPU_utilization[cpu][stat] << endl;
-			#endif
+#if PERFORMANCE_DETAILS || _DETAILS
+			cout << "CPU " << cpu << " recorded stat " << stat << " = "
+			    << cpu_results->CPU_utilization[cpu][stat] << endl;
+#endif
 		}
 	}
 }
 
-
-
-
-
 //
 // Calculate network performance statistics based on snapshots of performance counters.
 //
-void Performance::Calculate_TCP_Stats( Net_Results *net_results )
+void Performance::Calculate_TCP_Stats(Net_Results * net_results)
 {
-	int		stat;		// Loop control variable.
+	int stat;		// Loop control variable.
 
 	// Loop through the counters and calculate performance.
-	for ( stat = 0; stat < TCP_RESULTS; stat++ )
-	{
+	for (stat = 0; stat < TCP_RESULTS; stat++) {
 		// If we've never set the counter offsets, then we've never successfully retrieved
 		// the performance data.  Set all of the values to 0.
 		double result;
-		result = ((double) raw_tcp_data[stat][LAST_SNAPSHOT] - 
-			raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
-		result *= clock_tick;		// note that timediff is in CLK_TCKs and not seconds
+
+		result = ((double)raw_tcp_data[stat][LAST_SNAPSHOT] - raw_tcp_data[stat][FIRST_SNAPSHOT]) / timediff;
+		result *= clock_tick;	// note that timediff is in CLK_TCKs and not seconds
 		net_results->tcp_stats[stat] = result;
 
-		#if PERFORMANCE_DETAILS || _DETAILS
-			cout << "TCP recorded stat " << stat << " = " 
-				<< net_results->tcp_stats[stat] << endl;
-		#endif
+#if PERFORMANCE_DETAILS || _DETAILS
+		cout << "TCP recorded stat " << stat << " = " << net_results->tcp_stats[stat] << endl;
+#endif
 	}
 }
-
-
-
-
 
 //
 // Calculate network performance statistics based on snapshots of performance counters.
 //
-void Performance::Calculate_NI_Stats( Net_Results *net_results )
+void Performance::Calculate_NI_Stats(Net_Results * net_results)
 {
-	int		net, stat;		// Loop control variables.
+	int net, stat;		// Loop control variables.
 
 	// Loop through the counters and calculate performance.
 	net_results->ni_count = network_interfaces;
-	for ( net = 0; net < network_interfaces; net++ )
-	{
-		for ( stat = 0; stat < NI_RESULTS; stat++ )
-		{
+	for (net = 0; net < network_interfaces; net++) {
+		for (stat = 0; stat < NI_RESULTS; stat++) {
 			// If we've never set the counter offsets, then we've never successfully retrieved
 			// the performance data.  Set all of the values to 0.
 			double result;
+
 			//
 			// Note:
-			//		The array time_counter[] stores time in nanoseconds.
+			//              The array time_counter[] stores time in nanoseconds.
 			// Earlier, we used to divide by the calculated value of timediff and then
 			// multiply the result by clock_ticks per second to get the NI_data per
 			// second which was theoretically correct (and mathematically same as what 
 			// we are doing now) but reported wrong values while working with such 
 			// large numbers.
 			//
-			result = ((double) raw_ni_data[net][stat][LAST_SNAPSHOT] - 
-				raw_ni_data[net][stat][FIRST_SNAPSHOT]) * 1000000000.0 / 
-				((double) time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
+			result = ((double)raw_ni_data[net][stat][LAST_SNAPSHOT] -
+				  raw_ni_data[net][stat][FIRST_SNAPSHOT]) * 1000000000.0 /
+			    ((double)time_counter[LAST_SNAPSHOT] - time_counter[FIRST_SNAPSHOT]);
 
 			net_results->ni_stats[net][stat] = result;
 
-			#if PERFORMANCE_DETAILS || _DETAILS
-				cout << "   Network interface " << net << " recorded stat " << stat << " = " 
-					<< net_results->ni_stats[net][stat] << endl;
-			#endif
+#if PERFORMANCE_DETAILS || _DETAILS
+			cout << "   Network interface " << net << " recorded stat " << stat << " = "
+			    << net_results->ni_stats[net][stat] << endl;
+#endif
 		}
 	}
 }
-
-
 
 void Performance::Get_CPU_Counters(int snapshot)
 {
@@ -406,7 +377,7 @@ void Performance::Get_CPU_Counters(int snapshot)
 
 	host = mach_host_self();
 
-	kr = host_processor_info(host, PROCESSOR_CPU_LOAD_INFO, &procs, (processor_info_array_t *)&load, &load_count);
+	kr = host_processor_info(host, PROCESSOR_CPU_LOAD_INFO, &procs, (processor_info_array_t *) & load, &load_count);
 	if (kr != KERN_SUCCESS) {
 		raw_cpu_data[0][CPU_TOTAL_UTILIZATION][snapshot] = 1;
 		raw_cpu_data[0][CPU_USER_UTILIZATION][snapshot] = 1;
@@ -415,19 +386,17 @@ void Performance::Get_CPU_Counters(int snapshot)
 		raw_cpu_data[0][CPU_IRQ][snapshot] = 1;
 	} else {
 		for (current_cpu = 0; current_cpu < procs; current_cpu++) {
-			raw_cpu_data[current_cpu][CPU_TOTAL_UTILIZATION][snapshot] = 
-					load[current_cpu].cpu_ticks[CPU_STATE_USER] +
-					load[current_cpu].cpu_ticks[CPU_STATE_SYSTEM] +
-					load[current_cpu].cpu_ticks[CPU_STATE_NICE];
+			raw_cpu_data[current_cpu][CPU_TOTAL_UTILIZATION][snapshot] =
+			    load[current_cpu].cpu_ticks[CPU_STATE_USER] +
+			    load[current_cpu].cpu_ticks[CPU_STATE_SYSTEM] + load[current_cpu].cpu_ticks[CPU_STATE_NICE];
 			raw_cpu_data[current_cpu][CPU_USER_UTILIZATION][snapshot] =
-					load[current_cpu].cpu_ticks[CPU_STATE_USER] +
-					load[current_cpu].cpu_ticks[CPU_STATE_NICE];
+			    load[current_cpu].cpu_ticks[CPU_STATE_USER] + load[current_cpu].cpu_ticks[CPU_STATE_NICE];
 			raw_cpu_data[current_cpu][CPU_PRIVILEGED_UTILIZATION][snapshot] =
-					load[current_cpu].cpu_ticks[CPU_STATE_NICE];
+			    load[current_cpu].cpu_ticks[CPU_STATE_NICE];
 			raw_cpu_data[current_cpu][CPU_IRQ_UTILIZATION][snapshot] = 1;
 			raw_cpu_data[current_cpu][CPU_IRQ][snapshot] = 1;
 		}
-		vm_deallocate(mach_task_self(),(vm_address_t)load,(vm_size_t)(load_count * sizeof(*load)));
+		vm_deallocate(mach_task_self(), (vm_address_t) load, (vm_size_t) (load_count * sizeof(*load)));
 	}
 	return;
 }
@@ -459,7 +428,7 @@ void Performance::Get_NI_Counters(int snapshot)
 		return;
 	}
 
-	if (sysctl(mib,6,sysctlData,&sysctlExpectedSize,NULL,0) < 0) {
+	if (sysctl(mib, 6, sysctlData, &sysctlExpectedSize, NULL, 0) < 0) {
 		for (current_nic = 0; current_nic < network_interfaces; current_nic++) {
 			raw_ni_data[current_nic][NI_PACKETS][snapshot] = 1;
 			raw_ni_data[current_nic][NI_ERRORS][snapshot] = 1;
@@ -482,8 +451,10 @@ void Performance::Get_NI_Counters(int snapshot)
 				for (current_nic = 0; current_nic < network_interfaces; current_nic++) {
 					if (strcmp(ifname, nic_names[current_nic]))
 						continue;
-					raw_ni_data[current_nic][NI_PACKETS][snapshot] = ifmsg->ifm_data.ifi_ipackets + ifmsg->ifm_data.ifi_opackets;
-					raw_ni_data[current_nic][NI_ERRORS][snapshot] = ifmsg->ifm_data.ifi_ierrors + ifmsg->ifm_data.ifi_oerrors;
+					raw_ni_data[current_nic][NI_PACKETS][snapshot] =
+					    ifmsg->ifm_data.ifi_ipackets + ifmsg->ifm_data.ifi_opackets;
+					raw_ni_data[current_nic][NI_ERRORS][snapshot] =
+					    ifmsg->ifm_data.ifi_ierrors + ifmsg->ifm_data.ifi_oerrors;
 					raw_ni_data[current_nic][NI_IN_ERRORS][snapshot] = ifmsg->ifm_data.ifi_ierrors;
 					break;
 				}

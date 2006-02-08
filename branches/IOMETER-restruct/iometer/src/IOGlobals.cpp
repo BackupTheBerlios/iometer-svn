@@ -60,10 +60,8 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
-
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include "stdafx.h"
+#include "stdafx.h"
 #endif
 #include "IOCommon.h"
 
@@ -77,90 +75,90 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////
-//	Function Name:
-//		GetAppFileVersionString
+//      Function Name:
+//              GetAppFileVersionString
 //
-//	Purpose:
-//		Obtain file version string (standard one as well as the on with DEBUG indicator).
+//      Purpose:
+//              Obtain file version string (standard one as well as the on with DEBUG indicator).
 //
-//	Syntax:
-//		void	GetAppFileVersionString(char **ppStrStandard, char **ppStrWithDebug)
-//	
-//	Parameters:
-//		ppStrStandard	Ptr (must not be NULL) to a variable where the newly
-//						created string pointer can be returned in.
-//		ppStrWithDebug	Ptr (must not be NULL) to a variable where the newly
-//						created string with debug indicator can be returned in.
-//			(caller owns these strings, and is responsible for its cleanup).
+//      Syntax:
+//              void    GetAppFileVersionString(char **ppStrStandard, char **ppStrWithDebug)
+//      
+//      Parameters:
+//              ppStrStandard   Ptr (must not be NULL) to a variable where the newly
+//                                              created string pointer can be returned in.
+//              ppStrWithDebug  Ptr (must not be NULL) to a variable where the newly
+//                                              created string with debug indicator can be returned in.
+//                      (caller owns these strings, and is responsible for its cleanup).
 //
-//	Processing:
-//		1. Get file version string of the app module.
-//		2. If unable to do so or UNIX case, use the constant value IOVER_FILEVERSION.
-//		3. Form 'with debug indicator' string by concatenating VERSION_DEBUG value.
+//      Processing:
+//              1. Get file version string of the app module.
+//              2. If unable to do so or UNIX case, use the constant value IOVER_FILEVERSION.
+//              3. Form 'with debug indicator' string by concatenating VERSION_DEBUG value.
 //
-//	Notes:
-//		If a DLL calls this function, its EXE module's version info will be
-//		returned.  If the DLL's version info needs to be returned, 'NULL'
-//		parameter in the GetModuleFileName() call can be replaced by 
-//		'AfxGetInstanceHandle()'.
+//      Notes:
+//              If a DLL calls this function, its EXE module's version info will be
+//              returned.  If the DLL's version info needs to be returned, 'NULL'
+//              parameter in the GetModuleFileName() call can be replaced by 
+//              'AfxGetInstanceHandle()'.
 /////////////////////////////////////////////////////////////////////////////
-void	GetAppFileVersionString(char **ppStrStandard, char **ppStrWithDebug)
+void GetAppFileVersionString(char **ppStrStandard, char **ppStrWithDebug)
 {
-	char   *pStrStandard = NULL;
+	char *pStrStandard = NULL;
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	ASSERT((ppStrStandard != NULL) && (ppStrWithDebug != NULL));
 
 	//Get app(EXE module)'s file path
 	char modulePathBuff[MAX_PATH];
-	if (::GetModuleFileName(NULL, modulePathBuff, sizeof(modulePathBuff)) != 0)
-	{
-		DWORD	dwHandle=0;		//not used
-		DWORD	dwVerInfoSize = ::GetFileVersionInfoSize(modulePathBuff, &dwHandle);
+
+	if (::GetModuleFileName(NULL, modulePathBuff, sizeof(modulePathBuff)) != 0) {
+		DWORD dwHandle = 0;	//not used
+		DWORD dwVerInfoSize =::GetFileVersionInfoSize(modulePathBuff, &dwHandle);
+
 		//The module provides VersionInfo data
-		if (dwVerInfoSize != 0)
-		{
+		if (dwVerInfoSize != 0) {
 			//ptr to buffer to hold version information
-			char   *pVerInfo = new char[dwVerInfoSize];
-			if (::GetFileVersionInfo(modulePathBuff, NULL, dwVerInfoSize, pVerInfo))
-			{
-				UINT	dataLen;		//receives size of fixed data area (not used)
-				char   *pFileVersion;
+			char *pVerInfo = new char[dwVerInfoSize];
+
+			if (::GetFileVersionInfo(modulePathBuff, NULL, dwVerInfoSize, pVerInfo)) {
+				UINT dataLen;	//receives size of fixed data area (not used)
+				char *pFileVersion;
+
 				//04b0 == 1200 codepage denoting Unicode used for win95 and NT resource dlls (see Iometer.rc2)
 				if (::VerQueryValue(pVerInfo, TEXT("\\StringFileInfo\\040904b0\\FileVersion"),
-									 (void **)&pFileVersion, &dataLen))
-				{
+						    (void **)&pFileVersion, &dataLen)) {
 					pStrStandard = new char[strlen(pFileVersion) + 1];
+
 					strcpy(pStrStandard, pFileVersion);
 				}
 			}
-			delete [] pVerInfo;
+			delete[]pVerInfo;
 		}
 		//It should have VersionInfo!
 		else
 			ASSERT(0);
 	}
-#endif /* IOMTR_OS_WIN32 || IOMTR_OS_WIN64 */
+#endif				/* IOMTR_OS_WIN32 || IOMTR_OS_WIN64 */
 
 	//UNIX or last resort, use product-wide constant
-	if (pStrStandard == NULL)
-	{
+	if (pStrStandard == NULL) {
 		pStrStandard = new char[strlen(IOVER_FILEVERSION) + 1];
+
 		strcpy(pStrStandard, IOVER_FILEVERSION);
 	}
 
 	*ppStrStandard = pStrStandard;
 	*ppStrWithDebug = new char[strlen(pStrStandard) + strlen(VERSION_DEBUG) + 1];
+
 	strcpy(*ppStrWithDebug, pStrStandard);
 	strcat(*ppStrWithDebug, VERSION_DEBUG);
 }
-

@@ -59,7 +59,6 @@
 #ifndef GALILEODEFS_DEFINED
 #define GALILEODEFS_DEFINED
 
-
 #include "stdafx.h"
 #include "resource.h"
 
@@ -83,7 +82,7 @@ enum {
 	AssignNet
 };
 
-extern void ErrorMessage( LPCTSTR errmsg );
+extern void ErrorMessage(LPCTSTR errmsg);
 
 #define DEFAULT_CONFIG_FILE		"iometer.icf"
 
@@ -91,9 +90,4 @@ extern void ErrorMessage( LPCTSTR errmsg );
 //that needs to be created.
 #define HOSTNAME_LOCAL			"(Local)"
 
-
-#endif // GALILEODEFS_DEFINED
-
-
-
-
+#endif				// GALILEODEFS_DEFINED

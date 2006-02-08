@@ -58,7 +58,6 @@
 #ifndef PAGETARGET_DEFINED
 #define PAGETARGET_DEFINED
 
-
 // indexes for selection updates to make recursive updates easier to do
 // for the manager list up through the workers.
 #define TARGETS			0
@@ -71,7 +70,7 @@
 
 // Info for Targets image list
 #define TARGET_ICON_SIZE	16
-#define TARGET_ICON_EXPAND	10 // number of icons to add to ImageList when expanding
+#define TARGET_ICON_EXPAND	10	// number of icons to add to ImageList when expanding
 #define TARGET_ICON_BGCOLOR	0x00ffffff
 
 // Icons for Targets pane (position of icon in bitmap)
@@ -89,11 +88,10 @@
 // Inverse of INDEXTOSTATEIMAGEMASK(). (Windows doesn't define this, but it should...)
 #define STATEIMAGEMASKTOINDEX(i) ((i) >> 12)
 
-enum TargetSelType
-{
+enum TargetSelType {
 	TargetUnChecked = TARGET_STATE_UNCHECKED,
-	TargetChecked   = TARGET_STATE_CHECKED,
-	TargetGrayed    = TARGET_STATE_UNKNOWN,
+	TargetChecked = TARGET_STATE_CHECKED,
+	TargetGrayed = TARGET_STATE_UNKNOWN,
 };
 
 #endif

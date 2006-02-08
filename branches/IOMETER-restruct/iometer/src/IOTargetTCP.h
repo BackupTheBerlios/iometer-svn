@@ -59,51 +59,46 @@
 #ifndef TCPTARGET_DEFINED
 #define TCPTARGET_DEFINED
 
-
 #include "IOCommon.h"
 #include "IOTarget.h"
 #include "NetTCP.h"
 #include "IOCQAIO.h"
 
-
-
 //
 // TCP/IP socket class.
 //
-class TargetTCP : public Target
-{
-public:
-	
-	TargetTCP();
-	~TargetTCP() {};
+class TargetTCP:public Target {
+      public:
 
-	BOOL	Initialize( Target_Spec *target_info, CQ *cq );
+	TargetTCP();
+	~TargetTCP() {
+	};
+
+	BOOL Initialize(Target_Spec * target_info, CQ * cq);
 
 	// Tells the socket what kind of socket it is (call only one of these)
 	// and who to talk to.
-	BOOL	InitServer( Target_Spec *target_info );
-	BOOL	InitClient( Target_Spec *target_info );
+	BOOL InitServer(Target_Spec * target_info);
+	BOOL InitClient(Target_Spec * target_info);
 
 	// Opens/closes socket (actual action depends on whether the socket 
 	// is a client or server).
-	BOOL	Open( volatile TestState *test_state, int open_flag = 0 );
-	BOOL	Close( volatile TestState *test_state );
+	BOOL Open(volatile TestState * test_state, int open_flag = 0);
+	BOOL Close(volatile TestState * test_state);
 
 	// Performs send/receive operations.  (Reversed for client!!)
-	ReturnVal	Read( LPVOID buffer, Transaction *trans );
-	ReturnVal	Write( LPVOID buffer, Transaction *trans );
+	ReturnVal Read(LPVOID buffer, Transaction * trans);
+	ReturnVal Write(LPVOID buffer, Transaction * trans);
 
 	// Is this socket a TCP server or a client?
-	BOOL			is_server;
+	BOOL is_server;
 
-protected:
+      protected:
 	// Location where completion information should be sent in the case 
 	// of asynchronous I/O.
-	CQAIO			*io_cq;
-	NetAsyncTCP		tcp_socket;
-	ReadWriteType	lastIO;		// Was the last I/O a read or write?
+	CQAIO * io_cq;
+	NetAsyncTCP tcp_socket;
+	ReadWriteType lastIO;	// Was the last I/O a read or write?
 };
-
-
 
 #endif

@@ -58,12 +58,8 @@
 #ifndef	NETVI_DEFINED
 #define	NETVI_DEFINED
 
-
-
 #include "IOCQVI.h"
 #include "Network.h"
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Abstracts VI message passing calls.
@@ -72,45 +68,38 @@
 // this class.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class NetVI
-{
-public:
+class NetVI {
+      public:
 
 	NetVI();
 
 	///////////////////////////////////////////////////////////////////////////
 	// Public functions used to communicate over a VI connection.
 	//
-	ReturnVal	Create( VINic *nic, TargetVI *vi_target );
-	ReturnVal	Close();
-	ReturnVal	CheckForDisconnect();
+	ReturnVal Create(VINic * nic, TargetVI * vi_target);
+	ReturnVal Close();
+	ReturnVal CheckForDisconnect();
 	//
-	ReturnVal	Connect( VIP_NET_ADDRESS *local_nic_address, VIP_NET_ADDRESS *remote_nic_address );
-	ReturnVal	Accept( VIP_NET_ADDRESS *local_nic_address );
+	ReturnVal Connect(VIP_NET_ADDRESS * local_nic_address, VIP_NET_ADDRESS * remote_nic_address);
+	ReturnVal Accept(VIP_NET_ADDRESS * local_nic_address);
 	//
-	ReturnVal	Send( VIP_DESCRIPTOR *descriptor, 
-					VIP_MEM_HANDLE descriptor_handle );
-	ReturnVal	Receive( VIP_DESCRIPTOR *descriptor, 
-					VIP_MEM_HANDLE descriptor_handle );
+	ReturnVal Send(VIP_DESCRIPTOR * descriptor, VIP_MEM_HANDLE descriptor_handle);
+	ReturnVal Receive(VIP_DESCRIPTOR * descriptor, VIP_MEM_HANDLE descriptor_handle);
 	//
 	///////////////////////////////////////////////////////////////////////////
-	 
 
 	///////////////////////////////////////////////////////////////////////////
 	// Information about the VI connection.
 	//
-	VIP_VI_HANDLE	vi;
-	VINic			*vi_nic;
-	CQVI			vi_cq;
+	VIP_VI_HANDLE vi;
+	VINic *vi_nic;
+	CQVI vi_cq;
 	//
 	///////////////////////////////////////////////////////////////////////////
 
+      private:
 
-private:
-
-	VIPL		vipl;		// Dynamically linked library.
+	 VIPL vipl;		// Dynamically linked library.
 };
 
-
-
-#endif // NETVI_DEFINED
+#endif				// NETVI_DEFINED

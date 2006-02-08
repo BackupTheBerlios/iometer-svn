@@ -79,7 +79,6 @@
 /* ######################################################################### */
 #if defined(IOMTR_OS_SOLARIS)
 
-
 #include "IOManager.h"
 #include "IOTargetDisk.h"
 #include <dirent.h>
@@ -99,23 +98,25 @@ static char *mnttab;
 // of disks found.  Drives are reported in order so that Iometer does not
 // need to sort them.
 //
-int Manager::Report_Disks( Target_Spec* disk_spec )
+int Manager::Report_Disks(Target_Spec * disk_spec)
 {
-//	DWORD	dummy_word;
-	TargetDisk	d;
-//	char	drive_letter;
-//	int		drive_number = 0;
-	int		count = 0;
-	DIR		*dirp;
+//      DWORD   dummy_word;
+	TargetDisk d;
+
+//      char    drive_letter;
+//      int             drive_number = 0;
+	int count = 0;
+	DIR *dirp;
 	struct dirent *dp;
-//	int		i;
+
+//      int             i;
 
 	cout << "Reporting drive information..." << endl;
 
 	// *********************************************************************************
 	// DEVELOPER NOTES
 	// ---------------
-	//		Currently the only disk types supported are Logical Disks (through the magic 
+	//              Currently the only disk types supported are Logical Disks (through the magic 
 	// file iobw.tst on a mounted file system) and Physical disks (through the /dev/rdsk
 	// interface).
 	//
@@ -126,12 +127,12 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// 3) Meta Physical disks. (      -do-               )
 	//
 	// 1)
-	//		The Direct Logical Disks (*DO NOT* go through the magic file iobw.tst) can be
+	//              The Direct Logical Disks (*DO NOT* go through the magic file iobw.tst) can be
 	// accessed through the /dev/dsk interfaces. Only ensure that the disks are not 
 	// already mounted as file systems and also sort the list of disks.
 	//
 	// 2)
-	//		The Meta Logical Disks (probably Solaris specific) are similar to Direct Logical
+	//              The Meta Logical Disks (probably Solaris specific) are similar to Direct Logical
 	// Disks. They are actually one or more logical disks grouped together and handled by a 
 	// special driver. RAID Logical Disks come under this category.
 	//
@@ -139,7 +140,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// are not already mounted as file systems and again file name sorting is required.
 	//
 	// 3)
-	//		The Meta Physical Disks (probably Solaris specific) are similar to Direct 
+	//              The Meta Physical Disks (probably Solaris specific) are similar to Direct 
 	// Physical Disks. Again, Meta is for a grouping of one or more physical disks and RAID 
 	// Physical Disks come under this category.
 	//
@@ -156,8 +157,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// type along with the path names.
 	//
 	// **********************************************************************************
-	
-	
+
 	// Reporting Logical drives first (filesystems).
 	cout << "  Logical drives (mounted filesystems)..." << endl;
 
@@ -165,29 +165,27 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		mnttab = MNTTAB_FILE;
 
 	FILE *fp;
-	if ((fp = fopen(mnttab, "r")) == NULL)
-	{
+
+	if ((fp = fopen(mnttab, "r")) == NULL) {
 		cout << "open (mount tab) file " << mnttab << " failed with error " << errno << endl;
 		cout << "Set environment variable MNTTAB to correct pathname" << endl;
 		exit(1);
 	}
-	
+
 	struct mnttab mtab;
 	int retval, length, buffered;
 	char disk_name[MAX_NAME];
 
-	while ((retval = getmntent(fp, &mtab)) == 0)
-	{
+	while ((retval = getmntent(fp, &mtab)) == 0) {
 		buffered = FALSE;
 		// see if the current file sys is an excluded file system type for dynamo.
 		if (strstr(exclude_filesys, mtab.mnt_fstype) != NULL)
 			continue;
 
-		if (hasmntopt(&mtab, "forcedirectio") == NULL)
-		{
-			cout << "NOTICE: filesystem " << mtab.mnt_mountp 
-				<< " not mounted with option - forcedirectio" << endl;
-			// continue;		// enable only if we do not want to report this disk.
+		if (hasmntopt(&mtab, "forcedirectio") == NULL) {
+			cout << "NOTICE: filesystem " << mtab.mnt_mountp
+			    << " not mounted with option - forcedirectio" << endl;
+			// continue;            // enable only if we do not want to report this disk.
 			buffered = TRUE;
 			this->is_buffered = TRUE;
 		}
@@ -204,12 +202,12 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		strncpy(disk_name, mtab.mnt_mountp, length);
 		disk_name[length] = 0;
 
-		if ( ! d.Init_Logical( disk_name ) )
+		if (!d.Init_Logical(disk_name))
 			continue;
 
 		// Drive exists and ready for use.
 		d.spec.type = LogicalDiskType;
-		memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
+		memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
 
 		disk_spec[count].name[length] = 0;
 		// check for this pattern is also in TargetDisk::Init_Logical().
@@ -220,7 +218,7 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 		strcat(disk_spec[count].name, "]");
 
 #if _DEBUG
-			cout << "   Found " << disk_spec[count].name << "." << endl << flush;
+		cout << "   Found " << disk_spec[count].name << "." << endl << flush;
 #endif
 		count++;
 		if (count >= MAX_TARGETS)
@@ -228,15 +226,12 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	}
 	fclose(fp);
 
-	if (this->is_buffered)
-	{
+	if (this->is_buffered) {
 		cout << endl
-			 << "NOTICE: One or more filesystems not mounted with 'forcedirecio'"
-			 << endl
-			 << "        option set. All I/O will be via kernel buffers."
-			 << endl
-			 << "  --->  See mount(1), mount_ufs(1) for details."
-			 << endl << endl;
+		    << "NOTICE: One or more filesystems not mounted with 'forcedirecio'"
+		    << endl
+		    << "        option set. All I/O will be via kernel buffers."
+		    << endl << "  --->  See mount(1), mount_ufs(1) for details." << endl << endl;
 		this->is_buffered = FALSE;
 	}
 
@@ -246,15 +241,14 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	// Now reporting physical drives (raw devices)
 	cout << "  Physical drives (raw devices)..." << endl;
 	int logical_count = count;
-	
+
 	// Get a list of all the swap devices into a static public variable.
 	// Its easier to lookup. We need to check if the partition/slice under
 	// consideration is a swap device or not.
 	Get_All_Swap_Devices();
 
 	dirp = opendir(RAW_DEVICE_DIR);
-	while ((dp = readdir(dirp)) != NULL)
-	{
+	while ((dp = readdir(dirp)) != NULL) {
 		//
 		// Either we take all of the disk or none. No individual partitions. 
 		// Do we really want to test partition by partition ? I guess not.
@@ -266,51 +260,46 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 #elif defined(IOMTR_CPU_SPARC)
 		if (strstr(dp->d_name, "s2") != NULL)
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 		{
 #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
 			// Read partition table on fdisk partition p0.
-			if ( Report_FDISK_Partitions(dp->d_name, disk_spec, &count, 
-				logical_count) == TRUE )
-			{
+			if (Report_FDISK_Partitions(dp->d_name, disk_spec, &count, logical_count) == TRUE) {
 				// Some partitions were processed. The disk is not empty.
 				// Skip this disk and jump back to start of while loop.
 				if (count >= MAX_TARGETS)
-					break;			// no room for more.
+					break;	// no room for more.
 
 				continue;
 			}
 			// Here we continue with reporting fdisk partition p0. The fdisk
 			// table is empty.
 #elif defined(IOMTR_CPU_SPARC)
-			if ( Report_VTOC_Partitions(dp->d_name, disk_spec, &count,
-				logical_count) == TRUE )
-			{
+			if (Report_VTOC_Partitions(dp->d_name, disk_spec, &count, logical_count) == TRUE) {
 				// some vtoc partitions were processed. The disk is not empty
 				// skip this disk and jump back to start of while loop.
 				if (count == MAX_TARGETS)
-					break;			// no room for more.
+					break;	// no room for more.
 
 				continue;
 			}
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
 			// Check if this is a swap device.
-			if (strstr(swap_devices, dp->d_name))
-			{
+			if (strstr(swap_devices, dp->d_name)) {
 				// Yes, it is. skip.
 				continue;
 			}
 
-			if ( ! d.Init_Physical( dp->d_name ) )
+			if (!d.Init_Physical(dp->d_name))
 				continue;
 
 			// the physical drive is ready for use.
-			memcpy( &disk_spec[count], &d.spec, sizeof( Target_Spec ) );
-			d.spec.type = PhysicalDiskType;		
+			memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
+			d.spec.type = PhysicalDiskType;
 #if _DEBUG
 			cout << "   Found " << disk_spec[count].name << "." << endl << flush;
 #endif
@@ -323,19 +312,16 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 
 	// sort all the raw disk names in disk_spec array.
 	Sort_Raw_Disk_Names(disk_spec, logical_count, count);
-	if (this->is_destructive)
-	{
+	if (this->is_destructive) {
 		cout << endl
-			 << "NOTICE: One or more disk partitions/slices ignored because Iometer"
-			 << endl
-			 << "        detected the presence of file systems."
-			 << endl
-			 << "  --->  To enable access to the partition/slice mount it or destroy"
-			 << endl
-			 << "        it or over-ride protection by setting the IOMTR_SETTING_OVERRIDE_FS"
-			 << endl
-			 << "        environment var."
-			 << endl << endl;
+		    << "NOTICE: One or more disk partitions/slices ignored because Iometer"
+		    << endl
+		    << "        detected the presence of file systems."
+		    << endl
+		    << "  --->  To enable access to the partition/slice mount it or destroy"
+		    << endl
+		    << "        it or over-ride protection by setting the IOMTR_SETTING_OVERRIDE_FS"
+		    << endl << "        environment var." << endl << endl;
 		this->is_destructive = FALSE;
 	}
 
@@ -343,10 +329,8 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	return count;
 }
 
-
 #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64)
-BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec, 
-									  int *count, int logical_count)
+BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *count, int logical_count)
 {
 	static BOOL has_solaris_parts = FALSE;
 	BOOL FDISK_table_valid = FALSE;
@@ -355,7 +339,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 	int i, fd, bytes_read, length;
 	struct mboot *mb;
 	struct ipart *ip;
-	char fstype[32];				// to hold the file system type.
+	char fstype[32];	// to hold the file system type.
 	char base_name[MAX_NAME];
 	char file_name[MAX_NAME];
 	char buffer[512];
@@ -368,58 +352,50 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 	cout << "   Reporting disk partitions: " << file_name << endl << flush;
 #endif
 
-	fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
-	if (fd < 0)
-	{
+	fd = open(file_name, O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
 #if _DEBUG
 		cout << "  open failed.." << endl << flush;
 #endif
-		return(TRUE);
+		return (TRUE);
 	}
 
-	if ((bytes_read = read(fd, buffer, 512)) < 512)
-	{
+	if ((bytes_read = read(fd, buffer, 512)) < 512) {
 		// cannot read start sector. Disk might be bad.
 #if _DEBUG
 		cout << "  read failed.. returning" << endl << flush;
 #endif
 		close(fd);
-		return(TRUE);
+		return (TRUE);
 	}
 	close(fd);
 
 	mb = (struct mboot *)buffer;
-	if (mb->signature != MBB_MAGIC)
-	{
+	if (mb->signature != MBB_MAGIC) {
 		// Don't worry about including disk spec in disk_spec. The caller
 		// will take care of it when you return FALSE.
 		// But yes, there is an additional loop going on here - a waste
 		// of time but that does'nt matter for now.
 		close(fd);
-		return(FALSE);
-	}
-	else
-	{
+		return (FALSE);
+	} else {
 		// We do have partitions.
 		strncpy(base_name, name, (strstr(name, "p0") - name));
 #if _DEBUG
-			cout << "   basename: " << base_name << endl << flush;
+		cout << "   basename: " << base_name << endl << flush;
 #endif
-		for (i = 1; i <= FD_NUMPART; i++)
-		{
-			ip = (struct ipart *) (buffer + BOOTSZ + ((i - 1) * sizeof(struct ipart)));
+		for (i = 1; i <= FD_NUMPART; i++) {
+			ip = (struct ipart *)(buffer + BOOTSZ + ((i - 1) * sizeof(struct ipart)));
 
-			if ((ip->systid  == SUNIXOS) && (has_solaris_parts == FALSE))
-			{
+			if ((ip->systid == SUNIXOS) && (has_solaris_parts == FALSE)) {
 				// Do this only once even if you have multiple solaris partitions.
 				// Other Solaris parts are invisible through the disk label/vtoc.
 				has_solaris_parts = TRUE;
 				sprintf(file_name, "%ss2", base_name);
-				if (Report_VTOC_Partitions(file_name, disk_spec, count, logical_count) == TRUE)
-				{
+				if (Report_VTOC_Partitions(file_name, disk_spec, count, logical_count) == TRUE) {
 					VTOC_valid = TRUE;
 					continue;
-				}	
+				}
 			}
 
 			sprintf(file_name, "%sp%d", base_name, i);
@@ -431,36 +407,31 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 				// Yes, this is a swap device, skip
 				continue;
 
-			if (d.Init_Physical(file_name))
-			{
+			if (d.Init_Physical(file_name)) {
 				// Disk Initialization succeeded, 
 				// note that this is not needed here. We get here only if SUNIXOS 
 				// partition does not have any VTOC (which is not possible on IA32) and
 				// for other partitions.
-				if ( Part_Reported_As_Logical(disk_spec, file_name, logical_count) )
+				if (Part_Reported_As_Logical(disk_spec, file_name, logical_count))
 					continue;
 
 				// Not mounted! Next check if there is a file system on it.
-				if (Has_File_System(file_name, fstype) == TRUE)
-				{
+				if (Has_File_System(file_name, fstype) == TRUE) {
 #if defined(IOMTR_SETTING_OVERRIDE_FS)
-					if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
-					{
+					if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL) {
 						cout << "WARNING: allowing raw access to unmounted fs: "
-							<< file_name << endl;
-					}
-					else // environ variable not set
+						    << file_name << endl;
+					} else	// environ variable not set
 					{
 #endif
 						cout << "NOTICE: ignoring " << file_name
-							<< ". File system found on disk" << endl;
+						    << ". File system found on disk" << endl;
 						this->is_destructive = TRUE;
-						continue; 	// jump to start of for-loop
+						continue;	// jump to start of for-loop
 #if defined(IOMTR_SETTING_OVERRIDE_FS)
 					}
 #endif
 				}
-
 				// take away 16 bytes the largest of fdisk part names and
 				// and 5 bytes for the string elements. "[  ]"
 				length = MAX_NAME - 16 - 5;
@@ -470,12 +441,11 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 				// Reset it to correct value.
 				d.spec.disk_info.maximum_size = ip->numsect;
 				d.Set_Size(ip->numsect);
-				memcpy( &disk_spec[*count], &d.spec, sizeof( Target_Spec ) );
+				memcpy(&disk_spec[*count], &d.spec, sizeof(Target_Spec));
 				// Get the fdisk partition type info.
 				disk_spec[*count].name[length] = 0;
 				strcat(disk_spec[*count].name, " [ ");
-				switch (ip->systid)
-				{
+				switch (ip->systid) {
 				case DOSOS12:
 					strcat(disk_spec[*count].name, "dosos12");
 					break;
@@ -508,13 +478,13 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 //       build and exclude it for i386 build (because it is not defined
 //       within /usr/include/sys/dktp/fdisk.h).
 #if defined(IOMTR_CPU_I386)
- // nop
+					// nop
 #elif defined(IOMTR_CPU_SPARC)
 				case PPCBOOT:
 					strcat(disk_spec[*count].name, "ppcboot");
 					break;
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 				case SUNIXOS:
 					strcat(disk_spec[*count].name, "sunixos");
@@ -529,8 +499,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 					strcat(disk_spec[*count].name, "unknown");
 					break;
 				}
-				if (fstype[0] != 0)
-				{
+				if (fstype[0] != 0) {
 					strcat(disk_spec[*count].name, ", ");
 					strcat(disk_spec[*count].name, fstype);
 				}
@@ -544,10 +513,8 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 				FDISK_table_valid = TRUE;
 				if (*count >= MAX_TARGETS)
 					break;
-			}
-			else
-			{
-				// partition access failed.				
+			} else {
+				// partition access failed.                             
 #if _DEBUG
 				cout << "   Not found " << file_name << endl << flush;
 #endif
@@ -556,27 +523,25 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec *disk_spec,
 		// Done with this disk. Reset the bool flag has_solaris_parts
 		has_solaris_parts = FALSE;
 		if (VTOC_valid)
-			return(TRUE);
+			return (TRUE);
 
 		if (FDISK_table_valid)
-			return(TRUE);
+			return (TRUE);
 		else
-			return(FALSE);
+			return (FALSE);
 	}
-	return(FALSE); 			// a dummy
+	return (FALSE);		// a dummy
 }
-#endif  // IOMTR_CPU_I386 || IOMTR_CPU_IA64
+#endif				// IOMTR_CPU_I386 || IOMTR_CPU_IA64
 
-
-
-BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec, 
-									 int *count, int logical_count)
+BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *count, int logical_count)
 {
 	TargetDisk d;
 	int i, j, fd, length;
+
 //  int bytes_read;
 	struct vtoc this_vtoc;
-	char fstype[32];				// to hold the file system type.
+	char fstype[32];	// to hold the file system type.
 	char base_name[MAX_NAME];
 	char file_name[MAX_NAME];
 	BOOL vtoc_has_only_backup_slice = TRUE;
@@ -588,38 +553,34 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 #if _DEBUG
 	cout << "   Reporting vtoc partitions: " << file_name << endl << flush;
 #endif
-	fd = open(file_name, O_RDWR|O_LARGEFILE, S_IRUSR|S_IWUSR);
-	if (fd < 0)
-	{
+	fd = open(file_name, O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
 #if _DEBUG
 		cout << "  open failed.." << endl << flush;
 #endif
-		return(TRUE);
+		return (TRUE);
 	}
 
-	if (ioctl(fd, DKIOCGVTOC, &this_vtoc) < 0)
-	{
+	if (ioctl(fd, DKIOCGVTOC, &this_vtoc) < 0) {
 		// Get VTOC failed. Something wrong here.
 		// Ignore all slices in this partition.
 		close(fd);
-		return(TRUE);
+		return (TRUE);
 	}
 	close(fd);
 
-	if (this_vtoc.v_sanity != VTOC_SANE)
-	{
+	if (this_vtoc.v_sanity != VTOC_SANE) {
 		// this vtoc is insane. report TRUE to ignore this partition 
 		// and all slices within.
-		return(TRUE);
+		return (TRUE);
 	}
 
 	strncpy(base_name, name, (strstr(name, "s2") - name));
 #if _DEBUG
-		cout << "  vtoc basename: " << base_name << endl << flush;
+	cout << "  vtoc basename: " << base_name << endl << flush;
 #endif
 
-	for(i = 0; i < this_vtoc.v_nparts; i++)
-	{
+	for (i = 0; i < this_vtoc.v_nparts; i++) {
 		if (this_vtoc.v_part[i].p_size <= 3)
 			continue;
 
@@ -636,68 +597,67 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 		// disk data in harm's way simply because if the disk has some data
 		// say somefilesystem in it, it is not reported to Galileo.
 		//
-		if ( (this_vtoc.v_part[i].p_tag == V_BOOT) ||
-			// (this_vtoc.v_part[i].p_tag == V_BACKUP) ||
-			(this_vtoc.v_part[i].p_tag == V_ALTSCTR) )
+		if ((this_vtoc.v_part[i].p_tag == V_BOOT) ||
+		    // (this_vtoc.v_part[i].p_tag == V_BACKUP) ||
+		    (this_vtoc.v_part[i].p_tag == V_ALTSCTR))
 			continue;
 
 		// Having reached here, we now know that the vtoc has other valid
 		// slices too.
 		vtoc_has_only_backup_slice = FALSE;
-	
+
 		if (this_vtoc.v_part[i].p_flag == V_RONLY)
 			continue;
 
 		// Next check if this vtoc partition overlaps with any of the
 		// subsequent parts.
 		BOOL overlap = FALSE;
-		for (j = 0; j < this_vtoc.v_nparts; j++)
-		{
-			if (i == j) continue;
-			switch (this_vtoc.v_part[j].p_tag)
-			{
+
+		for (j = 0; j < this_vtoc.v_nparts; j++) {
+			if (i == j)
+				continue;
+			switch (this_vtoc.v_part[j].p_tag) {
 				//
 				// We ignore V_BOOT AND V_ALTSCTR slices. The V_BACKUP
 				// slice is going to overlap with every other slice, so...
-				case V_BOOT:
-					continue;
-				case V_BACKUP:
-					break;
-				case V_ALTSCTR:
-					continue;
-				default:
-					break;
+			case V_BOOT:
+				continue;
+			case V_BACKUP:
+				break;
+			case V_ALTSCTR:
+				continue;
+			default:
+				break;
 			}
 
 			//
 			// algorithm to determine overlapping partitions.
 			//
 			// if (start[i] < start[j])
-			// 		if (end[i] > start[j])
-			// 			overlap = TRUE;
+			//              if (end[i] > start[j])
+			//                      overlap = TRUE;
 			// if (start[i] > start[j])
-			// 		if (start[i] < end[j])
-			//			overlap = TRUE;
+			//              if (start[i] < end[j])
+			//                      overlap = TRUE;
 			//
-			if ( (this_vtoc.v_part[i].p_start < this_vtoc.v_part[j].p_start) &&
-				((this_vtoc.v_part[i].p_start + this_vtoc.v_part[i].p_size) > this_vtoc.v_part[j].p_start) )
-
+			if ((this_vtoc.v_part[i].p_start < this_vtoc.v_part[j].p_start) &&
+			    ((this_vtoc.v_part[i].p_start + this_vtoc.v_part[i].p_size) > this_vtoc.v_part[j].p_start))
 			{
 				overlap = TRUE;
-				break;	
+				break;
 			}
 
-			if ( (this_vtoc.v_part[i].p_start > this_vtoc.v_part[j].p_start) &&
-				(this_vtoc.v_part[i].p_start < (this_vtoc.v_part[j].p_start + this_vtoc.v_part[j].p_size)) )
+			if ((this_vtoc.v_part[i].p_start > this_vtoc.v_part[j].p_start) &&
+			    (this_vtoc.v_part[i].p_start < (this_vtoc.v_part[j].p_start + this_vtoc.v_part[j].p_size)))
 			{
 				overlap = TRUE;
 				break;
 			}
 		}
 
-		if (overlap == TRUE)
-		{
+		if (overlap == TRUE) {
 			char temp[MAX_NAME];
+
 			// Note that index i is the current slice and index j is the overlapping
 			// slice.
 			// check  if overlap is with a slice containing an unmounted file system.
@@ -707,19 +667,16 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 			cerr << "NOTE: Overlapping slices : " << i << ", " << j << endl;
 #endif
 			sprintf(temp, "%ss%d", base_name, j);
-			if (Has_File_System(temp, fstype) == TRUE)
-			{
+			if (Has_File_System(temp, fstype) == TRUE) {
 				// this slice 'i' overlaps with an unmounted file system.
 				continue;
 			}
-			if (strstr(swap_devices, temp))
-			{
+			if (strstr(swap_devices, temp)) {
 				// this slice 'i' overlaps with a swap device.
 				continue;
 			}
 			// else we are ok. overlapping empty slices is just fine.
 		}
-
 		// Here we do have VTOC parts to report.
 		sprintf(file_name, "%ss%d", base_name, i);
 #if _DEBUG
@@ -730,31 +687,27 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 			// Yes, this is a swap device, skip
 			continue;
 
-		if (d.Init_Physical(file_name))
-		{
+		if (d.Init_Physical(file_name)) {
 			// Disk Initialization succeeded,
-			if ( Part_Reported_As_Logical(disk_spec, file_name, logical_count) )
+			if (Part_Reported_As_Logical(disk_spec, file_name, logical_count))
 				continue;
 
 			// Not mounted! Next check if there is a file system on it.
-			if (Has_File_System(file_name, fstype) == TRUE)
-			{
+			if (Has_File_System(file_name, fstype) == TRUE) {
 #if defined(IOMTR_SETTING_OVERRIDE_FS)
-				if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
-				{
+				if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL) {
 					cout << "WARNING: allowing raw access to unmounted fs: " << file_name << endl;
-				}
-				else // environ variable not set
+				} else	// environ variable not set
 				{
 #endif
-					cout << "NOTICE: ignoring " << file_name << ". file system found on disk" << endl;
+					cout << "NOTICE: ignoring " << file_name << ". file system found on disk" <<
+					    endl;
 					this->is_destructive = TRUE;
 					continue;
 #if defined(IOMTR_SETTING_OVERRIDE_FS)
 				}
 #endif
 			}
-
 			// take away 10 bytes for the largest of vtoc part names and
 			// and 5 bytes for the string elements. "[  ]"
 			length = MAX_NAME - 10 - 5;
@@ -764,13 +717,12 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 			// Reset it to correct value.
 			d.spec.disk_info.maximum_size = this_vtoc.v_part[i].p_size;
 			d.Set_Size(this_vtoc.v_part[i].p_size);
-			memcpy( &disk_spec[*count], &d.spec, sizeof( Target_Spec ) );
+			memcpy(&disk_spec[*count], &d.spec, sizeof(Target_Spec));
 
 			// Get the vtoc partition type info.
 			disk_spec[*count].name[length] = 0;
 			strcat(disk_spec[*count].name, " [ ");
-			switch(this_vtoc.v_part[i].p_tag)
-			{
+			switch (this_vtoc.v_part[i].p_tag) {
 			case V_UNASSIGNED:
 				strcat(disk_spec[*count].name, "unassigned");
 				break;
@@ -809,8 +761,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 				break;
 			}
 
-			if (fstype[0] != 0)
-			{
+			if (fstype[0] != 0) {
 				strcat(disk_spec[*count].name, ", ");
 				strcat(disk_spec[*count].name, fstype);
 			}
@@ -827,45 +778,39 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 		}
 	}
 
-	if (vtoc_has_only_backup_slice == TRUE)
-	{
+	if (vtoc_has_only_backup_slice == TRUE) {
 		// No VTOC slices qualified. We only have slices less than 3 sectors and backup
 		// slices.
 		// Report backup slice i.e whole disk.
 		// It is beyond our control if backup slice does not span the whole disk
 		// however, the format utility does warn the admin if that is the case.
 		// NOTE: EXTRA LOOP TO GRAB WHOLE SLICE if nothing else left.
-		for(i = 0; i < this_vtoc.v_nparts; i++)
-		{
-			if (this_vtoc.v_part[i].p_tag == V_BACKUP)
-			{
+		for (i = 0; i < this_vtoc.v_nparts; i++) {
+			if (this_vtoc.v_part[i].p_tag == V_BACKUP) {
 				sprintf(file_name, "%ss%d", base_name, i);
-				if (d.Init_Physical(file_name))
-				{
+				if (d.Init_Physical(file_name)) {
 					if (d.Init_Physical(file_name))
-					// Disk Initialization succeeded,
-					if ( Part_Reported_As_Logical(disk_spec, file_name, logical_count) )
-						continue;
+						// Disk Initialization succeeded,
+						if (Part_Reported_As_Logical(disk_spec, file_name, logical_count))
+							continue;
 
 					// Not mounted! Next check if there is a file system on it.
-					if (Has_File_System(file_name, fstype) == TRUE)
-					{
+					if (Has_File_System(file_name, fstype) == TRUE) {
 #if defined(IOMTR_SETTING_OVERRIDE_FS)
-						if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL)
-						{
-							cout << "WARNING: allowing raw access to unmounted fs: " << file_name << endl;
-						}
-						else // environ variable not set
+						if (getenv("IOMTR_SETTING_OVERRIDE_FS") != NULL) {
+							cout << "WARNING: allowing raw access to unmounted fs: " <<
+							    file_name << endl;
+						} else	// environ variable not set
 						{
 #endif
-							cout << "NOTICE: ignoring " << file_name << ". file system found on disk" << endl;
+							cout << "NOTICE: ignoring " << file_name <<
+							    ". file system found on disk" << endl;
 							this->is_destructive = TRUE;
 							continue;
 #if defined(IOMTR_SETTING_OVERRIDE_FS)
 						}
 #endif
 					}
-
 					// take away 10 bytes for the largest of vtoc part names and
 					// and 5 bytes for the string elements. "[  ]"
 					length = MAX_NAME - 10 - 5;
@@ -875,14 +820,13 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 					// Reset it to correct value.
 					d.spec.disk_info.maximum_size = this_vtoc.v_part[i].p_size;
 					d.Set_Size(this_vtoc.v_part[i].p_size);
-					memcpy( &disk_spec[*count], &d.spec, sizeof( Target_Spec ) );
+					memcpy(&disk_spec[*count], &d.spec, sizeof(Target_Spec));
 
 					// Get the vtoc partition type info.
 					disk_spec[*count].name[length] = 0;
 					strcat(disk_spec[*count].name, " [ ");
 					strcat(disk_spec[*count].name, "backup");
-					if (fstype[0] != 0)
-					{
+					if (fstype[0] != 0) {
 						strcat(disk_spec[*count].name, ", ");
 						strcat(disk_spec[*count].name, fstype);
 					}
@@ -895,18 +839,17 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec *disk_spec,
 					(*count)++;
 					if (*count >= MAX_TARGETS)
 						break;
-				}	
+				}
 			}
 		}
 	}
-	return(TRUE);
+	return (TRUE);
 }
-
 
 BOOL Manager::Has_File_System(char *file_name, char *fstype)
 {
 // int pid, status;
-  int retval;
+	int retval;
 	FILE *pptr;
 	char path[MAX_NAME];
 	char cmd[MAX_NAME];
@@ -916,8 +859,7 @@ BOOL Manager::Has_File_System(char *file_name, char *fstype)
 	fstype[0] = 0;
 	sprintf(path, "/dev/rdsk/%s", file_name);
 	sprintf(cmd, "/usr/sbin/fstyp %s 2>/dev/null", path);
-	if ((pptr = popen(cmd, "r")) != NULL)
-	{
+	if ((pptr = popen(cmd, "r")) != NULL) {
 		// popen succeeded.
 		fgets(buf, BUFSIZ, pptr);
 
@@ -928,29 +870,25 @@ BOOL Manager::Has_File_System(char *file_name, char *fstype)
 		// fork1() + exec(), on the other hand, return values correctly
 		// but then how do we get the file system type, if it exists ?
 		retval = pclose(pptr);
-		if (retval == 0)
-		{
+		if (retval == 0) {
 			strcpy(fstype, buf);
-			return(TRUE);
-		}
-		else
-			return(FALSE);
-	}	
-	return(FALSE);
+			return (TRUE);
+		} else
+			return (FALSE);
+	}
+	return (FALSE);
 }
 
-
-
-BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count)
+BOOL Manager::Part_Reported_As_Logical(Target_Spec * spec, char *rdisk, int count)
 {
-	int					i, retval;
-	char				*p;
-	char				rstr[MAX_NAME], lstr[MAX_NAME];		// for physical/logical disks.
-	FILE 				*fp;
-	struct mnttab		mtab, mpref;
+	int i, retval;
+	char *p;
+	char rstr[MAX_NAME], lstr[MAX_NAME];	// for physical/logical disks.
+	FILE *fp;
+	struct mnttab mtab, mpref;
 
 	//
-	//		checks if the named partition/slice has already been mounted.
+	//              checks if the named partition/slice has already been mounted.
 	// The file systems listed in the mnttab file are already mounted. So, we have two cases :
 	// The file system is listed for testing (eg: ufs) or not listed (eg. procfs)
 	// But we need only check if the file sys is mounted and thats sufficient. That will
@@ -958,21 +896,19 @@ BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count
 	//
 	strcpy(rstr, rdisk);
 
-	if ((fp = fopen(mnttab, "r")) == NULL)
-	{
+	if ((fp = fopen(mnttab, "r")) == NULL) {
 		cout << "open (mount tab) file " << mnttab << " failed with error " << errno << endl;
 		cout << "Set environment variable MNTTAB to correct pathname" << endl;
 		// We wont try to report any disk. Could expose the OS partition to destructive tests.
 		return TRUE;
 	}
 
-	for (i = 0; i < count; i++)
-	{
+	for (i = 0; i < count; i++) {
 		// Initialize the mpref structure to NULL. Solaris does'nt do it.
 		memset(&mpref, 0, sizeof(struct mnttab));
 #ifdef _DEBUG
 		cout << "checking if physical disk already reported as logical." << endl
-			<< "	logical disk : " << spec[i].name << " physical disk : " << rdisk << endl;
+		    << "	logical disk : " << spec[i].name << " physical disk : " << rdisk << endl;
 #endif
 		// check for this pattern is also in Manager::Report_Disks()
 		// and TargetDisk::Init_Logical().
@@ -981,17 +917,15 @@ BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count
 		lstr[p - spec[i].name] = 0;
 
 		mpref.mnt_mountp = lstr;
-		if ((retval = getmntany(fp, &mtab, &mpref)) == 0)
-		{
+		if ((retval = getmntany(fp, &mtab, &mpref)) == 0) {
 			// found the entry in mnttab.
-			if (strstr(mtab.mnt_special, rstr))
-			{
+			if (strstr(mtab.mnt_special, rstr)) {
 				// equal! the entry contains this physical disk name (in the form c0t0d0[p|s]?).
 				// further the entry is in the list of reported logical disks.
 				// So, this physical disk has already been reported as a logical disk.
 #ifdef _DEBUG
 				cout << "physical disk " << rdisk << " reported logical disk "
-					<< mtab.mnt_mountp << endl;
+				    << mtab.mnt_mountp << endl;
 #endif
 				fclose(fp);
 				return TRUE;
@@ -1002,9 +936,7 @@ BOOL Manager::Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count
 	return FALSE;
 }
 
-
-
-BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
+BOOL Manager::Sort_Raw_Disk_Names(Target_Spec * disk_spec, int start, int end)
 {
 	int i, j;
 	Target_Spec temp_spec;
@@ -1017,21 +949,18 @@ BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
 	// Plain, old, simplified bubble sort is being used here. Most of the disk path names
 	// are already sorted. So it is ok to use this method.
 	//
-	for (i = start; i < end - 1 ; i++)
-	{
-		for (j = i + 1; j < end; j++)
-		{
+	for (i = start; i < end - 1; i++) {
+		for (j = i + 1; j < end; j++) {
 			//
 			// The function Compare...() compares two disk names and returns values 
 			// similar to strcmp().
 			//
-			switch(Compare_Raw_Disk_Names(disk_spec[i].name, disk_spec[j].name))
-			{
-			case 0:			// both are equal
+			switch (Compare_Raw_Disk_Names(disk_spec[i].name, disk_spec[j].name)) {
+			case 0:	// both are equal
 				break;
-			case -1:		// 1st < 2nd
+			case -1:	// 1st < 2nd
 				break;
-			case 1:			// 1st > 2nd
+			case 1:	// 1st > 2nd
 				// Swap the two.
 				memcpy(&temp_spec, &disk_spec[i], sizeof(Target_Spec));
 				memcpy(&disk_spec[i], &disk_spec[j], sizeof(Target_Spec));
@@ -1047,12 +976,12 @@ BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
 // This function compares two disk names and returns values similar to strcmp().
 // The comparison is not pure lexical but pure Numeric.
 // For example,
-//		- When comparing disk names c0t10d0p0 and c0t2d0p0, the function determines
-//		  that c0t2d0p0 is less than c0t10d0p0.
-//		- When comparing disk names c0t0d0p0 and c0d0p0, the function determines
-//		  that c0d0p0 is less than c0t0d0p0 (going by the shorter string length).
-//		- Disk names c0t0d0p0 and a0b0c0d0 are returned as equal. This is acceptable
-//		  because we do not come across such cases in the UNIX environment.
+//              - When comparing disk names c0t10d0p0 and c0t2d0p0, the function determines
+//                that c0t2d0p0 is less than c0t10d0p0.
+//              - When comparing disk names c0t0d0p0 and c0d0p0, the function determines
+//                that c0d0p0 is less than c0t0d0p0 (going by the shorter string length).
+//              - Disk names c0t0d0p0 and a0b0c0d0 are returned as equal. This is acceptable
+//                because we do not come across such cases in the UNIX environment.
 //
 int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 {
@@ -1062,41 +991,35 @@ int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 	BOOL alpha1 = FALSE;
 	BOOL alpha2 = FALSE;
 
-	while(1)
-	{
-		if ((! *str1) || (! *str2))
-		{
+	while (1) {
+		if ((!*str1) || (!*str2)) {
 			// either one or both strings have hit eos.
-			if ( *str1)		// str2 hit eos first.
-				return(1);
-			else if ( *str2) // str1 hit eos first.
-				return(-1);
+			if (*str1)	// str2 hit eos first.
+				return (1);
+			else if (*str2)	// str1 hit eos first.
+				return (-1);
 			else
-				return 0; // both hit eos.
+				return 0;	// both hit eos.
 		}
 
-		if (alpha1 && alpha2)
-		{
+		if (alpha1 && alpha2) {
 			// compare the characters at this position.
-			if ( *(str1-1) < *(str2-1) )
-				return(-1);
-			if ( *(str1-1) > *(str2-1) )
-				return(1);
+			if (*(str1 - 1) < *(str2 - 1))
+				return (-1);
+			if (*(str1 - 1) > *(str2 - 1))
+				return (1);
 
 			alpha1 = FALSE;
 			alpha2 = FALSE;
 		}
-
 		// Scan the strings for the next available number.
-		if (isalpha(*str1))
-		{
+		if (isalpha(*str1)) {
 			str1++;
 			alpha1 = TRUE;
 			continue;
 		}
 
-		if (isalpha(*str2))
-		{
+		if (isalpha(*str2)) {
 			str2++;
 			alpha2 = TRUE;
 			continue;
@@ -1123,16 +1046,14 @@ int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 
 		if (num1 < num2)
 			// String 1 is less than string 2.
-			return(-1);
+			return (-1);
 
 		if (num1 > num2)
 			// String 1 is greater than string 2.
-			return(1);
+			return (1);
 
-	} // end-while().
+	}			// end-while().
 }
-
-
 
 // Function to get all swap device names into a single string of the form
 // <string1>:<string2>:<string3> and so on.
@@ -1141,85 +1062,75 @@ int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 void Manager::Get_All_Swap_Devices()
 {
 	// Presettings
-	
-	int 		num, i, n;
-	swaptbl_t	*pSwapTable;
-	char 		*pcSwapNames;
+
+	int num, i, n;
+	swaptbl_t *pSwapTable;
+	char *pcSwapNames;
 
 	// Loop till list of swap devices is created
 
-	for(;;) {
+	for (;;) {
 
 		// Get the number of swap devices
 		// (if non is found or error occurred - simply return)
 
-		if( ( num = swapctl(SC_GETNSWP, 0) ) <= 0 ) {
+		if ((num = swapctl(SC_GETNSWP, 0)) <= 0) {
 			return;
 		}
-
 		// Allocate the needed temporary memory structures
-		
-		pSwapTable = (swaptbl_t *) malloc( ( ( num + 1 ) * sizeof(swapent_t) ) + sizeof(struct swaptable) );
-		if( pSwapTable == NULL ) {
-			return;
-		}
-		pcSwapNames = (char *) malloc( ( num + 1 ) * MAX_NAME );
-		if( pcSwapNames == NULL ) {
-			free( pSwapTable );
-			return;
-		}
 
+		pSwapTable = (swaptbl_t *) malloc(((num + 1) * sizeof(swapent_t)) + sizeof(struct swaptable));
+		if (pSwapTable == NULL) {
+			return;
+		}
+		pcSwapNames = (char *)malloc((num + 1) * MAX_NAME);
+		if (pcSwapNames == NULL) {
+			free(pSwapTable);
+			return;
+		}
 		// Initialize string pointers in the swaptable
-		
-		for( i = 0; i < ( num + 1 ); i++ ) {
-			pSwapTable->swt_ent[i].ste_path = pcSwapNames + ( i * MAX_NAME );	
+
+		for (i = 0; i < (num + 1); i++) {
+			pSwapTable->swt_ent[i].ste_path = pcSwapNames + (i * MAX_NAME);
 		}
 		pSwapTable->swt_n = num + 1;
-		
+
 		// Request filling the swaptable
-		
-		if( ( n = swapctl(SC_LIST, pSwapTable) ) < 0 ) {
+
+		if ((n = swapctl(SC_LIST, pSwapTable)) < 0) {
 			cerr << "WARN: swapctl failed with error " << errno << endl;
-			free( pSwapTable );
-			free( pcSwapNames );
+			free(pSwapTable);
+			free(pcSwapNames);
 			return;
 		}
-
 		// Ensure that the swaptable was big enough for the data
-		
-		if( n > num ) {
-			free( pSwapTable );
-			free( pcSwapNames );
-			continue;			
+
+		if (n > num) {
+			free(pSwapTable);
+			free(pcSwapNames);
+			continue;
 		}
-		
 		// Allocate the memory for the final destination of the swap device list
 		// (n * swap_device_name) + (n * ":") + 1
 
-		swap_devices = (char *) malloc( ( n * MAX_NAME ) + n + 1 );
-		if( swap_devices == NULL ) {
-			free( pSwapTable );
-			free( pcSwapNames );
+		swap_devices = (char *)malloc((n * MAX_NAME) + n + 1);
+		if (swap_devices == NULL) {
+			free(pSwapTable);
+			free(pcSwapNames);
 			return;
 		}
 
-		for( i = 0; i < n; i++ ) {
-			strcat( swap_devices, pSwapTable->swt_ent[i].ste_path );
-			strcat( swap_devices, ":" );
+		for (i = 0; i < n; i++) {
+			strcat(swap_devices, pSwapTable->swt_ent[i].ste_path);
+			strcat(swap_devices, ":");
 		}
 #ifdef _DEBUG
 		cout << "swap devices: " << swap_devices << endl;
 #endif
-		free( pSwapTable );
-		free( pcSwapNames );
+		free(pSwapTable);
+		free(pcSwapNames);
 		return;
 	}
 }
 
-
-
-#endif // IOMTR_OS_SOLARIS
-
-
-
-
+#endif				// IOMTR_OS_SOLARIS

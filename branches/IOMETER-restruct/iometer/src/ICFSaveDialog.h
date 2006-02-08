@@ -61,59 +61,56 @@
 #ifndef ICFSAVEDIALOG_DEFINED
 #define ICFSAVEDIALOG_DEFINED
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CICFSaveDialog dialog
 
-class CICFSaveDialog : public CFileDialog
-{
+class CICFSaveDialog:public CFileDialog {
 	DECLARE_DYNAMIC(CICFSaveDialog)
-
 // Construction
-public:
+      public:
 	CICFSaveDialog();
 
 // Dialog Data
 	//{{AFX_DATA(CICFSaveDialog)
 	enum { IDD = IDD_FILESAVE_OPTS };
-	CButton	m_CkTestSetup;
-	CButton	m_CkResultsDisplay;
-	CButton	m_CkGlobalAccessSpec;
-	CButton	m_CkManagerWorker;
-	CButton	m_CkAssignAccessSpec;
-	CButton	m_CkAssignTargets;
-	BOOL	isCkTestSetup;
-	BOOL	isCkResultsDisplay;
-	BOOL	isCkGlobalAccessSpec;
-	BOOL	isCkManagerWorker;
-	BOOL	isCkAssignAccessSpec;
-	BOOL	isCkAssignTargets;
+	CButton m_CkTestSetup;
+	CButton m_CkResultsDisplay;
+	CButton m_CkGlobalAccessSpec;
+	CButton m_CkManagerWorker;
+	CButton m_CkAssignAccessSpec;
+	CButton m_CkAssignTargets;
+	BOOL isCkTestSetup;
+	BOOL isCkResultsDisplay;
+	BOOL isCkGlobalAccessSpec;
+	BOOL isCkManagerWorker;
+	BOOL isCkAssignAccessSpec;
+	BOOL isCkAssignTargets;
 	//}}AFX_DATA
 
 	// Once checkboxes are cleared and disabled in response to the
 	// deselection of other checkboxes, their old states are maintained here.
-	BOOL	wasCkAssignAccessSpec;
-	BOOL	wasCkAssignTargets;
+	BOOL wasCkAssignAccessSpec;
+	BOOL wasCkAssignTargets;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CICFSaveDialog)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+      protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CICFSaveDialog)
-	afx_msg void OnCkManagerWorker();
+	 afx_msg void OnCkManagerWorker();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnAnyCheck();
-	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
+	afx_msg BOOL OnHelpInfo(HELPINFO * pHelpInfo);
 	afx_msg void OnPaint();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}

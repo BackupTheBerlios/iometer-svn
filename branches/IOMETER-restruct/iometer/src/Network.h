@@ -73,56 +73,49 @@
 #define NETWORK_DEFINED
 
 #ifdef IOMTR_OSFAMILY_WINDOWS
-namespace std {}
+namespace std {
+}
 #endif
 using namespace std;
+
 #include <sstream>
 
 #include "IOCommon.h"
-
 
 // Set NETWORK_DETAILS to 1 to enable network related debug messages, 0 to disable them.
 // If _DETAILS  is defined and NETWORK_DETAILS is set to 0, some messages will
 // still appear.
 #define NETWORK_DETAILS	0
 
-
 #define NETWORK_ERROR	0xffffffffffffffff
 #define SERVER	TRUE
 #define CLIENT	FALSE
 
-
-
-enum ReadWriteType
-{
+enum ReadWriteType {
 	READ,
 	WRITE
 };
 
-
-
-class Network
-{
-public:
-	// constructor and destructor	
+class Network {
+      public:
+	// constructor and destructor   
 	Network();
-	virtual	~Network();
+	virtual ~ Network();
 
 	// public functions common to all Networks (pure virtual, not implemented by Network)
-	virtual ReturnVal	Create( BOOL create_server ) = 0;
-	virtual ReturnVal	Connect( const char* ip_address, 
-							unsigned short port_number ) = 0;
-	virtual ReturnVal	Accept() = 0;
-	virtual ReturnVal	Destroy() = 0;
-	virtual ReturnVal	Receive( LPVOID buffer, DWORD bytes, LPDWORD return_value,
-							LPOVERLAPPED asynchronous_io, DWORD flags = 0 ) = 0;
-	virtual ReturnVal	Send( LPVOID buffer, DWORD bytes, LPDWORD return_value,
-							LPOVERLAPPED asynchronous_io, DWORD flags = 0 ) = 0;
-	virtual DWORD		Peek() = 0;
-	virtual ReturnVal	Close( BOOL close_server ) = 0;
+	virtual ReturnVal Create(BOOL create_server) = 0;
+	virtual ReturnVal Connect(const char *ip_address, unsigned short port_number) = 0;
+	virtual ReturnVal Accept() = 0;
+	virtual ReturnVal Destroy() = 0;
+	virtual ReturnVal Receive(LPVOID buffer, DWORD bytes, LPDWORD return_value,
+				  LPOVERLAPPED asynchronous_io, DWORD flags = 0) = 0;
+	virtual ReturnVal Send(LPVOID buffer, DWORD bytes, LPDWORD return_value,
+			       LPOVERLAPPED asynchronous_io, DWORD flags = 0) = 0;
+	virtual DWORD Peek() = 0;
+	virtual ReturnVal Close(BOOL close_server) = 0;
 
-protected:
-	virtual void OutputErrMsg();
+      protected:
+	 virtual void OutputErrMsg();
 
 	ostringstream *errmsg;
 };

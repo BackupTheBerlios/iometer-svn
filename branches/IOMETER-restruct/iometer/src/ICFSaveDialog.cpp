@@ -62,11 +62,9 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "GalileoApp.h"
 #include "ICFSaveDialog.h"
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -78,35 +76,31 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
+#endif
 
 IMPLEMENT_DYNAMIC(CICFSaveDialog, CFileDialog)
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CICFSaveDialog dialog
-
-CICFSaveDialog::CICFSaveDialog()
-					: CFileDialog(	FALSE, "icf", "iometer", NULL,
-									"Iometer Configuration Files (*.icf)|*.icf|"
-									"Text Files (*.txt)|*.txt|All Files (*.*)|*.*||" )
+    CICFSaveDialog::CICFSaveDialog()
+:  CFileDialog(FALSE, "icf", "iometer", NULL,
+	    "Iometer Configuration Files (*.icf)|*.icf|" "Text Files (*.txt)|*.txt|All Files (*.*)|*.*||")
 {
 	CString title;
 	char *buf;
 
-	VERIFY( title.LoadString( IDS_SAVE_DIALOG_TITLE ) );	// get frame title from resource file
-	buf = new char[ title.GetLength() + 1 ];
-	strcpy( buf, title );
+	VERIFY(title.LoadString(IDS_SAVE_DIALOG_TITLE));	// get frame title from resource file
+	buf = new char[title.GetLength() + 1];
+
+	strcpy(buf, title);
 	m_ofn.lpstrTitle = buf;
 
-	m_ofn.Flags |= OFN_ENABLETEMPLATE | OFN_PATHMUSTEXIST
-				| OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	m_ofn.Flags |= OFN_ENABLETEMPLATE | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
 	m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILESAVE_OPTS);
 	//{{AFX_DATA_INIT(CICFSaveDialog)
@@ -122,8 +116,7 @@ CICFSaveDialog::CICFSaveDialog()
 	wasCkAssignTargets = TRUE;
 }
 
-
-void CICFSaveDialog::DoDataExchange(CDataExchange* pDX)
+void CICFSaveDialog::DoDataExchange(CDataExchange * pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CICFSaveDialog)
@@ -142,49 +135,41 @@ void CICFSaveDialog::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CICFSaveDialog, CDialog)
-	//{{AFX_MSG_MAP(CICFSaveDialog)
-	ON_BN_CLICKED(CkManagerWorker, OnCkManagerWorker)
-	ON_BN_CLICKED(CkTestSetup, OnAnyCheck)
-	ON_WM_HELPINFO()
-	ON_BN_CLICKED(CkResultsDisplay, OnAnyCheck)
-	ON_BN_CLICKED(CkGlobalAccessSpec, OnAnyCheck)
-	ON_BN_CLICKED(CkAssignAccessSpec, OnAnyCheck)
-	ON_BN_CLICKED(CkAssignTargets, OnAnyCheck)
-	ON_WM_PAINT()
-	//}}AFX_MSG_MAP
+    //{{AFX_MSG_MAP(CICFSaveDialog)
+    ON_BN_CLICKED(CkManagerWorker, OnCkManagerWorker)
+    ON_BN_CLICKED(CkTestSetup, OnAnyCheck)
+    ON_WM_HELPINFO()
+    ON_BN_CLICKED(CkResultsDisplay, OnAnyCheck)
+    ON_BN_CLICKED(CkGlobalAccessSpec, OnAnyCheck)
+    ON_BN_CLICKED(CkAssignAccessSpec, OnAnyCheck)
+    ON_BN_CLICKED(CkAssignTargets, OnAnyCheck)
+ON_WM_PAINT()
+    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
 /////////////////////////////////////////////////////////////////////////////
 // CICFSaveDialog message handlers
-
-void CICFSaveDialog::OnCkManagerWorker() 
+void CICFSaveDialog::OnCkManagerWorker()
 {
 	UpdateData(TRUE);	// copy the GUI state to the variables
 
-	if ( isCkManagerWorker )
-	{
+	if (isCkManagerWorker) {
 		// The box was checked
-		m_CkAssignAccessSpec.EnableWindow( TRUE );
+		m_CkAssignAccessSpec.EnableWindow(TRUE);
 		isCkAssignAccessSpec = wasCkAssignAccessSpec;
 
-		m_CkAssignTargets.EnableWindow( TRUE );
+		m_CkAssignTargets.EnableWindow(TRUE);
 		isCkAssignTargets = wasCkAssignTargets;
-	}
-	else
-	{
+	} else {
 		// The box was unchecked
-		if ( m_CkAssignAccessSpec.IsWindowEnabled() )
-		{
-			m_CkAssignAccessSpec.EnableWindow( FALSE );
+		if (m_CkAssignAccessSpec.IsWindowEnabled()) {
+			m_CkAssignAccessSpec.EnableWindow(FALSE);
 			wasCkAssignAccessSpec = isCkAssignAccessSpec;
 			isCkAssignAccessSpec = FALSE;
 		}
 
-		if ( m_CkAssignTargets.IsWindowEnabled() )
-		{
-			m_CkAssignTargets.EnableWindow( FALSE );
+		if (m_CkAssignTargets.IsWindowEnabled()) {
+			m_CkAssignTargets.EnableWindow(FALSE);
 			wasCkAssignTargets = isCkAssignTargets;
 			isCkAssignTargets = FALSE;
 		}
@@ -195,39 +180,36 @@ void CICFSaveDialog::OnCkManagerWorker()
 	OnAnyCheck();
 }
 
-void CICFSaveDialog::OnAnyCheck() 
+void CICFSaveDialog::OnAnyCheck()
 {
 	UpdateData(TRUE);	// copy the GUI state to the variables
 
 	// Disable OK button if no boxes are checked
-	if ( isCkTestSetup || isCkResultsDisplay
-			|| isCkGlobalAccessSpec || isCkManagerWorker
-			|| isCkAssignAccessSpec || isCkAssignTargets )
+	if (isCkTestSetup || isCkResultsDisplay
+	    || isCkGlobalAccessSpec || isCkManagerWorker || isCkAssignAccessSpec || isCkAssignTargets)
 		CWnd::GetOwner()->GetDlgItem(IDOK)->EnableWindow(TRUE);
 	else
 		CWnd::GetOwner()->GetDlgItem(IDOK)->EnableWindow(FALSE);
 }
 
-BOOL CICFSaveDialog::OnInitDialog() 
+BOOL CICFSaveDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
 	UpdateData(FALSE);	// copy the variable states to the GUI
 
-	if ( !isCkManagerWorker )
-	{
-		m_CkAssignAccessSpec.EnableWindow( FALSE );
-		m_CkAssignTargets.EnableWindow( FALSE );
+	if (!isCkManagerWorker) {
+		m_CkAssignAccessSpec.EnableWindow(FALSE);
+		m_CkAssignTargets.EnableWindow(FALSE);
 	}
 
-	return TRUE;  // return TRUE unless you set the focus to a control
+	return TRUE;		// return TRUE unless you set the focus to a control
 }
 
-BOOL CICFSaveDialog::OnHelpInfo(HELPINFO* pHelpInfo) 
+BOOL CICFSaveDialog::OnHelpInfo(HELPINFO * pHelpInfo)
 {
-	switch ( pHelpInfo->iCtrlId )
-	{
-	// When we figure out the help, put it here...
+	switch (pHelpInfo->iCtrlId) {
+		// When we figure out the help, put it here...
 	case CkTestSetup:
 		break;
 	case CkResultsDisplay:
@@ -245,7 +227,6 @@ BOOL CICFSaveDialog::OnHelpInfo(HELPINFO* pHelpInfo)
 	return CDialog::OnHelpInfo(pHelpInfo);
 }
 
-
 //
 // Draw the lines that show the relation between the Manager/Worker
 // checkbox and the access spec and target assignment checkboxes.
@@ -253,9 +234,9 @@ BOOL CICFSaveDialog::OnHelpInfo(HELPINFO* pHelpInfo)
 // message, since this is an extension to the file open/save common
 // dialog.
 //
-void CICFSaveDialog::OnPaint() 
+void CICFSaveDialog::OnPaint()
 {
-	CPaintDC dc(this); // device context for painting
+	CPaintDC dc(this);	// device context for painting
 
 	CRect MgrWkr;
 	CRect AsgnAspec;
@@ -279,7 +260,7 @@ void CICFSaveDialog::OnPaint()
 
 	x1 = MgrWkr.left + centerer - 1;
 	x2 = AsgnAspec.left;
-	
+
 	y1 = MgrWkr.bottom;
 	y2 = AsgnAspec.top + centerer;
 	y3 = AsgnTargets.top + centerer;

@@ -59,61 +59,56 @@
 #ifndef FRAME_DEFINED
 #define FRAME_DEFINED
 
-
 #include "IOCommon.h"
 
-
-class CMainFrame : public CFrameWnd
-{
-protected: // create from serialization only
+class CMainFrame:public CFrameWnd {
+      protected:		// create from serialization only
 	CMainFrame();
 	DECLARE_DYNCREATE(CMainFrame)
-
 // Attributes
-public:
+      public:
 
 // Operations
-public:
+      public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainFrame)
-	public:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	protected:
+      public:
+	virtual BOOL PreCreateWindow(CREATESTRUCT & cs);
+      protected:
 	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
 // Implementation
-public:
-	virtual ~CMainFrame();
+      public:
+	virtual ~ CMainFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void Dump(CDumpContext & dc) const;
 #endif
 
 //protected:  // control bar embedded members
-public:
+      public:
 
-//	CToolBar    m_wndToolBar;
+//      CToolBar    m_wndToolBar;
 
 // Generated message map functions
-protected:
+      protected:
 	//{{AFX_MSG(CMainFrame)
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	 afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-private:
-	UINT m_nStatusPane1ID;
-private:
-	UINT m_nStatusPane1Style;
-private:
-	INT  m_nStatusPane1Width;
-private:
-	BOOL m_bMenuSelect;
+	 DECLARE_MESSAGE_MAP()
+      private:
+	 UINT m_nStatusPane1ID;
+      private:
+	 UINT m_nStatusPane1Style;
+      private:
+	 INT m_nStatusPane1Width;
+      private:
+	 BOOL m_bMenuSelect;
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
 
 #endif

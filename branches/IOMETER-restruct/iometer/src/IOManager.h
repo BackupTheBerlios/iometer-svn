@@ -89,121 +89,112 @@
 #ifndef MANAGER_DEFINED
 #define MANAGER_DEFINED
 
-
-
 #include "IOGrunt.h"
 #include "IOPort.h"
 #include "IOPerformance.h"
 
-
-
 #if defined(IOMTR_OSFAMILY_UNIX)
- #if defined(IOMTR_OS_LINUX)
-  #define DEFAULT_EXCLUDE_FILESYS   "proc shm swap devpts"
- #elif defined(IOMTR_OS_SOLARIS)
-  #define DEFAULT_EXCLUDE_FILESYS   "proc specfs config" 
- #elif defined(IOMTR_OS_OSX)
-  #define DEFAULT_EXCLUDE_FILESYS   "devfs nfs fdesc afpfs"
- #else
-  #warning ===> WARNING: You have to do some coding here to get the port done! 
- #endif
+#if defined(IOMTR_OS_LINUX)
+#define DEFAULT_EXCLUDE_FILESYS   "proc shm swap devpts"
+#elif defined(IOMTR_OS_SOLARIS)
+#define DEFAULT_EXCLUDE_FILESYS   "proc specfs config"
+#elif defined(IOMTR_OS_OSX)
+#define DEFAULT_EXCLUDE_FILESYS   "devfs nfs fdesc afpfs"
+#else
+#warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
 #elif defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_WINDOWS)
  // if we are not on UNIX the excluded filesystem stuff doesn't really matter
- #define DEFAULT_EXCLUDE_FILESYS   ""
+#define DEFAULT_EXCLUDE_FILESYS   ""
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-
-
-void Wait_for_Prepare( void *grunt_thread_info );
-
-
+void Wait_for_Prepare(void *grunt_thread_info);
 
 //
 // Class to manager grunt worker threads.
 //
-class Manager
-{
-public:
+class Manager {
+      public:
 	Manager();
 	~Manager();
 
-	const char* 	GetVersionString(BOOL fWithDebugIndicator = FALSE);
-	BOOL		Process_Message();
-	BOOL		Login( char* port_name );
-	BOOL		Run();
+	const char *GetVersionString(BOOL fWithDebugIndicator = FALSE);
+	BOOL Process_Message();
+	BOOL Login(char *port_name);
+	BOOL Run();
 
-	Port	        *prt;                  // Communication port to Iometer.
+	Port *prt;		// Communication port to Iometer.
 
-	Grunt*		grunts[MAX_WORKERS];   // I/O workers.
-	
-	void	        *data;					// Buffer for I/O requests.
-	int		data_size;				// Size of currently allocated data buffer.
+	Grunt *grunts[MAX_WORKERS];	// I/O workers.
 
-	char		manager_name[MAX_WORKER_NAME];	        // Name of manager, customizable on command line.
-	char            exclude_filesys[MAX_EXCLUDE_FILESYS];   // filesystem types to exclude, command line option
-	
-	char		blkdevlist[MAX_TARGETS][MAX_NAME];	// store command line supplied device name.
+	void *data;		// Buffer for I/O requests.
+	int data_size;		// Size of currently allocated data buffer.
+
+	char manager_name[MAX_WORKER_NAME];	// Name of manager, customizable on command line.
+	char exclude_filesys[MAX_EXCLUDE_FILESYS];	// filesystem types to exclude, command line option
+
+	char blkdevlist[MAX_TARGETS][MAX_NAME];	// store command line supplied device name.
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	char* 		swap_devices;
-	BOOL		is_destructive;
-	BOOL		is_buffered;
-#endif // IOMTR_OSFAMILY_UNIX
+	char *swap_devices;
+	BOOL is_destructive;
+	BOOL is_buffered;
+#endif				// IOMTR_OSFAMILY_UNIX
 
-private:
-	Message		msg;	       // Directional messages from Iometer.
-	Data_Message	data_msg;      // Data messages from Iometer.
-	int		grunt_count;   // Number of worker threads available.
-	char	       	*m_pVersionString;
-	char	       	*m_pVersionStringWithDebug;
+      private:
+	 Message msg;		// Directional messages from Iometer.
+	Data_Message data_msg;	// Data messages from Iometer.
+	int grunt_count;	// Number of worker threads available.
+	char *m_pVersionString;
+	char *m_pVersionStringWithDebug;
 
 	// Performance results functions and data.
-	void		Report_Results( int which_perf );
-	void		Get_Performance( int which_perf, int snapshot );
+	void Report_Results(int which_perf);
+	void Get_Performance(int which_perf, int snapshot);
 
-	Manager_Results	manager_performance[MAX_PERF];   // System performance results.
-	Performance	perf_data[MAX_PERF];		 // System performance information.
+	Manager_Results manager_performance[MAX_PERF];	// System performance results.
+	Performance perf_data[MAX_PERF];	// System performance information.
 
 	// Functions to process specific messages.
-	void		Start_Test( int target );
-	void		Begin_IO( int target );
-	void		Record_On( int target );
-	void		Record_Off( int target );
-	void		Stop_Test( int target );
+	void Start_Test(int target);
+	void Begin_IO(int target);
+	void Record_On(int target);
+	void Record_Off(int target);
+	void Stop_Test(int target);
 
-	BOOL		Set_Targets( int worker_no, int count, Target_Spec* target_specs );
+	BOOL Set_Targets(int worker_no, int count, Target_Spec * target_specs);
 
 	// Processing messages aimed at disk stuff.
-	void		Prepare_Disks( int target );
-	void		Stop_Prepare( int target );
+	void Prepare_Disks(int target);
+	void Stop_Prepare(int target);
 
-	int		Report_Disks( Target_Spec *disk_spec );
+	int Report_Disks(Target_Spec * disk_spec);
 #if defined(IOMTR_OSFAMILY_UNIX)
 	// These UNIX-specific methods are defined in IOManagerUNIX.cpp.
- #if defined(IOMTR_OS_OSX)
-	BOOL		containsPartitions(mach_port_t masterPort, char *bsdname);
- #endif
-	BOOL		Part_Reported_As_Logical(Target_Spec *spec, char *rdisk, int count);
+#if defined(IOMTR_OS_OSX)
+	BOOL containsPartitions(mach_port_t masterPort, char *bsdname);
+#endif
+	BOOL Part_Reported_As_Logical(Target_Spec * spec, char *rdisk, int count);
 
-	BOOL 		Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end);
-	int		Compare_Raw_Disk_Names(char *str1, char *str2);
+	BOOL Sort_Raw_Disk_Names(Target_Spec * disk_spec, int start, int end);
+	int Compare_Raw_Disk_Names(char *str1, char *str2);
 
-	BOOL 		Report_FDISK_Partitions(char *name, Target_Spec *disk_spec, int *count, int logical_count);
-	BOOL 		Report_VTOC_Partitions(char *name, Target_Spec *disk_spec, int *count, int logical_count);
-	BOOL 		Has_File_System(char *, char *);
-	void 		Get_All_Swap_Devices();
-#endif // IOMTR_OSFAMILY_UNIX
+	BOOL Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *count, int logical_count);
+	BOOL Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *count, int logical_count);
+	BOOL Has_File_System(char *, char *);
+	void Get_All_Swap_Devices();
+#endif				// IOMTR_OSFAMILY_UNIX
 
-	int		Report_TCP( Target_Spec *tcp_spec );
-	int		Report_VIs( Target_Spec *vi_spec );
+	int Report_TCP(Target_Spec * tcp_spec);
+	int Report_VIs(Target_Spec * vi_spec);
 
-	BOOL		Set_Access( int target, const Test_Spec* spec );
+	BOOL Set_Access(int target, const Test_Spec * spec);
 
-	void		Add_Workers( int count );
-	void		Remove_Workers( int target );
+	void Add_Workers(int count);
+	void Remove_Workers(int target);
 
-	BOOL		record;
+	BOOL record;
 };
 
 #endif

@@ -59,7 +59,6 @@
 #ifndef	VIEW_DEFINED
 #define VIEW_DEFINED
 
-
 #define	TEST_TIMER		1
 #define PREPARE_TIMER		2
 #define RAMP_TIMER		3
@@ -73,7 +72,6 @@
 
 #define NUM_TOOLBAR_BUTTONS	13
 
-
 #include "GalileoDoc.h"
 #include "WorkerView.h"
 #include "ManagerList.h"
@@ -86,195 +84,185 @@
 #include "ICFOpenDialog.h"
 #include "ICFSaveDialog.h"
 
-class CGalileoView : public CView
-{
-protected: // create from serialization only
+class CGalileoView:public CView {
+      protected:		// create from serialization only
 	CGalileoView();
 	DECLARE_DYNCREATE(CGalileoView)
-
 // Attributes
-public:
-	CGalileoDoc*	GetDocument();
+      public:
+	CGalileoDoc * GetDocument();
 
 // Operations
-public:
+      public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGalileoView)
-	public:
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = NULL);
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
+      public:
+	virtual void OnDraw(CDC * pDC);	// overridden to draw this view
+	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT & rect,
+			    CWnd * pParentWnd, UINT nID, CCreateContext * pContext = NULL);
+      protected:
+	 virtual void DoDataExchange(CDataExchange * pDX);
 	//}}AFX_VIRTUAL
 
 // Implementation
-public:
-	virtual			~CGalileoView();
+      public:
+	 virtual ~ CGalileoView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void Dump(CDumpContext & dc) const;
 #endif
-	void			AddManager( Manager *manager );
-	Worker*			AddWorker( TargetType worker_type, Manager *manager,
-						const CString& name = "" );
-	void			OnNewWorker( TargetType worker_type );
-	void			AddDefaultWorkers( Manager *manager );
-	BOOL			DisksNotPrepared();
-	void			ChangedSelection();
-	void			ChangingSelection();
-	TargetType		GetSelectedTargetType();
+	void AddManager(Manager * manager);
+	Worker *AddWorker(TargetType worker_type, Manager * manager, const CString & name = "");
+	void OnNewWorker(TargetType worker_type);
+	void AddDefaultWorkers(Manager * manager);
+	BOOL DisksNotPrepared();
+	void ChangedSelection();
+	void ChangingSelection();
+	TargetType GetSelectedTargetType();
 
 	// Functions to set button states.
-	void			ButtonReset();
+	void ButtonReset();
 
 	// Called by the button handlers for the toolbar and for the big meter dialog
-	void			Go();
-	void			StopAll();
+	void Go();
+	void StopAll();
 
 	//////////////////////////////////////////////////////
 	// Saves/loads an Iometer Configuration File (.icf) //
 	//////////////////////////////////////////////////////
 	// Preprocesses the config file and makes sure all managers specified in
 	// the file are available (or waits on them), then calls OpenConfigFile.
-	BOOL			PrepareToOpenConfigFile(
-									const CString& infilename,
-									BOOL* flags,
-									BOOL replace );
+	BOOL PrepareToOpenConfigFile(const CString & infilename, BOOL * flags, BOOL replace);
 	// Restores configuration from specified file.
-	BOOL			OpenConfigFile( const CString& infilename,	// DO NOT CALL DIRECTLY!
-									BOOL* flags,				// Use OpenConfigFileWrapper!
-									BOOL replace );
+	BOOL OpenConfigFile(const CString & infilename,	// DO NOT CALL DIRECTLY!
+			    BOOL * flags,	// Use OpenConfigFileWrapper!
+			    BOOL replace);
 	// Saves configuration to specified file.
-	BOOL			SaveConfigFile( const CString& outfilename,
-									BOOL* flags );
+	BOOL SaveConfigFile(const CString & outfilename, BOOL * flags);
 
 	// Resets display as needed.
-	void			ResetDisplayforNewTest();
+	void ResetDisplayforNewTest();
 
 	// Function to set text in the status bar.
-	void			SetStatusBarText( CString text1 = "", CString text2 = "", CString text3 = "" );
-	void			ClearStatusBar();
-	void			UpdateTestStatus();
+	void SetStatusBarText(CString text1 = "", CString text2 = "", CString text3 = "");
+	void ClearStatusBar();
+	void UpdateTestStatus();
 
 	// Returns the currently running access spec's index.
-	int				GetCurrentAccessIndex();
+	int GetCurrentAccessIndex();
 
-	void			CalcRunCount();
+	void CalcRunCount();
 
 	// Tells the results display dialogs which result was selected to be monitored.
-	void			OnMDisplay( int submenu_id, int menu_item );
+	void OnMDisplay(int submenu_id, int menu_item);
 
-	void			Reset();
+	void Reset();
 
 	///////////////////////////////////////////////////////////////////////////
 	// Tab sheets.
 	//
-	CWorkerView*	m_pWorkerView;
-	CPageDisk*		m_pPageDisk;
-	CPageNetwork*	m_pPageNetwork;
-	CPageDisplay*	m_pPageDisplay;
-	CPageSetup*		m_pPageSetup;
-	CPageAccess*	m_pPageAccess;
+	CWorkerView *m_pWorkerView;
+	CPageDisk *m_pPageDisk;
+	CPageNetwork *m_pPageNetwork;
+	CPageDisplay *m_pPageDisplay;
+	CPageSetup *m_pPageSetup;
+	CPageAccess *m_pPageAccess;
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-
-	HTREEITEM		right_clicked_item;
-	CImageList*		p_DragImage;
-	BOOL			dragging;
+	HTREEITEM right_clicked_item;
+	CImageList *p_DragImage;
+	BOOL dragging;
 
 	// property sheet is wired to MDI child frame and is not displayed
-	CPropertySheet* m_pPropSheet;
+	CPropertySheet *m_pPropSheet;
 
-protected:
-	CICFOpenDialog file_open_box;	// open config file dialog box
+      protected:
+	 CICFOpenDialog file_open_box;	// open config file dialog box
 	CICFSaveDialog file_save_box;	// save config file dialog box
 
 	// tracks whether parent frame has already been sized.
-	BOOL			m_bSizedBefore;
+	BOOL m_bSizedBefore;
 
-	int				manager_to_prepare;
-	int				worker_to_prepare;
-	CString			result_file;
+	int manager_to_prepare;
+	int worker_to_prepare;
+	CString result_file;
 
-	struct
-	{ 
+	struct {
 		UINT nID;
 		BOOL enabled;
-	}				toolbar_buttons[NUM_TOOLBAR_BUTTONS];
+	} toolbar_buttons[NUM_TOOLBAR_BUTTONS];
 
 	///////////////////////////////////////////////////////////////////////////
 	// Information needed to save configuration settings before testing and
 	// restore them afterwards.
 	//
-	void			SaveSettings();
-	void			RestoreSettings();
+	void SaveSettings();
+	void RestoreSettings();
 	//
-	int				*save_queue_depth;
+	int *save_queue_depth;
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-	void			InitAccessSpecRun();
-	BOOL			SetAccess();
-	void			SaveAccessSpecs();
-	void			StartTest();
-	void			StartRecording();
-public:
-	void			StopTest( ReturnVal test_successful );
-protected:
-	void			TestDone( ReturnVal test_successful );
-	void			SaveResults();
-	BOOL			SetActiveTargets();
-	BOOL			SetTargets();
+	void InitAccessSpecRun();
+	BOOL SetAccess();
+	void SaveAccessSpecs();
+	void StartTest();
+	void StartRecording();
+      public:
+	void StopTest(ReturnVal test_successful);
+      protected:
+	void TestDone(ReturnVal test_successful);
+	void SaveResults();
+	BOOL SetActiveTargets();
+	BOOL SetTargets();
 
-	void			EnableWindow( BOOL enable = TRUE );
+	void EnableWindow(BOOL enable = TRUE);
 
 	///////////////////////////////////////////////////////////////////////////
 	// Functions to set button states.
 	//
-	void			SetButton(UINT nID, BOOL state); 
-	void			ButtonReady();
-	void			ButtonTest();
-	void			ButtonPrepare();
-	void			ButtonOff();
+	void SetButton(UINT nID, BOOL state);
+	void ButtonReady();
+	void ButtonTest();
+	void ButtonPrepare();
+	void ButtonOff();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Information used to manage cycling through targets, workers, queue
 	// depth, access specs, etc.
 	//
-	int				run_count;
-	int				run_index;
-	int				access_count;
-	int				access_index;
+	int run_count;
+	int run_index;
+	int access_count;
+	int access_index;
 	//
-	BOOL			CycleTargets();
-	BOOL			CycleWorkers();
-	BOOL			IncrementTargets();
-	BOOL			IncrementTargetsSerial();
-	BOOL			Normal();
-	int				CycleWorkersTargets();
-	BOOL			CycleQueue();
-	BOOL			CycleTargetsQueue();
+	BOOL CycleTargets();
+	BOOL CycleWorkers();
+	BOOL IncrementTargets();
+	BOOL IncrementTargetsSerial();
+	BOOL Normal();
+	int CycleWorkersTargets();
+	BOOL CycleQueue();
+	BOOL CycleTargetsQueue();
 	//
-	int				workers_to_run;
-	int				targets_to_run;
-	int				queue_depth_to_run;
-	int				worker_exponent;
-	int				target_exponent;
-	int				queue_exponent;
+	int workers_to_run;
+	int targets_to_run;
+	int queue_depth_to_run;
+	int worker_exponent;
+	int target_exponent;
+	int queue_exponent;
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-
 // Generated message map functions
-protected:
+      protected:
 	//{{AFX_MSG(CGalileoView)
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	 afx_msg BOOL OnEraseBkgnd(CDC * pDC);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnBReset();
 	afx_msg void OnFileOpen();
@@ -288,8 +276,8 @@ protected:
 	afx_msg void OnBStart();
 	afx_msg void OnBStop();
 	afx_msg void OnBStopAll();
-	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-	afx_msg void OnUpdateToolbarButton(CCmdUI* pCmdUI);
+	afx_msg BOOL OnSetCursor(CWnd * pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnUpdateToolbarButton(CCmdUI * pCmdUI);
 	afx_msg void OnDestroy();
 	afx_msg void OnMDisplayCPUDPC();
 	afx_msg void OnMDisplayCPUEffectiveness();
@@ -323,12 +311,14 @@ protected:
 	afx_msg void OnMDisplayOpsTransPS();
 	afx_msg void OnMDisplayOpsWIOPS();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 };
 
-#ifndef _DEBUG  // debug version in GalileoView.cpp
-inline CGalileoDoc* CGalileoView::GetDocument()
-   { return (CGalileoDoc*)m_pDocument; }
+#ifndef _DEBUG			// debug version in GalileoView.cpp
+inline CGalileoDoc *CGalileoView::GetDocument()
+{
+	return (CGalileoDoc *) m_pDocument;
+}
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

@@ -61,19 +61,16 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "IOVIPL.h"
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #include <iostream>
- using namespace std;
+#include <iostream>
+using namespace std;
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
- #include <iostream.h>
+#include <iostream.h>
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Initial declarations for static variables.
@@ -134,10 +131,9 @@ fVipNSInit VIPL::VipNSInit = NULL;
 fVipNSGetHostByName VIPL::VipNSGetHostByName = NULL;
 fVipNSGetHostByAddr VIPL::VipNSGetHostByAddr = NULL;
 fVipNSShutdown VIPL::VipNSShutdown = NULL;
+
 //
 ///////////////////////////////////////////////////////////////////////////////
-
-
 
 //
 // Loading vipl.dll and dynamically linking all VI functions.  Setting 
@@ -146,7 +142,7 @@ fVipNSShutdown VIPL::VipNSShutdown = NULL;
 //
 // UNIX/SOLARIS NOTE
 // -----------------
-//		The UNIX code should work straightaway as soon as a VI shared object is
+//              The UNIX code should work straightaway as soon as a VI shared object is
 // available. The dlopen(3), dlsym(3) and dlclose(3) calls setup the VI shared
 // libraries and make the symbols available for access by dynamo.
 //
@@ -171,183 +167,177 @@ VIPL::VIPL()
 {
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Load vipl.dll.
-	if ( !(vipl_dll = LoadLibrary( "vipl.dll" )) )
-	{
-		#if _DEBUG
-			cout << "Unable to load vipl.dll" << endl;
-		#endif
+	if (!(vipl_dll = LoadLibrary("vipl.dll"))) {
+#if _DEBUG
+		cout << "Unable to load vipl.dll" << endl;
+#endif
 		return;
 	}
-
 	// Dynamically linking VI functions.
 
 	// NIC
-	VipOpenNic = (fVipOpenNic)GetProcAddress( vipl_dll, "VipOpenNic" );
-	VipCloseNic = (fVipCloseNic)GetProcAddress( vipl_dll, "VipCloseNic" );
+	VipOpenNic = (fVipOpenNic) GetProcAddress(vipl_dll, "VipOpenNic");
+	VipCloseNic = (fVipCloseNic) GetProcAddress(vipl_dll, "VipCloseNic");
 
 	// VI
-	VipCreateVi = (fVipCreateVi)GetProcAddress( vipl_dll, "VipCreateVi" );
-	VipDestroyVi = (fVipDestroyVi)GetProcAddress( vipl_dll, "VipDestroyVi" );
-	
+	VipCreateVi = (fVipCreateVi) GetProcAddress(vipl_dll, "VipCreateVi");
+	VipDestroyVi = (fVipDestroyVi) GetProcAddress(vipl_dll, "VipDestroyVi");
+
 	// Client/server connection
 	VipConnectWait = (fVipConnectWait)
-		GetProcAddress( vipl_dll, "VipConnectWait" );
+	    GetProcAddress(vipl_dll, "VipConnectWait");
 	VipConnectAccept = (fVipConnectAccept)
-		GetProcAddress( vipl_dll, "VipConnectAccept" );
+	    GetProcAddress(vipl_dll, "VipConnectAccept");
 	VipConnectReject = (fVipConnectReject)
-		GetProcAddress( vipl_dll, "VipConnectReject" );
+	    GetProcAddress(vipl_dll, "VipConnectReject");
 	VipConnectRequest = (fVipConnectRequest)
-		GetProcAddress( vipl_dll, "VipConnectRequest" );
+	    GetProcAddress(vipl_dll, "VipConnectRequest");
 	VipDisconnect = (fVipDisconnect)
-		GetProcAddress( vipl_dll, "VipDisconnect" );
-	
+	    GetProcAddress(vipl_dll, "VipDisconnect");
+
 	// Ptag
 	VipCreatePtag = (fVipCreatePtag)
-		GetProcAddress( vipl_dll, "VipCreatePtag" );
+	    GetProcAddress(vipl_dll, "VipCreatePtag");
 	VipDestroyPtag = (fVipDestroyPtag)
-		GetProcAddress( vipl_dll, "VipDestroyPtag" );
-	
+	    GetProcAddress(vipl_dll, "VipDestroyPtag");
+
 	// Memory
 	VipRegisterMem = (fVipRegisterMem)
-		GetProcAddress( vipl_dll, "VipRegisterMem" );
+	    GetProcAddress(vipl_dll, "VipRegisterMem");
 	VipDeregisterMem = (fVipDeregisterMem)
-		GetProcAddress( vipl_dll, "VipDeregisterMem" );
-	
+	    GetProcAddress(vipl_dll, "VipDeregisterMem");
+
 	// Send/receive
-	VipPostSend = (fVipPostSend)GetProcAddress( vipl_dll, "VipPostSend" );
-	VipSendDone = (fVipSendDone)GetProcAddress( vipl_dll, "VipSendDone" );
-	VipSendWait = (fVipSendWait)GetProcAddress( vipl_dll, "VipSendWait" );
-	VipPostRecv = (fVipPostRecv)GetProcAddress( vipl_dll, "VipPostRecv" );
-	VipRecvDone = (fVipRecvDone)GetProcAddress( vipl_dll, "VipRecvDone" );
-	VipRecvWait = (fVipRecvWait)GetProcAddress( vipl_dll, "VipRecvWait" );
-	
+	VipPostSend = (fVipPostSend) GetProcAddress(vipl_dll, "VipPostSend");
+	VipSendDone = (fVipSendDone) GetProcAddress(vipl_dll, "VipSendDone");
+	VipSendWait = (fVipSendWait) GetProcAddress(vipl_dll, "VipSendWait");
+	VipPostRecv = (fVipPostRecv) GetProcAddress(vipl_dll, "VipPostRecv");
+	VipRecvDone = (fVipRecvDone) GetProcAddress(vipl_dll, "VipRecvDone");
+	VipRecvWait = (fVipRecvWait) GetProcAddress(vipl_dll, "VipRecvWait");
+
 	// Completion queues
-	VipCQDone = (fVipCQDone)GetProcAddress( vipl_dll, "VipCQDone" );
-	VipCQWait = (fVipCQWait)GetProcAddress( vipl_dll, "VipCQWait" );
-	VipCreateCQ = (fVipCreateCQ)GetProcAddress( vipl_dll, "VipCreateCQ" );
-	VipDestroyCQ = (fVipDestroyCQ)GetProcAddress( vipl_dll, "VipDestroyCQ" );
-	VipResizeCQ = (fVipResizeCQ)GetProcAddress( vipl_dll, "VipResizeCQ" );
-	
+	VipCQDone = (fVipCQDone) GetProcAddress(vipl_dll, "VipCQDone");
+	VipCQWait = (fVipCQWait) GetProcAddress(vipl_dll, "VipCQWait");
+	VipCreateCQ = (fVipCreateCQ) GetProcAddress(vipl_dll, "VipCreateCQ");
+	VipDestroyCQ = (fVipDestroyCQ) GetProcAddress(vipl_dll, "VipDestroyCQ");
+	VipResizeCQ = (fVipResizeCQ) GetProcAddress(vipl_dll, "VipResizeCQ");
+
 	// Information
-	VipQueryNic = (fVipQueryNic)GetProcAddress( vipl_dll, "VipQueryNic" );
+	VipQueryNic = (fVipQueryNic) GetProcAddress(vipl_dll, "VipQueryNic");
 	VipSetViAttributes = (fVipSetViAttributes)
-		GetProcAddress( vipl_dll, "VipSetViAttributes" );
-	VipQueryVi = (fVipQueryVi)GetProcAddress( vipl_dll, "VipQueryVi" );
+	    GetProcAddress(vipl_dll, "VipSetViAttributes");
+	VipQueryVi = (fVipQueryVi) GetProcAddress(vipl_dll, "VipQueryVi");
 	VipSetMemAttributes = (fVipSetMemAttributes)
-		GetProcAddress( vipl_dll, "VipSetMemAttributes" );
-	VipQueryMem = (fVipQueryMem)GetProcAddress( vipl_dll, "VipQueryMem" );
+	    GetProcAddress(vipl_dll, "VipSetMemAttributes");
+	VipQueryMem = (fVipQueryMem) GetProcAddress(vipl_dll, "VipQueryMem");
 	VipQuerySystemManagementInfo = (fVipQuerySystemManagementInfo)
-		GetProcAddress( vipl_dll, "VipQuerySystemManagementInfo" );
-	
+	    GetProcAddress(vipl_dll, "VipQuerySystemManagementInfo");
+
 	// Peer-to-peer connection
 	VipConnectPeerRequest = (fVipConnectPeerRequest)
-		GetProcAddress( vipl_dll, "VipConnectPeerRequest" );
+	    GetProcAddress(vipl_dll, "VipConnectPeerRequest");
 	VipConnectPeerDone = (fVipConnectPeerDone)
-		GetProcAddress( vipl_dll, "VipConnectPeerDone" );
+	    GetProcAddress(vipl_dll, "VipConnectPeerDone");
 	VipConnectPeerWait = (fVipConnectPeerWait)
-		GetProcAddress( vipl_dll, "VipConnectPeerWait" );
-	
+	    GetProcAddress(vipl_dll, "VipConnectPeerWait");
+
 	// Name service
-	VipNSInit = (fVipNSInit)GetProcAddress( vipl_dll, "VipNSInit" );
+	VipNSInit = (fVipNSInit) GetProcAddress(vipl_dll, "VipNSInit");
 	VipNSGetHostByName = (fVipNSGetHostByName)
-		GetProcAddress( vipl_dll, "VipNSGetHostByName" );
+	    GetProcAddress(vipl_dll, "VipNSGetHostByName");
 	VipNSGetHostByAddr = (fVipNSGetHostByAddr)
-		GetProcAddress( vipl_dll, "VipNSGetHostByAddr" );
+	    GetProcAddress(vipl_dll, "VipNSGetHostByAddr");
 	VipNSShutdown = (fVipNSShutdown)
-		GetProcAddress( vipl_dll, "VipNSShutdown" );
+	    GetProcAddress(vipl_dll, "VipNSShutdown");
 #elif defined(IOMTR_OS_SOLARIS)
 	// When VI library becomes available on Solaris, this should work
-	if ( (vipl_dll = dlopen( "vipl.so", RTLD_NOW|RTLD_GLOBAL|RTLD_PARENT )) == NULL )
-	{
-		#ifdef _DEBUG
+	if ((vipl_dll = dlopen("vipl.so", RTLD_NOW | RTLD_GLOBAL | RTLD_PARENT)) == NULL) {
+#ifdef _DEBUG
 		cout << "unable to load VI shared library" << endl;
-		#endif
+#endif
 		return;
 	}
-
 	// Link all the VI functions.
 	// NIC
-	VipOpenNic = (fVipOpenNic)dlsym( vipl_dll, "VipOpenNic" );
-	VipCloseNic = (fVipCloseNic)dlsym( vipl_dll, "VipCloseNic" );
+	VipOpenNic = (fVipOpenNic) dlsym(vipl_dll, "VipOpenNic");
+	VipCloseNic = (fVipCloseNic) dlsym(vipl_dll, "VipCloseNic");
 
 	// VI
-	VipCreateVi = (fVipCreateVi)dlsym( vipl_dll, "VipCreateVi" );
-	VipDestroyVi = (fVipDestroyVi)dlsym( vipl_dll, "VipDestroyVi" );
-	
+	VipCreateVi = (fVipCreateVi) dlsym(vipl_dll, "VipCreateVi");
+	VipDestroyVi = (fVipDestroyVi) dlsym(vipl_dll, "VipDestroyVi");
+
 	// Client/server connection
 	VipConnectWait = (fVipConnectWait)
-		dlsym( vipl_dll, "VipConnectWait" );
+	    dlsym(vipl_dll, "VipConnectWait");
 	VipConnectAccept = (fVipConnectAccept)
-		dlsym( vipl_dll, "VipConnectAccept" );
+	    dlsym(vipl_dll, "VipConnectAccept");
 	VipConnectReject = (fVipConnectReject)
-		dlsym( vipl_dll, "VipConnectReject" );
+	    dlsym(vipl_dll, "VipConnectReject");
 	VipConnectRequest = (fVipConnectRequest)
-		dlsym( vipl_dll, "VipConnectRequest" );
+	    dlsym(vipl_dll, "VipConnectRequest");
 	VipDisconnect = (fVipDisconnect)
-		dlsym( vipl_dll, "VipDisconnect" );
-	
+	    dlsym(vipl_dll, "VipDisconnect");
+
 	// Ptag
 	VipCreatePtag = (fVipCreatePtag)
-		dlsym( vipl_dll, "VipCreatePtag" );
+	    dlsym(vipl_dll, "VipCreatePtag");
 	VipDestroyPtag = (fVipDestroyPtag)
-		dlsym( vipl_dll, "VipDestroyPtag" );
-	
+	    dlsym(vipl_dll, "VipDestroyPtag");
+
 	// Memory
 	VipRegisterMem = (fVipRegisterMem)
-		dlsym( vipl_dll, "VipRegisterMem" );
+	    dlsym(vipl_dll, "VipRegisterMem");
 	VipDeregisterMem = (fVipDeregisterMem)
-		dlsym( vipl_dll, "VipDeregisterMem" );
-	
+	    dlsym(vipl_dll, "VipDeregisterMem");
+
 	// Send/receive
-	VipPostSend = (fVipPostSend)dlsym( vipl_dll, "VipPostSend" );
-	VipSendDone = (fVipSendDone)dlsym( vipl_dll, "VipSendDone" );
-	VipSendWait = (fVipSendWait)dlsym( vipl_dll, "VipSendWait" );
-	VipPostRecv = (fVipPostRecv)dlsym( vipl_dll, "VipPostRecv" );
-	VipRecvDone = (fVipRecvDone)dlsym( vipl_dll, "VipRecvDone" );
-	VipRecvWait = (fVipRecvWait)dlsym( vipl_dll, "VipRecvWait" );
-	
+	VipPostSend = (fVipPostSend) dlsym(vipl_dll, "VipPostSend");
+	VipSendDone = (fVipSendDone) dlsym(vipl_dll, "VipSendDone");
+	VipSendWait = (fVipSendWait) dlsym(vipl_dll, "VipSendWait");
+	VipPostRecv = (fVipPostRecv) dlsym(vipl_dll, "VipPostRecv");
+	VipRecvDone = (fVipRecvDone) dlsym(vipl_dll, "VipRecvDone");
+	VipRecvWait = (fVipRecvWait) dlsym(vipl_dll, "VipRecvWait");
+
 	// Completion queues
-	VipCQDone = (fVipCQDone)dlsym( vipl_dll, "VipCQDone" );
-	VipCQWait = (fVipCQWait)dlsym( vipl_dll, "VipCQWait" );
-	VipCreateCQ = (fVipCreateCQ)dlsym( vipl_dll, "VipCreateCQ" );
-	VipDestroyCQ = (fVipDestroyCQ)dlsym( vipl_dll, "VipDestroyCQ" );
-	VipResizeCQ = (fVipResizeCQ)dlsym( vipl_dll, "VipResizeCQ" );
-	
+	VipCQDone = (fVipCQDone) dlsym(vipl_dll, "VipCQDone");
+	VipCQWait = (fVipCQWait) dlsym(vipl_dll, "VipCQWait");
+	VipCreateCQ = (fVipCreateCQ) dlsym(vipl_dll, "VipCreateCQ");
+	VipDestroyCQ = (fVipDestroyCQ) dlsym(vipl_dll, "VipDestroyCQ");
+	VipResizeCQ = (fVipResizeCQ) dlsym(vipl_dll, "VipResizeCQ");
+
 	// Information
-	VipQueryNic = (fVipQueryNic)dlsym( vipl_dll, "VipQueryNic" );
+	VipQueryNic = (fVipQueryNic) dlsym(vipl_dll, "VipQueryNic");
 	VipSetViAttributes = (fVipSetViAttributes)
-		dlsym( vipl_dll, "VipSetViAttributes" );
-	VipQueryVi = (fVipQueryVi)dlsym( vipl_dll, "VipQueryVi" );
+	    dlsym(vipl_dll, "VipSetViAttributes");
+	VipQueryVi = (fVipQueryVi) dlsym(vipl_dll, "VipQueryVi");
 	VipSetMemAttributes = (fVipSetMemAttributes)
-		dlsym( vipl_dll, "VipSetMemAttributes" );
-	VipQueryMem = (fVipQueryMem)dlsym( vipl_dll, "VipQueryMem" );
+	    dlsym(vipl_dll, "VipSetMemAttributes");
+	VipQueryMem = (fVipQueryMem) dlsym(vipl_dll, "VipQueryMem");
 	VipQuerySystemManagementInfo = (fVipQuerySystemManagementInfo)
-		dlsym( vipl_dll, "VipQuerySystemManagementInfo" );
-	
+	    dlsym(vipl_dll, "VipQuerySystemManagementInfo");
+
 	// Peer-to-peer connection
 	VipConnectPeerRequest = (fVipConnectPeerRequest)
-		dlsym( vipl_dll, "VipConnectPeerRequest" );
+	    dlsym(vipl_dll, "VipConnectPeerRequest");
 	VipConnectPeerDone = (fVipConnectPeerDone)
-		dlsym( vipl_dll, "VipConnectPeerDone" );
+	    dlsym(vipl_dll, "VipConnectPeerDone");
 	VipConnectPeerWait = (fVipConnectPeerWait)
-		dlsym( vipl_dll, "VipConnectPeerWait" );
-	
+	    dlsym(vipl_dll, "VipConnectPeerWait");
+
 	// Name service
-	VipNSInit = (fVipNSInit)dlsym( vipl_dll, "VipNSInit" );
+	VipNSInit = (fVipNSInit) dlsym(vipl_dll, "VipNSInit");
 	VipNSGetHostByName = (fVipNSGetHostByName)
-		dlsym( vipl_dll, "VipNSGetHostByName" );
+	    dlsym(vipl_dll, "VipNSGetHostByName");
 	VipNSGetHostByAddr = (fVipNSGetHostByAddr)
-		dlsym( vipl_dll, "VipNSGetHostByAddr" );
+	    dlsym(vipl_dll, "VipNSGetHostByAddr");
 	VipNSShutdown = (fVipNSShutdown)
-		dlsym( vipl_dll, "VipNSShutdown" );
+	    dlsym(vipl_dll, "VipNSShutdown");
 #elif defined(IOMTR_OS_LINUX)
- // nop
+	// nop
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 }
-
-
 
 //
 // Freeing the dynamically linked vipl.dll
@@ -356,89 +346,76 @@ VIPL::~VIPL()
 {
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// If library had previously been loaded, free it.
-	if ( vipl_dll )
-		FreeLibrary( vipl_dll );
+	if (vipl_dll)
+		FreeLibrary(vipl_dll);
 #elif defined(IOMTR_OS_SOLARIS)
-	if ( vipl_dll )
-		dlclose( vipl_dll );
+	if (vipl_dll)
+		dlclose(vipl_dll);
 	return;
 #elif defined(IOMTR_OS_LINUX)
- // nop
+	// nop
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done! 
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 }
-
-
 
 //
 // Handy debugger function.  Call like so:
 //
 // cout << "*** Error: " << vipl.Error( result ) << endl;
 //
-char *VIPL::Error( VIP_RETURN result )
+char *VIPL::Error(VIP_RETURN result)
 {
 	static char errmsg[2048];
 
-	switch ( result )
-	{
+	switch (result) {
 	case VIP_NOT_DONE:
-		strcpy( errmsg, "VIP_NOT_DONE - The operation is still in"
-			" progress." );
+		strcpy(errmsg, "VIP_NOT_DONE - The operation is still in" " progress.");
 		break;
 	case VIP_INVALID_PARAMETER:
-		strcpy( errmsg, "VIP_INVALID_PARAMETER - One of the input"
-			" parameters was invalid." );
+		strcpy(errmsg, "VIP_INVALID_PARAMETER - One of the input" " parameters was invalid.");
 		break;
 	case VIP_ERROR_RESOURCE:
-		strcpy( errmsg, "VIP_ERROR_RESOURCE - The operation failed due"
-			" to insufficient resources." );
+		strcpy(errmsg, "VIP_ERROR_RESOURCE - The operation failed due" " to insufficient resources.");
 		break;
 	case VIP_TIMEOUT:
-		strcpy( errmsg, "VIP_TIMEOUT - The operation timed out." );
+		strcpy(errmsg, "VIP_TIMEOUT - The operation timed out.");
 		break;
 	case VIP_REJECT:
-		strcpy( errmsg, "VIP_REJECT - The connection was rejected." );
+		strcpy(errmsg, "VIP_REJECT - The connection was rejected.");
 		break;
 	case VIP_INVALID_RELIABILITY_LEVEL:
-		strcpy( errmsg, "VIP_INVALID_RELIABILITY_LEVEL - The requested"
-			" reliability level attribute was invalid or not supported." );
+		strcpy(errmsg, "VIP_INVALID_RELIABILITY_LEVEL - The requested"
+		       " reliability level attribute was invalid or not supported.");
 		break;
 	case VIP_INVALID_MTU:
-		strcpy( errmsg, "VIP_INVALID_MTU - The maximum transfer size"
-			" attribute was invalid or not supported." );
+		strcpy(errmsg, "VIP_INVALID_MTU - The maximum transfer size"
+		       " attribute was invalid or not supported.");
 		break;
 	case VIP_INVALID_QOS:
-		strcpy( errmsg, "VIP_INVALID_QOS - The quality of service"
-			" attribute was invalid or not supported." );
+		strcpy(errmsg, "VIP_INVALID_QOS - The quality of service" " attribute was invalid or not supported.");
 		break;
 	case VIP_INVALID_PTAG:
-		strcpy( errmsg, "VIP_INVALID_PTAG - The protection tag"
-			" attribute was invalid." );
+		strcpy(errmsg, "VIP_INVALID_PTAG - The protection tag" " attribute was invalid.");
 		break;
 	case VIP_INVALID_RDMAREAD:
-		strcpy( errmsg, "VIP_INVALID_RDMAREAD - The attributes"
-			" requested support for RDMA Read, but the VI Provider"
-			" does not support it." );
+		strcpy(errmsg, "VIP_INVALID_RDMAREAD - The attributes"
+		       " requested support for RDMA Read, but the VI Provider" " does not support it.");
 		break;
 	case VIP_DESCRIPTOR_ERROR:
-		strcpy( errmsg, "VIP_DESCRIPTOR_ERROR - The operation returned"
-			" a null Descriptor pointer." );
+		strcpy(errmsg, "VIP_DESCRIPTOR_ERROR - The operation returned" " a null Descriptor pointer.");
 		break;
 	case VIP_INVALID_STATE:
-		strcpy( errmsg, "VIP_INVALID_STATE - The VI is not in the"
-			" appropriate state for the operation." );
+		strcpy(errmsg, "VIP_INVALID_STATE - The VI is not in the" " appropriate state for the operation.");
 		break;
 	case VIP_ERROR_NAMESERVICE:
-		strcpy( errmsg, "VIP_ERROR_NAMESERVICE - There was an error"
-			" contacting the Name Service." );
+		strcpy(errmsg, "VIP_ERROR_NAMESERVICE - There was an error" " contacting the Name Service.");
 		break;
 	case VIP_NO_MATCH:
-		strcpy( errmsg, "VIP_NO_MATCH - The specified discriminator"
-			" was not matched." );
+		strcpy(errmsg, "VIP_NO_MATCH - The specified discriminator" " was not matched.");
 		break;
 	default:
-		sprintf( errmsg, "Unknown VI error: %d.", result );
+		sprintf(errmsg, "Unknown VI error: %d.", result);
 		break;
 	}
 

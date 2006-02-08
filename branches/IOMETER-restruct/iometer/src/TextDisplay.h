@@ -59,77 +59,67 @@
 #ifndef TEXTDISPLAY_DEFINED
 #define TEXTDISPLAY_DEFINED
 
-
 #include "GalileoDefs.h"
 
-
-enum TextAlignment
-{
+enum TextAlignment {
 	AlignLeft, AlignRight, AlignCenter
 };
 
-class CTextDisplay : public CWnd
-{
-	DECLARE_DYNAMIC( CTextDisplay );
+class CTextDisplay:public CWnd {
+	DECLARE_DYNAMIC(CTextDisplay);
 
-public:
+      public:
 
 	CTextDisplay();
-	void	SetAll( CString *show_text, char *font_name, LONG font_size, 
-				TextAlignment alignment, BOOL bold, BOOL italic, 
-				BOOL underline, COLORREF color );
+	void SetAll(CString * show_text, char *font_name, LONG font_size,
+		    TextAlignment alignment, BOOL bold, BOOL italic, BOOL underline, COLORREF color);
 
-	void	SetText( CString *show_text, BOOL refresh = TRUE );
+	void SetText(CString * show_text, BOOL refresh = TRUE);
 
-	void	SetFontType( char *font_name, BOOL refresh = TRUE );
-	void	SetFontSize( LONG size, BOOL refresh = TRUE );
-	void	SetTextColor( COLORREF color, BOOL refresh = TRUE );
+	void SetFontType(char *font_name, BOOL refresh = TRUE);
+	void SetFontSize(LONG size, BOOL refresh = TRUE);
+	void SetTextColor(COLORREF color, BOOL refresh = TRUE);
 
-	void	Bold( BOOL enable = TRUE, BOOL refresh = TRUE );
-	void	Italic( BOOL enable = TRUE, BOOL refresh = TRUE );
-	void	Underline( BOOL enable = TRUE, BOOL refresh = TRUE );
+	void Bold(BOOL enable = TRUE, BOOL refresh = TRUE);
+	void Italic(BOOL enable = TRUE, BOOL refresh = TRUE);
+	void Underline(BOOL enable = TRUE, BOOL refresh = TRUE);
 
-	void	SetTextAlignment( TextAlignment alignment, BOOL refresh = TRUE );
+	void SetTextAlignment(TextAlignment alignment, BOOL refresh = TRUE);
 
-protected:
+      protected:
 	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CTextDisplay)
-	virtual void	PostNcDestroy();
+	 virtual void PostNcDestroy();
 	//}}AFX_VIRTUAL
 
+	CString text;
+	int text_alignment;	// left, right, center
+	int text_position;	// location of text in text box
+	COLORREF text_color;
 
-	CString		text;
-	int			text_alignment;	// left, right, center
-	int			text_position;	// location of text in text box
-	COLORREF	text_color;
+	CFont font;
+	LOGFONT font_settings;
+	void UpdateFont(BOOL refresh = TRUE);
 
-	CFont		font;
-	LOGFONT		font_settings;
-	void		UpdateFont( BOOL refresh = TRUE );
-
-	RECT		text_box;
-
+	RECT text_box;
 
 	// Used to register the custom control with windows.
-	static BOOL	registered;
-	static BOOL	Register();
+	static BOOL registered;
+	static BOOL Register();
 
-
-protected:
+      protected:
 	// Generated message map functions
 	//{{AFX_MSG(CTextDisplay)
-	afx_msg int		OnCreate( LPCREATESTRUCT lpCreateStruct );
-	afx_msg void	OnPaint();
+	 afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnPaint();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 
-	static LRESULT CALLBACK EXPORT 
-	TextDisplayWndProc( HWND hWnd, UINT message, WPARAM xParam, LPARAM lParam );
+	static LRESULT CALLBACK EXPORT TextDisplayWndProc(HWND hWnd, UINT message, WPARAM xParam, LPARAM lParam);
 };
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
 
 #endif

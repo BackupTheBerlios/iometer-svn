@@ -60,10 +60,7 @@
 #ifndef METERCTRL_DEFINED
 #define METERCTRL_DEFINED
 
-
 #include "TextDisplay.h"
-
-
 
 // Angle of half pie slice not used by display, in degrees.
 #define NEEDLE_SWEEP		270
@@ -72,132 +69,121 @@
 // Degree of change needed in result before needed is moved.
 #define NEEDLE_SENSITIVITY	3	// degrees
 
+class CMeterCtrl:public CWnd {
+	DECLARE_DYNAMIC(CMeterCtrl)
 
-class CMeterCtrl : public CWnd
-{
-	DECLARE_DYNAMIC( CMeterCtrl )
-
-public:
+      public:
 	CMeterCtrl();
 
 	// Members which handle window class registration.
-	static BOOL	Register();
-	static BOOL	is_registered;
+	static BOOL Register();
+	static BOOL is_registered;
 
-protected:
+      protected:
 
 	///////////////////////////////////////////////////////////////////////////
 	// Meter setup information.
-public:
-	void	SetRange( int range1, int range2 );
-	void	SetValue( double new_value );
+      public:
+	void SetRange(int range1, int range2);
+	void SetValue(double new_value);
 	//
-protected:
-	int		min_range;
-	int		max_range;
-	double	value;
+      protected:
+	int min_range;
+	int max_range;
+	double value;
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Information about low to high performance marks.
-public:
-	void	ResetWatermark();
-	BOOL	show_watermark;
+      public:
+	void ResetWatermark();
+	BOOL show_watermark;
 	//
-protected:
-	double	low_value;
-	double	high_value;
+      protected:
+	double low_value;
+	double high_value;
 	//
-	RECT	watermark_box;
-	void	DrawWatermark();
+	RECT watermark_box;
+	void DrawWatermark();
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Information about the position and size of the bounding control box.
 	//
-	POINT	pivot_point;
+	POINT pivot_point;
 	//
 	// The display is bounded by two circles.  The outer circle defines the
 	// limit of the display, and the text is located between the outer and 
 	// inner circles.  The inner circle defines the limit of how far the 
 	// needed reaches.  Two circles are needed to prevent the needle from
 	// sweeping over the text markers.
-	int		outer_radius;
-	int		inner_radius;
-	int		label_radius;
-	int		tick_mark_radius;
-	int		pivot_radius;
+	int outer_radius;
+	int inner_radius;
+	int label_radius;
+	int tick_mark_radius;
+	int pivot_radius;
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Managing the updates to the needle display.
 	//
-	void	DrawNeedle();
-	void	CalculatePoint( int angle, int radius, LONG *x, LONG *y );
-	void	SetNeedlePoints();
+	void DrawNeedle();
+	void CalculatePoint(int angle, int radius, LONG * x, LONG * y);
+	void SetNeedlePoints();
 	//
-	int		actual_angle;
-	int		shown_angle;
+	int actual_angle;
+	int shown_angle;
 	//
 	// The needle is drawn as a triangle, given three points.
-	POINT	needle[3];
-	CRect	needle_pivot;	// inner circle needle pivots around
+	POINT needle[3];
+	CRect needle_pivot;	// inner circle needle pivots around
 	//
-	POINT	min_point, max_point;
+	POINT min_point, max_point;
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// Managing the updates to the display.
 	//
-	RECT	meter_box;
-	CFont	scale_font;
-	CFont	label_font;
+	RECT meter_box;
+	CFont scale_font;
+	CFont label_font;
 	//
-	void	UpdateScaleInfo();
-	CString	scale_text;
-	RECT	scale_box;
+	void UpdateScaleInfo();
+	CString scale_text;
+	RECT scale_box;
 	//
-	void	UpdateLabelInfo();
-	int		label_box_size;		// used to adjust size of the labels
-	RECT	label_box[11];		
-	CString	label[11];
-	int		label_count;
+	void UpdateLabelInfo();
+	int label_box_size;	// used to adjust size of the labels
+	RECT label_box[11];
+	CString label[11];
+	int label_count;
 	//
-	CPen	marker_pen;
-	POINT	tick_mark[11][2];	// endpoints of tick marks
+	CPen marker_pen;
+	POINT tick_mark[11][2];	// endpoints of tick marks
 	//
 	///////////////////////////////////////////////////////////////////////////
-
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMeterCtrl)
-	virtual void	PostNcDestroy();
+	virtual void PostNcDestroy();
 	//}}AFX_VIRTUAL
 
-	
 	// Generated message map functions
 	//{{AFX_MSG(CMeterCtrl)
-	afx_msg int		OnCreate( LPCREATESTRUCT lpCreateStruct );
-	afx_msg void	OnPaint();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnPaint();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+	 DECLARE_MESSAGE_MAP()
 
-	static LRESULT CALLBACK EXPORT 
-	MeterCtrlWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam );
+	static LRESULT CALLBACK EXPORT MeterCtrlWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
-
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-
-#endif // !METERCTRL_DEFINED
+#endif				// !METERCTRL_DEFINED

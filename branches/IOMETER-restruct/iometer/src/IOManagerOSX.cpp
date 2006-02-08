@@ -53,7 +53,6 @@
 /* ######################################################################### */
 #if defined(IOMTR_OS_OSX)
 
-
 #include "IOManager.h"
 #include "IOTargetDisk.h"
 #include <dirent.h>
@@ -68,39 +67,39 @@
 // of disks found.  Drives are reported in order so that Iometer does not
 // need to sort them.
 //
-int Manager::Report_Disks( Target_Spec* disk_spec )
+int Manager::Report_Disks(Target_Spec * disk_spec)
 {
-	TargetDisk	d;
-	int		count = 0, disksFound = 0, i, logicalDisks;
-	struct statfs	*buf = NULL;
-	char		disk_name[MNAMELEN], rawDeviceName[MNAMELEN];
-	kern_return_t	kernResult;
-	DIR		*directory;
-	struct dirent	*directoryEntry;
-	mach_port_t	masterPort;
+	TargetDisk d;
+	int count = 0, disksFound = 0, i, logicalDisks;
+	struct statfs *buf = NULL;
+	char disk_name[MNAMELEN], rawDeviceName[MNAMELEN];
+	kern_return_t kernResult;
+	DIR *directory;
+	struct dirent *directoryEntry;
+	mach_port_t masterPort;
 
 	cout << "Reporting drive information..." << endl;
 
 	// Reporting Logical drives first (filesystems).
 	cout << "  Logical drives (mounted filesystems)..." << endl;
 
-	count = getfsstat(NULL,0,MNT_WAIT);
-	buf = (struct statfs *)malloc(sizeof(struct statfs)*count);
+	count = getfsstat(NULL, 0, MNT_WAIT);
+	buf = (struct statfs *)malloc(sizeof(struct statfs) * count);
 
 	if (buf != NULL) {
-		getfsstat(buf,sizeof(struct statfs)*count,MNT_WAIT);
+		getfsstat(buf, sizeof(struct statfs) * count, MNT_WAIT);
 
 		for (i = 0; i < count; i++) {
 			if (strstr(exclude_filesys, buf[i].f_fstypename) != NULL)
 				continue;
 
 			strcpy(disk_name, buf[i].f_mntonname);
-			if (! d.Init_Logical( disk_name) )
+			if (!d.Init_Logical(disk_name))
 				continue;
 
 			// Drive exists and ready for use
 			d.spec.type = LogicalDiskType;
-			memcpy( &disk_spec[disksFound], &d.spec, sizeof( Target_Spec ) );
+			memcpy(&disk_spec[disksFound], &d.spec, sizeof(Target_Spec));
 
 			disksFound++;
 
@@ -121,15 +120,16 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	} else {
 		directory = opendir(RAW_DEVICE_DIR);
 		while ((directoryEntry = readdir(directory)) != NULL) {
-			if (strstr(directoryEntry->d_name,"disk") != NULL && strstr(directoryEntry->d_name,"rdisk") == NULL) {
-				if (!containsPartitions(masterPort,directoryEntry->d_name)) {
+			if (strstr(directoryEntry->d_name, "disk") != NULL
+			    && strstr(directoryEntry->d_name, "rdisk") == NULL) {
+				if (!containsPartitions(masterPort, directoryEntry->d_name)) {
 					strcpy(rawDeviceName, "r");
-					strcat(rawDeviceName,directoryEntry->d_name);
-					if ( ! d.Init_Physical( rawDeviceName ) )
+					strcat(rawDeviceName, directoryEntry->d_name);
+					if (!d.Init_Physical(rawDeviceName))
 						continue;
 
 					// the physical drive is ready for use
-					memcpy( &disk_spec[disksFound], &d.spec, sizeof( Target_Spec ) );
+					memcpy(&disk_spec[disksFound], &d.spec, sizeof(Target_Spec));
 
 					disksFound++;
 					if (disksFound >= MAX_TARGETS)
@@ -147,7 +147,6 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 	return disksFound;
 }
 
-
 BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 {
 	// This is a rather simple and probably incorrect way to determine if there
@@ -160,14 +159,14 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 	// that no partition structure (at least those identified by IOKit) is present
 	// and that the device is blank.
 
-	CFMutableDictionaryRef	matchingDict;
-	kern_return_t			kernResult;
-	io_iterator_t			iter;
-	io_service_t			service;
-	CFTypeRef				wholeMedia;
-	CFTypeRef				contents;
-	char					contentsCSTR[255];
-	bool					result = FALSE; // Start assuming it's a clean disk
+	CFMutableDictionaryRef matchingDict;
+	kern_return_t kernResult;
+	io_iterator_t iter;
+	io_service_t service;
+	CFTypeRef wholeMedia;
+	CFTypeRef contents;
+	char contentsCSTR[255];
+	bool result = FALSE;	// Start assuming it's a clean disk
 
 	matchingDict = IOBSDNameMatching(masterPort, 0, bsdName);
 	if (NULL == matchingDict) {
@@ -180,7 +179,7 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 		if (KERN_SUCCESS != kernResult) {
 			// If anything fails, we play it safe and just claim it has partitions
 			result = TRUE;
-		} else if ( NULL == iter) {
+		} else if (NULL == iter) {
 			result = true;
 		} else {
 			service = IOIteratorNext(iter);
@@ -194,24 +193,20 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 			} else {
 				// retrieve the Whole property
 				wholeMedia = IORegistryEntryCreateCFProperty(service,
-								CFSTR(kIOMediaWholeKey),
-								kCFAllocatorDefault,
-								0);
+									     CFSTR(kIOMediaWholeKey),
+									     kCFAllocatorDefault, 0);
 				if (NULL == wholeMedia) {
 					return TRUE;
-				} else if (CFBooleanGetValue((CFBooleanRef)wholeMedia)) {
+				} else if (CFBooleanGetValue((CFBooleanRef) wholeMedia)) {
 					// retrieve the Contents property
 					contents = IORegistryEntryCreateCFProperty(service,
-									CFSTR(kIOMediaContentKey),
-									kCFAllocatorDefault,
-									0);
+										   CFSTR(kIOMediaContentKey),
+										   kCFAllocatorDefault, 0);
 					if (NULL == contents) {
 						result = TRUE;
 					} else {
-						CFStringGetCString((CFStringRef)contents,
-									contentsCSTR,
-									255,
-									kCFStringEncodingASCII);
+						CFStringGetCString((CFStringRef) contents,
+								   contentsCSTR, 255, kCFStringEncodingASCII);
 						// Empty string is assumed to mean no partition structure
 						// WARNING: this is probably wrong, but it seems to work
 						if (strcmp(contentsCSTR, "") != 0) {
@@ -219,7 +214,7 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 						}
 					}
 					CFRelease(contents);
-				} else { // Not whole media
+				} else {	// Not whole media
 
 					result = TRUE;
 				}
@@ -233,7 +228,7 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 	return result;
 }
 
-BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
+BOOL Manager::Sort_Raw_Disk_Names(Target_Spec * disk_spec, int start, int end)
 {
 	int i, j;
 	Target_Spec temp_spec;
@@ -246,21 +241,18 @@ BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
 	// Plain, old, simplified bubble sort is being used here. Most of the disk path names
 	// are already sorted. So it is ok to use this method.
 	//
-	for (i = start; i < end - 1 ; i++)
-	{
-		for (j = i + 1; j < end; j++)
-		{
+	for (i = start; i < end - 1; i++) {
+		for (j = i + 1; j < end; j++) {
 			//
 			// The function Compare...() compares two disk names and returns values 
 			// similar to strcmp().
 			//
-			switch(Compare_Raw_Disk_Names(disk_spec[i].name, disk_spec[j].name))
-			{
-			case 0:			// both are equal
+			switch (Compare_Raw_Disk_Names(disk_spec[i].name, disk_spec[j].name)) {
+			case 0:	// both are equal
 				break;
-			case -1:		// 1st < 2nd
+			case -1:	// 1st < 2nd
 				break;
-			case 1:			// 1st > 2nd
+			case 1:	// 1st > 2nd
 				// Swap the two.
 				memcpy(&temp_spec, &disk_spec[i], sizeof(Target_Spec));
 				memcpy(&disk_spec[i], &disk_spec[j], sizeof(Target_Spec));
@@ -276,12 +268,12 @@ BOOL Manager::Sort_Raw_Disk_Names(Target_Spec *disk_spec, int start, int end)
 // This function compares two disk names and returns values similar to strcmp().
 // The comparison is not pure lexical but pure Numeric.
 // For example,
-//		- When comparing disk names c0t10d0p0 and c0t2d0p0, the function determines
-//		  that c0t2d0p0 is less than c0t10d0p0.
-//		- When comparing disk names c0t0d0p0 and c0d0p0, the function determines
-//		  that c0d0p0 is less than c0t0d0p0 (going by the shorter string length).
-//		- Disk names c0t0d0p0 and a0b0c0d0 are returned as equal. This is acceptable
-//		  because we do not come across such cases in the UNIX environment.
+//              - When comparing disk names c0t10d0p0 and c0t2d0p0, the function determines
+//                that c0t2d0p0 is less than c0t10d0p0.
+//              - When comparing disk names c0t0d0p0 and c0d0p0, the function determines
+//                that c0d0p0 is less than c0t0d0p0 (going by the shorter string length).
+//              - Disk names c0t0d0p0 and a0b0c0d0 are returned as equal. This is acceptable
+//                because we do not come across such cases in the UNIX environment.
 //
 int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 {
@@ -291,41 +283,35 @@ int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 	BOOL alpha1 = FALSE;
 	BOOL alpha2 = FALSE;
 
-	while(1)
-	{
-		if ((! *str1) || (! *str2))
-		{
+	while (1) {
+		if ((!*str1) || (!*str2)) {
 			// either one or both strings have hit eos.
-			if ( *str1)		// str2 hit eos first.
-				return(1);
-			else if ( *str2) // str1 hit eos first.
-				return(-1);
+			if (*str1)	// str2 hit eos first.
+				return (1);
+			else if (*str2)	// str1 hit eos first.
+				return (-1);
 			else
-				return 0; // both hit eos.
+				return 0;	// both hit eos.
 		}
 
-		if (alpha1 && alpha2)
-		{
+		if (alpha1 && alpha2) {
 			// compare the characters at this position.
-			if ( *(str1-1) < *(str2-1) )
-				return(-1);
-			if ( *(str1-1) > *(str2-1) )
-				return(1);
+			if (*(str1 - 1) < *(str2 - 1))
+				return (-1);
+			if (*(str1 - 1) > *(str2 - 1))
+				return (1);
 
 			alpha1 = FALSE;
 			alpha2 = FALSE;
 		}
-
 		// Scan the strings for the next available number.
-		if (isalpha(*str1))
-		{
+		if (isalpha(*str1)) {
 			str1++;
 			alpha1 = TRUE;
 			continue;
 		}
 
-		if (isalpha(*str2))
-		{
+		if (isalpha(*str2)) {
 			str2++;
 			alpha2 = TRUE;
 			continue;
@@ -352,13 +338,13 @@ int Manager::Compare_Raw_Disk_Names(char *str1, char *str2)
 
 		if (num1 < num2)
 			// String 1 is less than string 2.
-			return(-1);
+			return (-1);
 
 		if (num1 > num2)
 			// String 1 is greater than string 2.
-			return(1);
+			return (1);
 
-	} // end-while().
+	}			// end-while().
 }
 
-#endif // IOMTR_OS_OSX
+#endif				// IOMTR_OS_OSX

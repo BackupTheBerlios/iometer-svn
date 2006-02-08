@@ -71,12 +71,9 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-
 #include "stdafx.h"
 #include "GalileoDefs.h"
 #include "GalileoApp.h"
-
-
 
 // Needed for MFC Library support for assisting in finding memory leaks
 //
@@ -88,14 +85,12 @@
 //       [1] = http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vclib/html/_mfc_debug_new.asp
 //
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- #ifdef _DEBUG
-  #define new DEBUG_NEW
-  #undef THIS_FILE
-  static char THIS_FILE[] = __FILE__;
- #endif
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-
-
+#endif
 
 UINT CDECL MessageBoxThread(LPVOID pErrorMessage);
 
@@ -103,35 +98,33 @@ UINT CDECL MessageBoxThread(LPVOID pErrorMessage);
 // Reports error messages appropriately.
 // Make sure this is not called while the result file is open!
 //
-void ErrorMessage( LPCTSTR errmsg )
+void ErrorMessage(LPCTSTR errmsg)
 {
 	// If in batch mode, don't pop up error dialogs that require user intervention.
 
-	if ( theApp.IsBatchMode() )
-	{
+	if (theApp.IsBatchMode()) {
 		// Open the result file for appended output.
-		ofstream outfile( theApp.cmdline.GetResultFile(), ios::app );
+		ofstream outfile(theApp.cmdline.GetResultFile(), ios::app);
+
 		outfile << "\nERROR: " << errmsg << endl;
 		outfile.close();
-	}
-	else
-	{
+	} else {
 		//User-interactive mode: Display error message box.
 		//Must do so from a separate thread, in case the "waiting for managers"
 		//timeout dialog is present.  (Otherwise, the thread is blocked, and it
 		//continues to count down past 0, among other bad things.)  Bug #361.
 
 		//Create a copy of the error message string - thread must delete.
-		CString		*pErrorMessage = new CString(errmsg);
-		(void) AfxBeginThread(MessageBoxThread, (LPVOID) pErrorMessage);
+		CString *pErrorMessage = new CString(errmsg);
+
+		(void)AfxBeginThread(MessageBoxThread, (LPVOID) pErrorMessage);
 	}
 }
-
 
 //Called to display error message box in a separate thread (see ErrorMessage(), above).
 UINT CDECL MessageBoxThread(LPVOID pErrorMessage)
 {
-	AfxMessageBox(*(CString *)pErrorMessage);
-	delete (CString *)pErrorMessage;
+	AfxMessageBox(*(CString *) pErrorMessage);
+	delete(CString *) pErrorMessage;
 	return 0;
 }

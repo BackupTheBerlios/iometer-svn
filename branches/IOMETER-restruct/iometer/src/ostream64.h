@@ -64,50 +64,44 @@
 #ifndef	OSTREAM64_DEFINED
 #define OSTREAM64_DEFINED
 
-
-
 // Uncomment if the workaround is needed. This
 // - was needed prior to Win64 2239 IDW SDK and
 // - is needed as of latest Win32 SDK
 #if defined(IOMTR_OS_WIN32)
  //#define WORKAROUND_FOR_INT64_OFSTREAM
 
- #include <stdio.h>
- #include <ostream>
- using namespace std;
+#include <stdio.h>
+#include <ostream>
+using namespace std;
 
- #define INT64_DIGITS	21
+#define INT64_DIGITS	21
 
  //
  // Extension to ostream to permit int64.
  //
- inline ostream& operator << ( ostream& s, _int64 i )
- {
-     char buf[INT64_DIGITS];
-     sprintf( buf, "%I64i", i );  
-     return( s << buf );
- }
+inline ostream & operator <<(ostream & s, _int64 i)
+{
+	char buf[INT64_DIGITS];
+
+	sprintf(buf, "%I64i", i);
+	return (s << buf);
+}
 
  //
  // Extension to ostream to permit unsigned int64.
  //
- inline ostream& operator << ( ostream& s, unsigned _int64 i )
- {
-    char buf[INT64_DIGITS];
-    sprintf( buf, "%I64i", i );
-    return( s << buf );
- }
+inline ostream & operator <<(ostream & s, unsigned _int64 i)
+{
+	char buf[INT64_DIGITS];
+
+	sprintf(buf, "%I64i", i);
+	return (s << buf);
+}
 
 #elif defined(IOMTR_OS_WIN64)
  //#define WORKAROUND_FOR_INT64_OFSTREAM
 #else
- #warning ===> WARNING: You have to do some coding here to get the port done!
+#warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-
-
 #endif
-
-
-
-

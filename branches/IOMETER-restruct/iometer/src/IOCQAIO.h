@@ -7,7 +7,7 @@
 /* ##  Job .......: Interface for the class CQAIO, which provides a       ## */
 /* ##               Completion Queue for asynchronous access to           ## */
 /* ##               TargetDisk and TargetTCP objects. CQAIO is an         ## */
-/* ##               implementation of the abstract class CQ.              ## */ 
+/* ##               implementation of the abstract class CQ.              ## */
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
@@ -65,41 +65,29 @@
 #ifndef	CQAIO_DEFINED
 #define	CQAIO_DEFINED
 
-
-
 #include "IOCQ.h"
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Completion queues used by asynchronous I/O targets.  This includes NT
 // and Solaris disk and TCP targets.
 // 
 ///////////////////////////////////////////////////////////////////////////////
-class CQAIO : public CQ
-{
-public:
+class CQAIO:public CQ {
+      public:
 
 	CQAIO();
 
 	///////////////////////////////////////////////////////////////////////////
 	// Attach asynchronous I/O objects with this completion queue.
 	//
-	ReturnVal	GetStatus( int *bytes, int *data, int delay );
+	ReturnVal GetStatus(int *bytes, int *data, int delay);
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	BOOL        SetQueueSize(int);
+	BOOL SetQueueSize(int);
 #endif
-	HANDLE		completion_queue;
+	HANDLE completion_queue;
 	//
 	///////////////////////////////////////////////////////////////////////////
 
 };
 
-
-
-#endif // CQAIO_DEFINED
-
-
-
-
+#endif				// CQAIO_DEFINED
