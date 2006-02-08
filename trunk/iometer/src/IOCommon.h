@@ -819,6 +819,12 @@ inline int IsBigEndian( void )
  void	Dump_Net_Results(struct Net_Results *res);
 #endif
 // ----------------------------------------------------------------------------
+
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+ #define _time			time
+ #define _millitm		millitm
+#endif
+
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  BOOL    SetQueueSize(HANDLE, int);
  HANDLE  CreateIoCompletionPort(HANDLE, HANDLE, DWORD, DWORD);
