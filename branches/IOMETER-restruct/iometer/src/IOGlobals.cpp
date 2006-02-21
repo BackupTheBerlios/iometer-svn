@@ -114,41 +114,6 @@ void GetAppFileVersionString(char **ppStrStandard, char **ppStrWithDebug)
 {
 	char *pStrStandard = NULL;
 
-#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	ASSERT((ppStrStandard != NULL) && (ppStrWithDebug != NULL));
-
-	//Get app(EXE module)'s file path
-	char modulePathBuff[MAX_PATH];
-
-	if (::GetModuleFileName(NULL, modulePathBuff, sizeof(modulePathBuff)) != 0) {
-		DWORD dwHandle = 0;	//not used
-		DWORD dwVerInfoSize =::GetFileVersionInfoSize(modulePathBuff, &dwHandle);
-
-		//The module provides VersionInfo data
-		if (dwVerInfoSize != 0) {
-			//ptr to buffer to hold version information
-			char *pVerInfo = new char[dwVerInfoSize];
-
-			if (::GetFileVersionInfo(modulePathBuff, NULL, dwVerInfoSize, pVerInfo)) {
-				UINT dataLen;	//receives size of fixed data area (not used)
-				char *pFileVersion;
-
-				//04b0 == 1200 codepage denoting Unicode used for win95 and NT resource dlls (see Iometer.rc2)
-				if (::VerQueryValue(pVerInfo, TEXT("\\StringFileInfo\\040904b0\\FileVersion"),
-						    (void **)&pFileVersion, &dataLen)) {
-					pStrStandard = new char[strlen(pFileVersion) + 1];
-
-					strcpy(pStrStandard, pFileVersion);
-				}
-			}
-			delete[]pVerInfo;
-		}
-		//It should have VersionInfo!
-		else
-			ASSERT(0);
-	}
-#endif				/* IOMTR_OS_WIN32 || IOMTR_OS_WIN64 */
-
 	//UNIX or last resort, use product-wide constant
 	if (pStrStandard == NULL) {
 		pStrStandard = new char[strlen(IOVER_FILEVERSION) + 1];
