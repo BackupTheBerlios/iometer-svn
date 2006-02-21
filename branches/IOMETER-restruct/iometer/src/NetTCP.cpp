@@ -137,10 +137,6 @@ NetAsyncTCP::NetAsyncTCP()
 	client_socket = (CONNECTION)&client_fp;
 	maxfd = sysconf(_SC_OPEN_MAX);    // the max # of file descriptors that select() handles.
 
-#ifdef WORKAROUND_LISTEN_BUG
-	listening = FALSE;
-#endif
-
 #endif // IOMTR_OSFAMILY_UNIX
 
 #if defined(IOMTR_OSFAMILY_NETWARE)
@@ -486,10 +482,6 @@ ReturnVal NetAsyncTCP::Accept()
 	// It's ok to listen more than once on a socket.
 	// allow only a single connection.
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	#ifdef WORKAROUND_LISTEN_BUG
-	if ( ! listening )
-	{
-	#endif // WORKAROUND_LISTEN_BUG
 		if ( listen ( fp->fd, 1 ) != 0 )
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 		if ( listen ( server_socket, 1 ) != 0 ) 
@@ -502,12 +494,6 @@ ReturnVal NetAsyncTCP::Accept()
 			OutputErrMsg();
 			return ReturnError;
 		}
-#if defined(IOMTR_OSFAMILY_UNIX)
-	#ifdef WORKAROUND_LISTEN_BUG
-		listening =	TRUE;
-	}
-	#endif // WORKAROUND_LISTEN_BUG
-#endif // IOMTR_OSFAMILY_UNIX
 
 	// Accept connections to socket.
 	#if NETWORK_DETAILS || _DEBUG
@@ -903,9 +889,6 @@ ReturnVal NetAsyncTCP::Close( BOOL close_server )
 	if ( close_server )
 	{
 		s = &server_socket;
-#if defined(IOMTR_OSFAMILY_UNIX) && defined(WORKAROUND_LISTEN_BUG)
-		listening = FALSE;
-#endif // UNIX && WORKAROUND_LISTEN_BUG
 	}
 	else
 		s = &client_socket;

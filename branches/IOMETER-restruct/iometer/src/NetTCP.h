@@ -137,15 +137,11 @@ class NetAsyncTCP:public Network {
 	struct File client_fp;	// the client and server sockets on UNIX.
 	int maxfd;		// The max nos of fds' for select() call.
 
-#ifdef WORKAROUND_LISTEN_BUG
-	BOOL listening;		// flag to indicate if a socket is listening or not.
-#endif				// WORKAROUND_LISTEN_BUG
-
 #endif				// IOMTR_OSFAMILY_UNIX
 
       protected:
 	// Member Functions.
-	 ReturnVal CreateSocket(CONNECTION * s);
+	ReturnVal CreateSocket(CONNECTION * s);
 	ReturnVal BindSocket(CONNECTION * s, SOCKADDR_IN * address);
 	ReturnVal CloseSocket(CONNECTION * s);
 	void SetOptions(CONNECTION * s);
