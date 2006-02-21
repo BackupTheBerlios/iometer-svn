@@ -176,9 +176,7 @@ TargetDisk::TargetDisk()
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	disk_file = (HANDLE) & file_handle;
-#if defined(IOMTR_SETTING_GCC_M64) || defined(IOMTR_OS_OSX)
 	file_handle.iocq = NULL;
-#endif
 #endif
 
 #if defined(IOMTR_OSFAMILY_NETWARE)
