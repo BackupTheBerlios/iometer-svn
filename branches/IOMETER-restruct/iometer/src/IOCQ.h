@@ -75,7 +75,7 @@
 
 class CQ {
       public:
-
+	virtual ~CQ() { };
 	virtual ReturnVal GetStatus(int *bytes, int *data, int delay) = 0;
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	virtual BOOL SetQueueSize(int size) {
