@@ -768,26 +768,34 @@ void Worker::SaveResults(ostream * file, int access_index, int result_type)
 	}
 
 	for (i = 0; i < target_count; i++) {
+		char PrintName[MAX_NAME], *TheOffendingChar;
+
 		if (!IsType(Type(), GenericClientType))
 			target = GetTarget(i);
 		if (!IsType(target->spec.type, ActiveType))
 			continue;
 
+		strcpy(PrintName, target->spec.name);
+		TheOffendingChar = PrintName;
+		// convert commas, newlines and cariage returns to spaces so these don't break the .csv output
+		while ((TheOffendingChar = strpbrk(TheOffendingChar, "\n\r,")) != NULL)
+			*TheOffendingChar = ' ';
+
 		// Retrieving results for a single target in order to save it to a file.
 		if (IsType(target->spec.type, GenericDiskType)) {
-			(*file) << "DISK" << "," << target->spec.name;
+			(*file) << "DISK" << "," << PrintName;
 		} else if (IsType(target->spec.type, TCPClientType)) {
 			// Show name as local address >> remote address.
 			(*file) << "NETWORK" << "," << manager->name << ":"
-			    << target->spec.name << " >> "
+			    << PrintName << " >> "
 			    << net_partner->manager->name << ":" << target->spec.tcp_info.remote_address;
 		} else if (IsType(target->spec.type, VIClientType)) {
 			// Show name as local address >> remote address.
 			(*file) << "NETWORK" << "," << manager->name << ":"
-			    << target->spec.name << " >> "
+			    << PrintName << " >> "
 			    << net_partner->manager->name << ":" << target->spec.vi_info.remote_nic_name;
 		} else {
-			(*file) << "UNKNOWN" << "," << target->spec.name;
+			(*file) << "UNKNOWN" << "," << PrintName;
 		}
 
 		(*file) << ",,,,"	// space for access spec name, workers, managers and targets running.

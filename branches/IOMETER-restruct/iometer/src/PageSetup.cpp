@@ -711,6 +711,8 @@ void CPageSetup::UpdateData(BOOL save_from_window)
 			CheckData(ENetWorkerCount, &net_worker_count, FALSE);
 
 		GetDlgItemText(ETestName, test_name);
+		// Find all commas and replace with '-'
+		test_name.Replace(',', '-');
 	} else {
 		// Update all the combo box selections.
 		m_CResultType.SetCurSel(result_type);
