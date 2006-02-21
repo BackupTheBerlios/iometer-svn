@@ -97,7 +97,7 @@ LDFLAGS= -lrt -lpthread -static
 
 OBJECTS= IOGlobals.o \
          Pulsar.o \
-         IOManager.o IOManagerLinux.o IOManagerSolaris.o \
+         IOManager.o IOManagerLinux.o \
 	 IOGrunt.o \
 	 IOTarget.o IOTargetDisk.o IOTargetTCP.o \
 	 IOPort.o IOPortTCP.o \
