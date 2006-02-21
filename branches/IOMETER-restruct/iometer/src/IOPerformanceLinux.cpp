@@ -156,65 +156,10 @@ Performance::~Performance()
 {
 }
 
-//
-// Getting the number of processors in the system.
-//
 int Performance::Get_Processor_Count()
 {
-	// The file "/proc/stat" enumerates the CPUs, one per line, each line starting
-	// with the string "cpu". I prepend a '\n' to the file, then search for the
-	// string "\ncpu"; that way, I will find every time that "cpu" appears as the
-	// first thing in a line.
-	//
-	// Example /proc/stat file: (Note: On a two CPU system, you will see two
-	// cpu lines, beginning "cpu0 ..." and "cpu1 ...")
-	//////////////////////////////////////////////////////////////////////
-	// cpu  1847686 355419 509281 14738354
-	// disk 69683 0 22232 0
-	// disk_rio 18236 0 302 0
-	// disk_wio 51447 0 21930 0
-	// disk_rblk 145876 0 2374 0
-	// disk_wblk 411576 0 173352 0
-	// page 76934 442943
-	// swap 1410 2465
-	// intr 21377391 17450740 101201 0 2 2 0 3 0 1 0 0 69197 724623 1 340233 2691388 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	// ctxt 175242460
-	// btime 942875987
-	//////////////////////////////////////////////////////////////////////
-	char stats[16 * 1024 + 1], *search;
-	int fd, byteCount, cpuCount;
-
-	int nr_cpu = 0;
-
-	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCPUNUM, &nr_cpu) >= 0) {
-		cout << "# CPU: " << nr_cpu << endl;
-		return nr_cpu;
-	}
-
-	fd = open("/proc/stat", O_RDONLY);
-	if (fd < 0) {
-		cout << "*** Unable to determine number of processors in system.";
-		return 0;
-	}
-	byteCount = read(fd, stats + 1, sizeof(stats) - 1);
-	close(fd);
-	if ((byteCount < 0) || (byteCount == sizeof(stats) - 1)) {
-		cout << "*** Unable to determine number of processors in system.";
-		return 0;
-	}
-	stats[0] = '\n';	// Make the first line begin with a \n, like the others.
-	stats[byteCount + 1] = '\0';
-	search = stats;
-	cpuCount = 0;
-	while ((search = strstr(search, "\ncpu")) != NULL) {
-		++cpuCount;
-		++search;	// Make sure we don't find the same CPU again!
-	}
-
-	// Decrease result by one, because on a single processor
-	// machine, the code above counts "cpu" and "cpu0"!
-	cpuCount--;
-	return (cpuCount);
+	/* glib will do all parsing work for us from /proc/stat */
+	return (sysconf(_SC_NPROCESSORS_CONF));
 }
 
 //
