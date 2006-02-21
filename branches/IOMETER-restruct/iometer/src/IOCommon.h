@@ -256,6 +256,14 @@ using namespace std;
 
  #if defined(IOMTR_OS_OSX)
   #include <sys/aio.h>
+  #define aiocb64 		aiocb
+  #define aio_suspend64	aio_suspend
+  #define aio_error64		aio_error
+  #define aio_cancel64		aio_cancel
+  #define aio_read64		aio_read
+  #define aio_write64		aio_write
+  #define aio_return64		aio_return
+
  #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
   #include <malloc.h>
   #include <aio.h>
@@ -864,14 +872,6 @@ inline int IsBigEndian( void )
   #define Sleep(x)		delay((x))
  #elif defined(IOMTR_OSFAMILY_UNIX)
   #if defined(IOMTR_OS_OSX)
-   #define aiocb64 		aiocb
-   #define aio_suspend64	aio_suspend
-   #define aio_error64		aio_error
-   #define aio_cancel64		aio_cancel
-   #define aio_read64		aio_read
-   #define aio_write64		aio_write
-   #define aio_return64		aio_return
-
    #define _timeb		timeval
    #define _ftime(x)		gettimeofday(x,NULL)
    #define _time		tv_sec
