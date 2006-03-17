@@ -450,6 +450,8 @@ BOOL PortTCP::Connect(char *port_name, unsigned short port_number)
 	}
 	while (retval != 0);
 
+	printf("Successful PortTCP::Connect\n  - port name: %s\n", name);
+
 	return TRUE;
 }
 
