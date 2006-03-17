@@ -217,7 +217,7 @@ class Grunt {
 
 	// Random number generation functions
 	void Srand(DWORDLONG seed);
-	DWORDLONG Rand();
+	DWORDLONG Rand(DWORDLONG limit);
 
 	// Used by random number generator functions.
 	DWORDLONG holdrand;

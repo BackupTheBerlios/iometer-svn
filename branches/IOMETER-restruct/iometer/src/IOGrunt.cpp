@@ -1103,7 +1103,7 @@ void Grunt::Do_IOs()
 			// See if we need to get a new access spec line.  All transactions
 			// for the current burst have been sent.
 			if (--remaining_transactions_in_burst <= 0) {
-				access_spec.GetNextBurst(access_percent = (unsigned int)Rand() % 100,
+				access_spec.GetNextBurst(access_percent = (unsigned int)Rand(100),
 							 &remaining_transactions_in_burst, &size, &transfer_delay,
 							 &user_alignment, &user_align_mask, &reply);
 				// Possibly waiting some delay before sending next burst of transfers.
@@ -1125,7 +1125,7 @@ void Grunt::Do_IOs()
 
 			// Determine if the first I/O will be a read or write.
 			// (is_read will change when replies are sent)
-			transaction->is_read = access_spec.Read(access_percent, (unsigned int)target->Rand() % 100);
+			transaction->is_read = access_spec.Read(access_percent, (unsigned int)target->Rand(100));
 
 			// Set flag to record transaction start time when the transaction actually begins.
 			transaction->start_transaction = 0;
@@ -1141,7 +1141,7 @@ void Grunt::Do_IOs()
 		if (IsType(target->spec.type, GenericDiskType)) {
 			((TargetDisk *) targets[target_id])->Seek(access_spec.Random(access_percent,
 										     (unsigned int)targets[target_id]->
-										     Rand() % 100), size,
+										     Rand(100)), size,
 								  user_alignment, user_align_mask);
 		}
 
@@ -1426,7 +1426,11 @@ void Grunt::Srand(DWORDLONG seed)
 	holdrand = seed;
 }
 
-DWORDLONG Grunt::Rand()
+DWORDLONG Grunt::Rand(DWORDLONG limit)
 {
-	return (holdrand = A * holdrand + B);
+#if defined(IOMTR_OSFAMILY_UNIX) && defined(WORKAROUND_MOD_BUG)
+	return ((DWORDLONG)fmodl(holdrand = A * holdrand + B, limit));
+#else
+	return (holdrand = A * holdrand + B) % limit;
+#endif
 }

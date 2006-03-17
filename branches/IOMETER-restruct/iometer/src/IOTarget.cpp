@@ -104,7 +104,11 @@ Target::~Target()
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 
-DWORDLONG Target::Rand(void)
+DWORDLONG Target::Rand(DWORDLONG limit)
 {
-	return (spec.random = A * spec.random + B);
+#if defined(IOMTR_OSFAMILY_UNIX) && defined(WORKAROUND_MOD_BUG)
+	return ((DWORDLONG)fmodl(spec.random = A * spec.random + B, limit));
+#else
+	return (spec.random = A * spec.random + B) % limit;
+#endif
 }

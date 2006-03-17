@@ -1418,11 +1418,7 @@ void TargetDisk::Seek(BOOL random, DWORD request_size, DWORD user_alignment, DWO
 	// Find out if this is a random seek.
 	if (random) {
 		// Set the offset to a random location on the disk.
-#if defined(IOMTR_OSFAMILY_UNIX) && defined(WORKAROUND_MOD_BUG)
-		offset = starting_position + (DWORDLONG) fmod(Rand(), size);
-#else
-		offset = starting_position + Rand() % size;
-#endif
+		offset = starting_position + Rand(size);
 	} else {
 		// Adjusting the offset pointer by the last number of bytes successfully transferred.
 		offset += (DWORDLONG) bytes_transferred;

@@ -94,7 +94,7 @@ class Target {
 	virtual ReturnVal Read(LPVOID buffer, Transaction * trans) = 0;
 	virtual ReturnVal Write(LPVOID buffer, Transaction * trans) = 0;
 
-	virtual DWORDLONG Rand();
+	virtual DWORDLONG Rand(DWORDLONG limit);
 
 	Target_Spec spec;
 
