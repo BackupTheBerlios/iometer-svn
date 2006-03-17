@@ -1283,7 +1283,7 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 		// nothing in the drive.
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd =
-		    open(file_name, O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
+		    open(file_name, O_DIRECT| O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
 #elif defined(IOMTR_OS_NETWARE)
 		NXFileOpen(0, (void *)file_name, (NXMode_t) (NX_O_RDWR | NX_O_CREAT | open_flag),
 			   &((struct File *)disk_file)->fd);
@@ -1301,7 +1301,7 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 #endif
 	} else if (IsType(spec.type, PhysicalDiskType)) {
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
-		((struct File *)disk_file)->fd = open(file_name, O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
+		((struct File *)disk_file)->fd = open(file_name, O_DIRECT | O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
 #elif defined(IOMTR_OS_NETWARE)
 		((struct File *)disk_file)->fd = NWOpenDevice(atoi(file_name), 0);
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
