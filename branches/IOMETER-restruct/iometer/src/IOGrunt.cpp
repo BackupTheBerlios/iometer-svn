@@ -510,6 +510,8 @@ void Grunt::Wait_For_Stop()
 //
 BOOL Grunt::Set_Access(const Test_Spec * spec)
 {
+	char *write_ptr = NULL;
+
 	// Check for idle spec.
 	if ((idle = (spec->access[0].of_size == IOERROR)))
 		return TRUE;
@@ -598,6 +600,15 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 	}
 
 	data_size = access_spec.max_transfer;
+
+	/* Fill write buffer with something non-zero, it can affect the
+	 * rate at which the processor can do crc calculations
+	 */
+	write_ptr = (char *)write_data;
+	while ((unsigned long)write_ptr < ((unsigned long)write_data + data_size)) {
+		*write_ptr++ = (char)Rand(0xff);
+	}
+
 	return TRUE;
 }
 
