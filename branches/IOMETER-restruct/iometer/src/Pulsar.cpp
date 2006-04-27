@@ -185,9 +185,10 @@ int InitIoctlInterface(void)
 	int res;
 
 	res = open("/dev/iomtr_kstat", O_RDONLY);
-	if (res < 0)
+	if (res < 0) {
 		cerr << "Fail to open kstat device file. You can ignore this warning" << endl;
-	cerr << "unless you are running dynamo on XSCALE CPU." << endl;
+		cerr << "unless you are running dynamo on XSCALE CPU." << endl;
+	}
 	return res;
 }
 

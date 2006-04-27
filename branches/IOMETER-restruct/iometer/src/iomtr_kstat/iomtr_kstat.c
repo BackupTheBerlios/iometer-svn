@@ -81,10 +81,12 @@
 
 #define DEBUG
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,8))
 #define IOMTR_OSVERSION_LINUX26
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
 #define IOMTR_OSVERSION_LINUX24
+#else
+#error Kernel version not supported!
 #endif
 
 #include "iomtr_kstat.h"
@@ -269,17 +271,16 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 			t.retranssegs += tcp_statistics[ 2 * cpu_logical_map(i)].TcpRetransSegs;
 			t.retranssegs += tcp_statistics[ 2 * cpu_logical_map(i) + 1].TcpRetransSegs;
 		}
-#endif
-#ifdef IOMTR_OSVERSION_LINUX26
+#elif IOMTR_OSVERSION_LINUX26
 		for (i = 0; i < NR_CPUS; i++) {
 			if (!cpu_possible(i))
 				continue;
-			t.insegs += ((struct tcp_mib *) per_cpu_ptr(tcp_statistics[0], i))->TcpInSegs;
-			t.insegs += ((struct tcp_mib *) per_cpu_ptr(tcp_statistics[1], i))->TcpInSegs;
-			t.outsegs += ((struct tcp_mib *) per_cpu_ptr(tcp_statistics[0], i))->TcpOutSegs;
-			t.outsegs += ((struct tcp_mib *) per_cpu_ptr(tcp_statistics[1], i))->TcpOutSegs;
-			t.retranssegs += ((struct tcp_mib *) per_cpu_ptr(tcp_statistics[0], i))->TcpRetransSegs;
-			t.retranssegs += ((struct tcp_mib *) per_cpu_ptr(tcp_statistics[1], i))->TcpRetransSegs;
+			t.insegs += (per_cpu_ptr(tcp_statistics[0], i))->mibs[TCP_MIB_INSEGS];
+			t.insegs += (per_cpu_ptr(tcp_statistics[1], i))->mibs[TCP_MIB_INSEGS];
+			t.outsegs += (per_cpu_ptr(tcp_statistics[0], i))->mibs[TCP_MIB_OUTSEGS];
+			t.outsegs += (per_cpu_ptr(tcp_statistics[1], i))->mibs[TCP_MIB_OUTSEGS];
+			t.retranssegs += (per_cpu_ptr(tcp_statistics[0], i))->mibs[TCP_MIB_RETRANSSEGS];
+			t.retranssegs += (per_cpu_ptr(tcp_statistics[1], i))->mibs[TCP_MIB_RETRANSSEGS];
 		}
 #endif
 #ifdef DEBUG
