@@ -271,7 +271,8 @@ int imkstat_ioctl(struct inode *inode, struct file *filp,
 			t.retranssegs += tcp_statistics[ 2 * cpu_logical_map(i)].TcpRetransSegs;
 			t.retranssegs += tcp_statistics[ 2 * cpu_logical_map(i) + 1].TcpRetransSegs;
 		}
-#elif IOMTR_OSVERSION_LINUX26
+#endif
+#ifdef IOMTR_OSVERSION_LINUX26
 		for (i = 0; i < NR_CPUS; i++) {
 			if (!cpu_possible(i))
 				continue;
