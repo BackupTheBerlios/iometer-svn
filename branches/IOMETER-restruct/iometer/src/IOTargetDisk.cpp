@@ -505,7 +505,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 		if (!Open(NULL)) {
 #ifdef _DEBUG
 			cout << __FUNCTION__ << ": Open on \"" << file_name <<
-			    "\" failed (error " << strerror(errno) << ").\n";
+			    "\" failed (error " << strerror(errno) << ")." << endl;
 #endif
 			return (FALSE);
 		}
@@ -525,7 +525,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 			statResult = statfs(filesysName, &fsInfo);
 		}
 		if (statResult < 0) {
-			cerr << __FUNCTION__ << ": Couldn't statfs logical disk file!\n";
+			cerr << __FUNCTION__ << ": Couldn't statfs logical disk file!" << endl;
 			if (open_disk) {
 				Close(NULL);
 			}
@@ -540,7 +540,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 			statResult = stat(file_name, &fileInfo);
 		}
 		if (statResult < 0) {
-			cerr << __FUNCTION__ << ": Error " << strerror(errno) << "statting file " << file_name << "\n";
+			cerr << __FUNCTION__ << ": Error " << strerror(errno) << "statting file " << file_name << endl;
 			if (open_disk) {
 				Close(NULL);
 			}
@@ -564,13 +564,19 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 	} else {
 		spec.disk_info.sector_size = getSectorSizeOfPhysDisk(file_name);
 		if (spec.disk_info.sector_size == 0) {
-			cerr << __FUNCTION__ << ": Failed to get sector size. Aborting " << "target.\n";
+			cerr << __FUNCTION__ << ": Failed to get sector size for " << file_name << ". Skip it." << endl;
 			if (open_disk) {
 				Close(NULL);
 			}
 			return (FALSE);
 		}
 		size = getSizeOfPhysDisk(file_name);
+		if (size == 0) {
+			cerr << __FUNCTION__ << ": Failed to get device size for " << file_name << ". Skip it." << endl;
+			if (open_disk)
+				Close(NULL);
+			return (FALSE);
+		}
 		alignment = 0;
 		sector_align_mask = ~((DWORDLONG) spec.disk_info.sector_size - 1);
 		ending_position = size;
@@ -601,7 +607,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 		if (!Open(NULL)) {
 #ifdef _DEBUG
 			cout << __FUNCTION__ << ": Open on \"" << file_name <<
-			    "\" failed (error " << strerror(errno) << ").\n";
+			    "\" failed (error " << strerror(errno) << ")." << endl;
 #endif
 			return (FALSE);
 		}
@@ -624,10 +630,9 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 		netware_vol_info(&spaceInfo, (int *)&fsInfo.st_dev);
 
 		if (statResult < 0) {
-			printf("%s: Couldn't stat logical disk file!\n", __FUNCTION__);
-			if (open_disk) {
+			cerr << __FUNCTION__ << ": Couldn't stat logical disk file!" << endl;
+			if (open_disk)
 				Close(NULL);
-			}
 			return (FALSE);
 		}
 		spec.disk_info.sector_size = spaceInfo.SectorsPerCluster;
@@ -639,7 +644,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 			statResult = stat(file_name, &fileInfo);
 		}
 		if (statResult < 0) {
-			printf("%s: Error %s statting file %s\n", __FUNCTION__, strerror(errno), file_name);
+			cerr << __FUNCTION__ << ": Error " << strerror(errno) << " statting file " << file_name << endl;
 			if (open_disk) {
 				Close(NULL);
 			}
@@ -1212,7 +1217,7 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 
 						if (bytes_written != bytes) {
 							cout << "***Error (eventually); wrote only " << bytes_written
-							    << " of " << bytes << " bytes!\n";
+							    << " of " << bytes << " bytes!" << endl;
 							retval = FALSE;
 							write_ok = FALSE;
 							break;
@@ -1283,7 +1288,7 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 		// nothing in the drive.
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd =
-		    open(file_name, O_DIRECT| O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
+		    open(file_name, O_DIRECT | O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
 #elif defined(IOMTR_OS_NETWARE)
 		NXFileOpen(0, (void *)file_name, (NXMode_t) (NX_O_RDWR | NX_O_CREAT | open_flag),
 			   &((struct File *)disk_file)->fd);
@@ -1821,11 +1826,14 @@ static unsigned long long getSizeOfPhysDisk(const char *devName)
 		return 0;
 	}
 	if (ioctl(fd, BLKGETSIZE64, &sz64) < 0) {
+#ifdef _DEBUG
 		cerr << "Fail to get size for " << fullDevName << " by BLKGETSIZE64" << endl;
+#endif
 		if (ioctl(fd, BLKGETSIZE, &sz32) < 0) {
+#ifdef _DEBUG
 			cerr << "Fail to get size for " << fullDevName << "by BLKGETSIZE" << endl;
-			close(fd);
-			return 0;
+#endif
+			sz64 = 0;
 		} else {
 			sz64 = sz32;
 			sz64 <<= 9;
