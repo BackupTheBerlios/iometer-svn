@@ -153,12 +153,12 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT & cs)
 // CMainFrame diagnostics
 
 #ifdef _DEBUG
-void CMainFrame::AssertValid() const const
+void CMainFrame::AssertValid() const
 {
 	CFrameWnd::AssertValid();
 }
 
-void CMainFrame::Dump(CDumpContext & dc) const const
+void CMainFrame::Dump(CDumpContext & dc) const
 {
 	CFrameWnd::Dump(dc);
 }

@@ -130,12 +130,12 @@ void CGalileoDoc::Serialize(CArchive & ar)
 // CGalileoDoc diagnostics
 
 #ifdef _DEBUG
-void CGalileoDoc::AssertValid() const const
+void CGalileoDoc::AssertValid() const
 {
 	CDocument::AssertValid();
 }
 
-void CGalileoDoc::Dump(CDumpContext & dc) const const
+void CGalileoDoc::Dump(CDumpContext & dc) const
 {
 	CDocument::Dump(dc);
 }

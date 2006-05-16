@@ -293,12 +293,12 @@ void CGalileoView::OnDraw(CDC * pDC)
 // CGalileoView diagnostics
 
 #ifdef _DEBUG
-void CGalileoView::AssertValid() const const
+void CGalileoView::AssertValid() const
 {
 	CView::AssertValid();
 }
 
-void CGalileoView::Dump(CDumpContext & dc) const const
+void CGalileoView::Dump(CDumpContext & dc) const
 {
 	CView::Dump(dc);
 }
