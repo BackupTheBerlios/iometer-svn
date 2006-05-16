@@ -116,14 +116,14 @@ extern "C"
 //#define IOVER_FILEVERSION				"2004.07.30\0"
 //#define IOVER_FILEVERSION				"2003.12.16-post\0"
 //#define IOVER_FILEVERSION				"2004.07.30\0"   // => Has never been active; see IOMETER1 branch!
-#define IOVER_FILEVERSION				"2004.07.30-post\0"
+//#define IOVER_FILEVERSION				"2004.07.30-post\0"
+#define IOVER_FILEVERSION				"2006.05\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
-
 
 
 #if defined(IOMTR_OSFAMILY_WINDOWS)
 
-#define IOVER_LEGALCOPYRIGHT			"Copyright © 1996-2001 Intel Corporation\0"
+#define IOVER_LEGALCOPYRIGHT			"Copyright (c) 1996-2001 Intel Corporation\0"
 #define IOVER_LEGALTRADEMARKS			"\0"
 #define IOVER_COMPANYNAME			"Intel Corporation\0"
 
