@@ -270,9 +270,10 @@ __declspec(naked)
 extern DWORDLONG rdtsc()
 {
 	_asm {
-		_emit 0F h	// Store low  32-bits of counter in EAX.
-		    _emit 31 h	// Store high 32-bits of counter in EDX.
-	ret}
+		_emit 0Fh	// Store low  32-bits of counter in EAX.
+		_emit 31h	// Store high 32-bits of counter in EDX.
+		ret
+	}
 }
 
 // ----------------------------------------------------------------------------
