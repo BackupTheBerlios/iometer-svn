@@ -1286,7 +1286,10 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 	if (IsType(spec.type, LogicalDiskType)) {
 		// Ignore errors that occur if trying to open a floppy or CD-ROM with
 		// nothing in the drive.
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_SOLARIS)
+		((struct File *)disk_file)->fd =
+		    open(file_name, O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
+#elif defined(IOMTR_OS_LINUX)
 		((struct File *)disk_file)->fd =
 		    open(file_name, O_DIRECT | O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
 #elif defined(IOMTR_OS_NETWARE)
@@ -1305,7 +1308,9 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	} else if (IsType(spec.type, PhysicalDiskType)) {
-#if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_SOLARIS)
+#if defined(IOMTR_OS_SOLARIS)
+		((struct File *)disk_file)->fd = open(file_name, O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
+#elif defined(IOMTR_OS_LINUX)
 		((struct File *)disk_file)->fd = open(file_name, O_DIRECT | O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
 #elif defined(IOMTR_OS_NETWARE)
 		((struct File *)disk_file)->fd = NWOpenDevice(atoi(file_name), 0);
