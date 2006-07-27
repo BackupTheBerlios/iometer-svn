@@ -4,10 +4,23 @@
 
 
 
-ChangeLog (IOMETER2 - 2005.mm.dd):
+ChangeLog (IOMETER2 - 2006.mm.dd):
 ==================================
 
 - Applied patches:
+   - Patch by Ming Zhang to exclude the disk if can not detect the disk size
+     information under Linux.
+   - Patch by Fabian Tillier to fix DDK path.
+   - Patch by Christensen ReedX K to update iomtr_kstat module with newer
+     2.6.x kernel.
+   - Patch by Christensen ReedX K to use O_DIRECT as default for Linux.
+   - Patch by Ming Zhang to use sysconf for processor count.
+   - Patch by Ming Zhang to use unify method for version string.
+   - Patch by Saner Pool to filter invalid commas, new line, and cariage
+     return in .csv output.
+   - By Ganderson, initialize iocq structure member for all platform.
+   - By Rick Altherr, fixed the Mac OSX compile.
+   - By Ming Zhang, fixed the Windows compile broken by MacOS port.
    - #1239881 : iometer-2004.07.30-post.DS1.Rick002OsXPortTry2.patch by
      Rick Altherr (Patch that implements the Mac OS X / PPC port).
    - #1186329 : iometer-2004.07.30-post.DS1.Rick001AioCancelTry2.patch by
@@ -97,6 +110,10 @@ ChangeLog (IOMETER2 - 2005.mm.dd):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
+   - Added new VS project management file for VS.net.
+   - Various cleanup to remove compile warning with new version GCC.
+   - Removed wrongly included IOManageSolario.o from Makefile-Linux.ppc.
+   - Indent all source code to have better code style.
    - Renamed Makefile-Solaris.Sparc into Makefile-Solaris.sparc
    - Modified an #ifdef in IOPerformanceLinux.cpp to make it work for
      the XScale processor as well.
