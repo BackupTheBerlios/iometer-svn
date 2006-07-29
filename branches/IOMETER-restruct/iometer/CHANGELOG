@@ -110,6 +110,7 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
+   - Recovered all corrupted binary files.
    - Added new VS project management file for VS.net.
    - Various cleanup to remove compile warning with new version GCC.
    - Removed wrongly included IOManageSolario.o from Makefile-Linux.ppc.
