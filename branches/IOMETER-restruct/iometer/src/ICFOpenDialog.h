@@ -69,6 +69,7 @@ class CICFOpenDialog:public CFileDialog {
 // Construction
       public:
 	CICFOpenDialog();
+	~CICFOpenDialog();
 
 // Dialog Data
 	//{{AFX_DATA(CICFOpenDialog)

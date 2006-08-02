@@ -118,6 +118,12 @@ IMPLEMENT_DYNAMIC(CICFOpenDialog, CFileDialog)
 	wasCkAssignTargets = TRUE;
 }
 
+CICFOpenDialog::~CICFOpenDialog()
+{
+	if (m_ofn.lpstrTitle)
+		delete m_ofn.lpstrTitle;
+}
+
 void CICFOpenDialog::DoDataExchange(CDataExchange * pDX)
 {
 	CFileDialog::DoDataExchange(pDX);

@@ -69,6 +69,7 @@ class CICFSaveDialog:public CFileDialog {
 // Construction
       public:
 	CICFSaveDialog();
+	~CICFSaveDialog();
 
 // Dialog Data
 	//{{AFX_DATA(CICFSaveDialog)
