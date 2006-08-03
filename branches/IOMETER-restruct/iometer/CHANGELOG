@@ -8,6 +8,8 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
 ==================================
 
 - Applied patches:
+   - Patch by Ming Zhang to fix 2 memory leaks in ICFOpenDialog and ICFSaveDialog
+     class.
    - Patch by Ming Zhang to exclude the disk if can not detect the disk size
      information under Linux.
    - Patch by Fabian Tillier to fix DDK path.
