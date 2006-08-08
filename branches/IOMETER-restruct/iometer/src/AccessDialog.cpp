@@ -223,8 +223,8 @@ BOOL CAccessDialog::OnInitDialog()
 	//  since it really isn't needed anyway...
 	//size_controls.GetFunc                 = this->GetSize;
 	//size_controls.SetFunc                 = this->SetSize;
-	size_controls.GetFunc = GetSize;
-	size_controls.SetFunc = SetSize;
+	size_controls.GetFunc = &CAccessDialog::GetSize;
+	size_controls.SetFunc = &CAccessDialog::SetSize;
 
 	align_controls.EBytesCtrl = &m_EAlignBytes;
 	align_controls.EKilobytesCtrl = &m_EAlignKilobytes;
@@ -245,8 +245,8 @@ BOOL CAccessDialog::OnInitDialog()
 	//  since it really isn't needed anyway...
 	//align_controls.GetFunc                        = this->GetAlign;
 	//align_controls.SetFunc                        = this->SetAlign;
-	align_controls.GetFunc = GetAlign;
-	align_controls.SetFunc = SetAlign;
+	align_controls.GetFunc = &CAccessDialog::GetAlign;
+	align_controls.SetFunc = &CAccessDialog::SetAlign;
 
 // RSelectedID MUST be greater than RNotSelectedID, for the sake of GetCheckedRadioButton().
 #if !(RAlignBytes > RAlignSector)
@@ -272,8 +272,8 @@ BOOL CAccessDialog::OnInitDialog()
 	//  since it really isn't needed anyway...
 	//reply_controls.GetFunc                        = this->GetReply;
 	//reply_controls.SetFunc                        = this->SetReply;
-	reply_controls.GetFunc = GetReply;
-	reply_controls.SetFunc = SetReply;
+	reply_controls.GetFunc = &CAccessDialog::GetReply;
+	reply_controls.SetFunc = &CAccessDialog::SetReply;
 
 // RSelectedID MUST be greater than RNotSelectedID, for the sake of GetCheckedRadioButton().
 #if !(RReplySize > RNoReply)
