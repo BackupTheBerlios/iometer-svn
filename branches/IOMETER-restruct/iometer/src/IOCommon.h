@@ -757,30 +757,31 @@ inline void reorder(CPU_Results&, int);
 inline void reorder(Net_Results&, int);
 inline void reorder(Raw_Result&);
 
-inline char *Strip( char *pcString )
+inline char *Strip(char *pcString)
 {
- unsigned int uiLength = strlen(pcString);
- int          I;
- int          iIndex = 0;
- int          iPos1, iPos2; 
- 
- for( iPos1 = 0;            ( (iPos1<(int)uiLength) && (pcString[iPos1]==(int)' ') ); iPos1++ ) { /* NOP */ }
- for( iPos2 = uiLength - 1; ( (iPos2>=0)            && (pcString[iPos2]==(int)' ') ); iPos2-- ) { /* NOP */ }
- 
- if( (iPos1 != 0) || (iPos2 != ((int)uiLength - 1)) )
- {    
-  for( I = iPos1; I <= iPos2; I++ )
-  {
-   pcString[iIndex] = pcString[I];
-   iIndex++;
-  }
-  pcString[iIndex] = '\0';
- }
- 
- return(pcString);
+	size_t uiLength = strlen(pcString); // 64bit version now return qword values!
+	size_t I;
+	size_t iIndex = 0;
+	size_t iPos1, iPos2;
+
+	for (iPos1 = 0; ((iPos1 < (int)uiLength) && (pcString[iPos1] == (int)' ')); iPos1++) {
+		/* NOP */
+	}
+	for (iPos2 = uiLength - 1; ((iPos2 >= 0) && (pcString[iPos2] == (int)' ')); iPos2--) {
+		/* NOP */
+	}
+
+	if ((iPos1 != 0) || (iPos2 != ((int)uiLength - 1))) {
+		for (I = iPos1; I <= iPos2; I++) {
+			pcString[iIndex] = pcString[I];
+			iIndex++;
+		}
+		pcString[iIndex] = '\0';
+ 	}
+	return(pcString);
 }
 
-inline int IsBigEndian( void )
+inline int IsBigEndian(void)
 {
  union EndianUnion
  {

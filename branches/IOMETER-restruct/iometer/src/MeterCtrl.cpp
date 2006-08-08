@@ -246,9 +246,9 @@ void CMeterCtrl::UpdateScaleInfo()
 		return;
 	}
 	// Calculate the new scale.
-	scale = (int)pow(10, (int)floor(log10((double)max_range)));
+	scale = (int)pow((double)10, (int)floor(log10((double)max_range)));
 
-	if ((max_range == pow(10, (int)floor(log10((double)max_range))))) {
+	if ((max_range == (int)pow((double)10, (int)floor(log10((double)max_range))))) {
 		// max_range is a power of 10
 		scale /= 10;
 	}
@@ -278,11 +278,11 @@ void CMeterCtrl::UpdateLabelInfo()
 
 	// Sets the range that the marker labels will span.
 	range_diff = max_range - min_range;
-	if ((range_diff == pow(10, (int)floor(log10(range_diff)))) && (range_diff != 1)) {
+	if ((range_diff == pow((double)10, (int)floor(log10(range_diff)))) && (range_diff != 1)) {
 		// range_diff is a power of 10, but is not exactly 1
 		display_range = 10;
 	} else {
-		display_range = range_diff / pow(10, (int)floor(log10(range_diff)));
+		display_range = range_diff / pow((double)10, (int)floor(log10(range_diff)));
 	}
 
 	// Set the increment from one label to the next.
