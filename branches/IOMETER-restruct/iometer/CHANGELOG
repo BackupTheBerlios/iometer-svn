@@ -112,6 +112,7 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
+   - Adjusted some variable types to fit 64bit OS and compiler.
    - Recovered all corrupted binary files.
    - Added new VS project management file for VS.net.
    - Various cleanup to remove compile warning with new version GCC.
