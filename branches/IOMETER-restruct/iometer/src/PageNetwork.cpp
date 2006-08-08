@@ -263,6 +263,7 @@ void CPageNetwork::AddManager(Manager * manager)
 	TV_INSERTSTRUCT tvstruct;
 	HTREEITEM hmgr, hifc;
 	Manager *sel_mgr;
+	int n;
 
 	// Do not add the manager if it doesn't have any interfaces that are
 	// accessible from the selected manager.
@@ -328,7 +329,7 @@ void CPageNetwork::AddManager(Manager * manager)
 	tvstruct.item.state = INDEXTOSTATEIMAGEMASK(TARGET_STATE_UNCHECKED);
 
 	// insert the manager's network interfaces as its children in the tree
-	for (int n = 0; n < manager->InterfaceCount(GenericNetType); n++) {
+	for (n = 0; n < manager->InterfaceCount(GenericNetType); n++) {
 		// Only add interfaces that are accessible.
 		if (!sel_mgr->InterfaceCount(manager->GetInterface(n, GenericNetType)->type)) {
 			continue;

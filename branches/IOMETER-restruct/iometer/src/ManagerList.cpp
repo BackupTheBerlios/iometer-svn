@@ -1175,6 +1175,7 @@ BOOL ManagerList::AreAccessSpecsIdentical()
 char *ManagerList::GetCommonAccessSpec(int spec_index, char *const specname)
 {
 	char compare_string[MAX_WORKER_NAME];
+	int manager_index;
 
 	// Return null string if there are no managers.
 	if (ManagerCount() == 0) {
@@ -1182,7 +1183,7 @@ char *ManagerList::GetCommonAccessSpec(int spec_index, char *const specname)
 		return specname;
 	}
 	// Find the first manager with workers.
-	for (int manager_index = 0; manager_index < ManagerCount(); manager_index++) {
+	for (manager_index = 0; manager_index < ManagerCount(); manager_index++) {
 		if (GetManager(manager_index)->WorkerCount()) {
 			// Store that manager's access spec name.
 			GetManager(manager_index)->GetCommonAccessSpec(spec_index, specname);

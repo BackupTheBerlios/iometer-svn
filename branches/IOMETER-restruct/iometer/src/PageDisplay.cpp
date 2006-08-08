@@ -302,18 +302,19 @@ void CPageDisplay::SetResultSource(int manager_index, int worker_index, int sele
 void CPageDisplay::Update()
 {
 	int max_rate[NUM_STATUS_BARS];
+	int i, j;
 	CString max_range_text;
 	double stat_double;
 	CString stat_string;
 
 	// Setting ranges on status bar display based on selections.
-	for (int i = 0; i < NUM_STATUS_BARS; i++) {
+	for (i = 0; i < NUM_STATUS_BARS; i++) {
 		max_rate[i] = GetMaxRange(&(barcharts[i].results[GetWhichPerf()]), barcharts[i].result_to_display);
 	}
 
 	// If the results to display are the same, giving them the same ranges for easier comparisons.
 	for (i = 0; i < NUM_STATUS_BARS - 1; i++) {
-		for (int j = i; j < NUM_STATUS_BARS; j++) {
+		for (j = i; j < NUM_STATUS_BARS; j++) {
 			if (barcharts[i].result_to_display == barcharts[j].result_to_display) {
 				if (max_rate[i] > max_rate[j])
 					max_rate[j] = max_rate[i];
