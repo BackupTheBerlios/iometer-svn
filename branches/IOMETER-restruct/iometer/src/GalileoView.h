@@ -263,7 +263,7 @@ class CGalileoView:public CView {
       protected:
 	//{{AFX_MSG(CGalileoView)
 	 afx_msg BOOL OnEraseBkgnd(CDC * pDC);
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnBReset();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileSave();

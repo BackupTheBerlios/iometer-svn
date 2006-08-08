@@ -241,7 +241,7 @@ BOOL CWaitingForManagers::OnInitDialog()
 //
 // Timer handler -- decrements countdown every second.
 //
-void CWaitingForManagers::OnTimer(UINT nIDEvent)
+void CWaitingForManagers::OnTimer(UINT_PTR nIDEvent)
 {
 	static int accumulator = 0;
 

@@ -117,7 +117,7 @@ class CWaitingForManagers:public CDialog {
 	// Generated message map functions
 	//{{AFX_MSG(CWaitingForManagers)
 	virtual void OnCancel();
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	 DECLARE_MESSAGE_MAP()

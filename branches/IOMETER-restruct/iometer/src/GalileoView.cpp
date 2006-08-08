@@ -873,7 +873,7 @@ BOOL CGalileoView::DisksNotPrepared()
 	return FALSE;		// all drives prepared
 }
 
-void CGalileoView::OnTimer(UINT nIDEvent)
+void CGalileoView::OnTimer(UINT_PTR nIDEvent)
 {
 	int timer_delay;
 
