@@ -179,7 +179,7 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 		if (KERN_SUCCESS != kernResult) {
 			// If anything fails, we play it safe and just claim it has partitions
 			result = TRUE;
-		} else if (NULL == iter) {
+		} else if (!iter) {
 			result = true;
 		} else {
 			service = IOIteratorNext(iter);
@@ -188,7 +188,7 @@ BOOL Manager::containsPartitions(mach_port_t masterPort, char *bsdName)
 			// a single io_service_t
 			IOObjectRelease(iter);
 
-			if (NULL == service) {
+			if (!service) {
 				result = TRUE;
 			} else {
 				// retrieve the Whole property
