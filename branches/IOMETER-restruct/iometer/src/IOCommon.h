@@ -764,14 +764,14 @@ inline char *Strip(char *pcString)
 	size_t iIndex = 0;
 	size_t iPos1, iPos2;
 
-	for (iPos1 = 0; ((iPos1 < (int)uiLength) && (pcString[iPos1] == (int)' ')); iPos1++) {
+	for (iPos1 = 0; ((iPos1 < uiLength) && (pcString[iPos1] == (int)' ')); iPos1++) {
 		/* NOP */
 	}
 	for (iPos2 = uiLength - 1; ((iPos2 >= 0) && (pcString[iPos2] == (int)' ')); iPos2--) {
 		/* NOP */
 	}
 
-	if ((iPos1 != 0) || (iPos2 != ((int)uiLength - 1))) {
+	if ((iPos1 != 0) || (iPos2 != (uiLength - 1))) {
 		for (I = iPos1; I <= iPos2; I++) {
 			pcString[iIndex] = pcString[I];
 			iIndex++;

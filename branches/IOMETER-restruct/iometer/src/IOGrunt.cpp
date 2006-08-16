@@ -605,7 +605,7 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 	 * rate at which the processor can do crc calculations
 	 */
 	write_ptr = (char *)write_data;
-	while ((unsigned long)write_ptr < ((unsigned long)write_data + data_size)) {
+	while ((ULONG_PTR)write_ptr < ((ULONG_PTR)write_data + data_size)) {
 		*write_ptr++ = (char)Rand(0xff);
 	}
 
