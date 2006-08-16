@@ -117,7 +117,7 @@ extern "C"
 //#define IOVER_FILEVERSION				"2003.12.16-post\0"
 //#define IOVER_FILEVERSION				"2004.07.30\0"   // => Has never been active; see IOMETER1 branch!
 //#define IOVER_FILEVERSION				"2004.07.30-post\0"
-#define IOVER_FILEVERSION				"2006.07.27-RC1\0"
+#define IOVER_FILEVERSION				"2006.07.27-RC2\0"
 #define IOVER_PRODUCTVERSION				IOVER_FILEVERSION
 
 
