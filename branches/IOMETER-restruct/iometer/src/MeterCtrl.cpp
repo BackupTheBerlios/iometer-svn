@@ -50,7 +50,9 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2004-09-01 (henryx.w.tieman@intel.com)                ## */
+/* ##  Changes ...: 2006-08-04 (vedrand@yahoo.com)                        ## */
+/* ##               -misc syntactical -- explicit pow() arg typecasts     ## */
+/* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Needed to cast parameters to some functions         ## */
 /* ##                 because latest Visual Studio C++ library has        ## */
 /* ##                 multiple entry points for those functions.          ## */
@@ -246,9 +248,9 @@ void CMeterCtrl::UpdateScaleInfo()
 		return;
 	}
 	// Calculate the new scale.
-	scale = (int)pow((double)10, (int)floor(log10((double)max_range)));
+	scale = (int)powf(10.0, floor(log10((float)max_range)));
 
-	if ((max_range == (int)pow((double)10, (int)floor(log10((double)max_range))))) {
+	if ((max_range == (int)powf(10.0, floor(log10((float)max_range))))) {
 		// max_range is a power of 10
 		scale /= 10;
 	}
@@ -269,35 +271,35 @@ void CMeterCtrl::UpdateScaleInfo()
 //
 void CMeterCtrl::UpdateLabelInfo()
 {
-	double range_diff;
-	double display_range;	// range normalized to ##.##### for ranges > 10
-	double label_increment;
-	double display_value;
+	float range_diff;
+	float display_range;	// range normalized to ##.##### for ranges > 10
+	float label_increment;
+	float display_value;
 	int label_angle;
 	LONG x, y;		// temporary point coordinates
 
 	// Sets the range that the marker labels will span.
-	range_diff = max_range - min_range;
-	if ((range_diff == pow((double)10, (int)floor(log10(range_diff)))) && (range_diff != 1)) {
+	range_diff = (float) (max_range - min_range);
+	if ((range_diff == powf(10.0, floor(log10(range_diff)))) && (range_diff != 1)) {
 		// range_diff is a power of 10, but is not exactly 1
 		display_range = 10;
 	} else {
-		display_range = range_diff / pow((double)10, (int)floor(log10(range_diff)));
+		display_range = range_diff / powf(10.0, floor(log10(range_diff)));
 	}
 
 	// Set the increment from one label to the next.
 	if (display_range <= 1)
-		label_increment = .1;
+		label_increment = (float) .1;
 	else if (display_range <= 2)
-		label_increment = .2;
+		label_increment = (float) .2;
 	else if (display_range <= 5)
-		label_increment = .5;
+		label_increment = (float) .5;
 	else if (display_range <= 10)
 		label_increment = 1;
 
 	// Update the marker label text boxes.
 	label_count = 0;
-	display_value = min_range;
+	display_value = (float) min_range;
 	while (display_value <= display_range) {
 		// Set the position of the text boxes.
 		label_angle = (int)(display_value / display_range * NEEDLE_SWEEP);
