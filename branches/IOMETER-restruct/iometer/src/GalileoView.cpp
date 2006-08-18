@@ -1894,22 +1894,24 @@ void CGalileoView::OnMRefresh()
 
 void CGalileoView::ButtonReset()
 {
-	SetButton(ID_FILE_OPEN, TRUE);
-	SetButton(ID_FILE_SAVE, TRUE);
-	SetButton(BNewDynamo, TRUE);
-	SetButton(BNewDiskWorker, FALSE);
-	SetButton(BNewNetWorker, FALSE);
-	SetButton(BCopyWorker, FALSE);
-	SetButton(BReset, FALSE);
-	SetButton(BExitOne, FALSE);
-	SetButton(ID_APP_EXIT, TRUE);
+	if (theApp.m_wndToolBar) {
+		SetButton(ID_FILE_OPEN, TRUE);
+		SetButton(ID_FILE_SAVE, TRUE);
+		SetButton(BNewDynamo, TRUE);
+		SetButton(BNewDiskWorker, FALSE);
+		SetButton(BNewNetWorker, FALSE);
+		SetButton(BCopyWorker, FALSE);
+		SetButton(BReset, FALSE);
+		SetButton(BExitOne, FALSE);
+		SetButton(ID_APP_EXIT, TRUE);
 
-	m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, FALSE, FALSE);
-	SetButton(BStart, FALSE);
-	SetButton(BStop, FALSE);
-	SetButton(BStopAll, FALSE);
+		m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, FALSE, FALSE);
+		SetButton(BStart, FALSE);
+		SetButton(BStop, FALSE);
+		SetButton(BStopAll, FALSE);
 
-	theApp.m_wndToolBar.RedrawWindow();
+		theApp.m_wndToolBar.RedrawWindow();
+	}
 }
 
 //

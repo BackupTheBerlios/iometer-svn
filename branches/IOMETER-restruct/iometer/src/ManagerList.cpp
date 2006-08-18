@@ -227,6 +227,8 @@ BOOL ManagerList::CompareNames(char *net_name1, char *net_name2)
 //
 BOOL ManagerList::RemoveManager(int index, int purpose)
 {
+	int i;
+
 	if (index < 0 || index >= ManagerCount()) {
 		ErrorMessage("Invalid index in ManagerList::RemoveManager().");
 		return FALSE;
@@ -244,10 +246,11 @@ BOOL ManagerList::RemoveManager(int index, int purpose)
 
 	// Perform a full reset if all managers have
 	// been removed to reset the display properly.
-	if (!ManagerCount())
+	i = ManagerCount();
+	if (!i)
 		theApp.pView->Reset();
 
-	return (ManagerCount());
+	return (i);
 }
 
 //
