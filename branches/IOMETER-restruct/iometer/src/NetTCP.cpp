@@ -153,7 +153,7 @@ NetAsyncTCP::NetAsyncTCP()
 	// Initialize WinSock if it has not yet been initialized in this process.
 	if ( InterlockedIncrement ( &sockets_in_use ) == 1 )
 	{
-		#if NETWORK_DETAILS || _DEBUG
+		#if NETWORK_DETAILS || defined(_DEBUG)
 			cout << "Initializing WinSock." << endl;
 		#endif
 
@@ -181,7 +181,7 @@ NetAsyncTCP::~NetAsyncTCP()
 	// Clean up WinSock if nobody else is using it in this process.
 	if ( InterlockedDecrement ( &sockets_in_use ) == 0 )
 	{
-		#if NETWORK_DETAILS || _DEBUG
+		#if NETWORK_DETAILS || defined(_DEBUG)
 			cout << "Cleaning up WinSock." << endl;
 		#endif
 		
@@ -349,7 +349,7 @@ ReturnVal NetAsyncTCP::BindSocket( CONNECTION *s, SOCKADDR_IN *address )
 		return ReturnError;
 	}
 
-	#if NETWORK_DETAILS || _DEBUG
+	#if NETWORK_DETAILS || defined(_DEBUG)
 		cout << "Bound socket on port " << ntohs(address->sin_port) << "." << endl;
 	#endif
 
@@ -378,7 +378,7 @@ ReturnVal NetAsyncTCP::ConnectSocket( SOCKADDR_IN *address )
  #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 	{
-		#if NETWORK_DETAILS || _DEBUG
+		#if NETWORK_DETAILS || defined(_DEBUG)
 			// WSAECONNREFUSED means the server isn't up yet or is busy, 
 			// don't print an error message
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
@@ -496,7 +496,7 @@ ReturnVal NetAsyncTCP::Accept()
 		}
 
 	// Accept connections to socket.
-	#if NETWORK_DETAILS || _DEBUG
+	#if NETWORK_DETAILS || defined(_DEBUG)
 		cout << "Accepting connections to socket." << endl;
 	#endif
 
@@ -520,7 +520,7 @@ ReturnVal NetAsyncTCP::Accept()
 		// A connection was requested.  Accept it.
 		addr_len = sizeof( client_address );
 		// Create client socket.
-		#if NETWORK_DETAILS || _DEBUG
+		#if NETWORK_DETAILS || defined(_DEBUG)
 			cout << "Creating client socket." << endl;
 		#endif
 
@@ -813,7 +813,7 @@ DWORD NetAsyncTCP::Peek()
 	}
 	else
 	{
-		#if NETWORK_DETAILS || _DEBUG
+		#if NETWORK_DETAILS || defined(_DEBUG)
 			*errmsg << "*** Error " << WSAGetLastError() 
 					<< " peeking from socket in NetAsyncTCP::Peek()." << ends;
 			OutputErrMsg();
@@ -847,7 +847,7 @@ ReturnVal NetAsyncTCP::CloseSocket( CONNECTION *s )
 		return ReturnSuccess;
 	}
 
-	#if NETWORK_DETAILS || _DEBUG
+	#if NETWORK_DETAILS || defined(_DEBUG)
 		cout << "Closing socket." << endl;
 	#endif
 
@@ -907,7 +907,7 @@ void NetAsyncTCP::SetOptions( CONNECTION *s )
 	LINGER lstruct = {TRUE, 0};
 
 	
-#if (NETWORK_DETAILS || _DEBUG) && !defined(IOMTR_OS_LINUX)
+#if (NETWORK_DETAILS || defined(_DEBUG)) && !defined(IOMTR_OS_LINUX)
 	BOOL CHECK_setoption;
 	LINGER	CHECK_lstruct;
 	int size;
@@ -945,7 +945,7 @@ void NetAsyncTCP::SetOptions( CONNECTION *s )
 	/////////////////////////////////////
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
-	#if NETWORK_DETAILS || _DEBUG
+	#if NETWORK_DETAILS || defined(_DEBUG)
 		// When closing the connection, do a hard close.
 		size = sizeof(CHECK_lstruct);
 		if ( getsockopt( *s, SOL_SOCKET, SO_LINGER, (char *) &CHECK_lstruct, &size ) == SOCKET_ERROR )

@@ -87,7 +87,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 			cout << "   Unable to retrieve volume information for " << d.spec.name << "." << endl;
 			disk_spec[count].name[2] = '\0';
 		}
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Found " << disk_spec[count].name << "." << endl;
 #endif
 		count++;
@@ -118,7 +118,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 		_itoa(drive_number, disk_spec[count].name + strlen(disk_spec[count].name), 10);
 		drive_number++;
 
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Found " << disk_spec[count].name << "." << endl;
 #endif
 		count++;

@@ -395,7 +395,7 @@ int Manager::Report_TCP(Target_Spec * tcp_spec)
 		strncpy(tcp_spec[count].name, inet_ntoa(sin.sin_addr), sizeof(tcp_spec[count].name) - 1);
 		tcp_spec[count].type = TCPClientType;	// interface to access a client
 
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Found " << tcp_spec[count].name << "." << endl;
 #endif
 
@@ -530,7 +530,7 @@ int Manager::Report_VIs(Target_Spec * vi_spec)
 			vi_spec[count].vi_info.outstanding_ios = nic.nic_attributes.MaxDescriptorsPerQueue >> 1;
 
 			nic.Close();
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "   Found " << vi_spec[count].name << "." << endl;
 #endif
 
@@ -545,7 +545,7 @@ int Manager::Report_VIs(Target_Spec * vi_spec)
 
 	// All done.
 	cout << "   done." << endl;
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Find " << count << " network interface." << endl;
 #endif
 	return count;
@@ -675,7 +675,7 @@ void Manager::Report_Results(int which_perf)
 	for (int g = 0; g < grunt_count; g++) {
 		// Only send results for grunts that are running.
 		if (grunts[g]->target_count && !grunts[g]->idle) {
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "Reporting results for grunt " << g << " ...";
 #endif
 			// Copying worker's results into the message.
@@ -754,7 +754,7 @@ void Manager::Report_Results(int which_perf)
 				(void)reorder(data_msg, DATA_MESSAGE_WORKER_RESULTS, SEND);
 			}
 			prt->Send(&data_msg, DATA_MESSAGE_SIZE);
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "sent." << endl;
 #endif
 		}
@@ -764,7 +764,7 @@ void Manager::Report_Results(int which_perf)
 		// Store current performance counters as baseline for next update.
 		Get_Performance(LAST_UPDATE_PERF, FIRST_SNAPSHOT);
 	}
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Finished reporting results." << endl;
 #endif
 }
@@ -807,7 +807,7 @@ BOOL Manager::Process_Message()
 {
 	switch (msg.purpose) {
 	case ADD_WORKERS:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : ADD_WORKERS" << endl;
 #endif
 		Add_Workers(msg.data);
@@ -816,7 +816,7 @@ BOOL Manager::Process_Message()
 		// Signaling to reset all workers
 	case RESET:
 		// Remove all workers.
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : RESET" << endl;
 #endif
 		Remove_Workers(ALL_WORKERS);
@@ -824,7 +824,7 @@ BOOL Manager::Process_Message()
 		break;
 		// Received call to end program or thread execution.
 	case EXIT:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : EXIT" << endl;
 #endif
 		Remove_Workers(msg.data);
@@ -832,14 +832,14 @@ BOOL Manager::Process_Message()
 
 		// Preparing drives for access.
 	case PREP_DISKS:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : PREP_DISKS" << endl;
 #endif
 		Prepare_Disks(msg.data);
 		break;
 		// Signalling to stop disk preparation.
 	case STOP_PREPARE:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : STOP_PREPARE" << endl;
 #endif
 		Stop_Prepare(msg.data);
@@ -847,7 +847,7 @@ BOOL Manager::Process_Message()
 
 		// Reporting all targets accessible by this manager.
 	case REPORT_TARGETS:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : REPORT_TARGETS" << endl;
 #endif
 		data_msg.count = Report_Disks(data_msg.data.targets);
@@ -870,7 +870,7 @@ BOOL Manager::Process_Message()
 		break;
 		// Setting targets for a given grunt and reporting back.
 	case SET_TARGETS:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : SET_TARGETS" << endl;
 #endif
 		prt->Receive(&data_msg, DATA_MESSAGE_SIZE);
@@ -892,7 +892,7 @@ BOOL Manager::Process_Message()
 
 		// Setting access specifications for next test.
 	case SET_ACCESS:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : SET_ACCESS" << endl;
 #endif
 		prt->Receive(&data_msg, DATA_MESSAGE_SIZE);
@@ -909,35 +909,35 @@ BOOL Manager::Process_Message()
 
 		// Signalling start of test.
 	case START:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : START" << endl;
 #endif
 		Start_Test(msg.data);
 		break;
 		// Beginning to perform I/O.
 	case BEGIN_IO:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : BEGIN_IO" << endl;
 #endif
 		Begin_IO(msg.data);
 		break;
 		// Beginning recording of test results.
 	case RECORD_ON:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : RECORD_ON" << endl;
 #endif
 		Record_On(msg.data);
 		break;
 		// Stopping recording of test results.
 	case RECORD_OFF:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : RECORD_OFF" << endl;
 #endif
 		Record_Off(msg.data);
 		break;
 		// Signalling to stop testing.
 	case STOP:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : STOP" << endl;
 #endif
 		Stop_Test(msg.data);
@@ -945,7 +945,7 @@ BOOL Manager::Process_Message()
 
 		// Reporting results of whole test to Iometer.
 	case REPORT_RESULTS:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : REPORT_RESULTS" << endl;
 #endif
 		Report_Results(WHOLE_TEST_PERF);
@@ -953,7 +953,7 @@ BOOL Manager::Process_Message()
 
 		// Reporting results since last update to Iometer.
 	case REPORT_UPDATE:
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "in Process_Message() : REPORT_UPDATE" << endl;
 #endif
 		Report_Results(LAST_UPDATE_PERF);
@@ -983,7 +983,7 @@ void Manager::Start_Test(int target)
 	} else {
 		grunts[target]->Start_Test();
 	}
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Started." << endl << flush;
 #endif
 	// Reply that test has started.
@@ -1016,7 +1016,7 @@ void Manager::Begin_IO(int target)
 		if (grunts[target]->critical_error)
 			msg.data = FALSE;
 	}
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Performing I/O." << endl << flush;
 #endif
 
@@ -1150,7 +1150,7 @@ BOOL Manager::Set_Access(int target, const Test_Spec * spec)
 		return TRUE;
 	}
 	// Grow the manager's data buffer and update all grunts using it.
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Growing manager data buffer from " << data_size << " to "
 	    << grunts[target]->access_spec.max_transfer << endl << flush;
 #endif
@@ -1197,7 +1197,7 @@ void Manager::Record_On(int target)
 {
 	record = TRUE;		// At least 1 worker is recording.
 
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Recording Started." << endl << flush;
 #endif
 
@@ -1233,7 +1233,7 @@ void Manager::Record_Off(int target)
 	cout << "   Stopped." << endl << flush;
 
 	record = FALSE;		// No workers are recording data.
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Recording stopped." << endl << flush;
 #endif
 	if (IsBigEndian()) {
@@ -1250,7 +1250,7 @@ void Manager::Add_Workers(int count)
 {
 	msg.data = 0;
 
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Adding " << count << " new worker(s)." << endl << flush;
 #endif
 
@@ -1274,7 +1274,7 @@ void Manager::Add_Workers(int count)
 			msg.data--;
 		}
 	}
-#if _DEBUG
+#ifdef _DEBUG
 	cout << msg.data << " worker(s) are created." << endl;
 #endif
 

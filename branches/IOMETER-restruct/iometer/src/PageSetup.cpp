@@ -173,7 +173,7 @@ BOOL CPageSetup::OnInitDialog()
 	SetDlgItemInt(EDiskWorkerCount, 0);	// Display a number.
 	SetDlgItemInt(ENetWorkerCount, 0);	// Display a number.
 	disk_worker_count = -1;	// default number of disk workers               
-#if _DEBUG
+#ifdef _DEBUG
 	net_worker_count = -1;	// create network workers for debug
 #else
 	net_worker_count = 0;	// default number of network workers
@@ -188,7 +188,7 @@ BOOL CPageSetup::OnInitDialog()
 	SetCyclingInfo(&queue_cycling, FALSE, 1, 32, 2, StepExponential);
 	OnSelchangeCQStepType();
 
-#if _DEBUG
+#ifdef _DEBUG
 	result_type = RecordNone;	// don't save results for debug code
 #else
 	result_type = RecordAll;	// save all results for release code

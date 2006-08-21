@@ -113,7 +113,7 @@ TargetVI::~TargetVI()
 //
 BOOL TargetVI::Initialize(Target_Spec * target_info, CQ * completion_queue)
 {
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Initializing VI target on NIC " << target_info->name << endl;
 #endif
 

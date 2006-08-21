@@ -83,7 +83,7 @@ BOOL VINic::Open(const char *nic_name)
 
 	// Open the NIC.
 	if ((result = vipl.VipOpenNic((const VIP_CHAR *)nic_name, &nic)) != VIP_SUCCESS) {
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "Unable to open VI nic " << nic_name << ": " << vipl.Error(result) << endl;
 #endif
 		return FALSE;

@@ -168,7 +168,7 @@ VIPL::VIPL()
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Load vipl.dll.
 	if (!(vipl_dll = LoadLibrary("vipl.dll"))) {
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "Unable to load vipl.dll" << endl;
 #endif
 		return;

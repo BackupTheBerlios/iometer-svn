@@ -212,7 +212,7 @@ double Performance::Get_Processor_Speed()
 void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 {
 	// Get the performance data stored by the system.
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Getting system performance data." << endl << flush;
 #endif
 

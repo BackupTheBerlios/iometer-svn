@@ -481,7 +481,7 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 #endif
 
 	// Get the performance data stored by the system.
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Getting system performance data." << endl << flush;
 #endif
 
@@ -495,7 +495,7 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 					       NULL, NULL, perf_data, &perf_object_size)) != ERROR_SUCCESS) {
 		if (query_result == ERROR_MORE_DATA) {
 			// More data than we had room for!  Try a bigger buffer.
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "   RegQueryValueEx() returned ERROR_MORE_DATA!  Number of bytes used: "
 			    << perf_object_size << endl << flush
 			    << "   Bumping performance data buffer up from " << perf_size
@@ -552,7 +552,7 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 		else {
 			perf_time = (double)0.0;	// Error gathering performance time, mark as invalid.
 		}
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Performance time = " << perf_time << endl << flush;
 #endif
 	}
@@ -882,7 +882,7 @@ void Performance::Get_TCP_Counters(int snapshot)
 		}
 		// retval == 0  is the only case where we have good data
 		raw_tcp_data[TCP_SEGMENTS_RESENT][snapshot] = ((struct mib2_tcp *)(strbuf_data.buf))->tcpRetransSegs;
-#ifdef _DETAILS
+#if _DETAILS
 		cout << "tcp segments retrans : " << ((struct mib2_tcp *)(strbuf_data.buf))->tcpRetransSegs << endl;
 #endif
 	}
@@ -948,19 +948,19 @@ void Performance::Extract_Counters(DWORD perf_data_type, int snapshot)
 	// Save specific performance counters.
 	switch (perf_data_type) {
 	case PERF_PROCESSOR:
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "Extracting processor data." << endl << flush;
 #endif
 		Extract_CPU_Counters(snapshot);
 		break;
 	case PERF_NETWORK_TCP:
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Extracting network TCP data." << endl << flush;
 #endif
 		Extract_TCP_Counters(snapshot);
 		break;
 	case PERF_NETWORK_INTERFACE:
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Extracting network interface data." << endl << flush;
 #endif
 		Extract_NI_Counters(snapshot);
@@ -996,7 +996,7 @@ void Performance::Extract_CPU_Counters(int snapshot)
 		}
 
 		if (strncmp(cpu_name, cpu_reg_name, 2)) {
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "Performing exhaustive search for processor instance " << cpu << endl;
 #endif
 
@@ -1121,7 +1121,7 @@ BOOL Performance::Locate_Perf_Object(DWORD perf_object_index)
 	// This is normal for performance data disabled by default (e.g. network interface).
 	if (i >= (int)pperf_data->NumObjectTypes) {
 		perf_object = NULL;
-#if PERFORMANCE_DETAILS || _DEBUG
+#if PERFORMANCE_DETAILS || defined(_DEBUG)
 		cout << "No current performance object to retrieve counters from." << endl
 		    << "   Searching for " << perf_object_index << endl << flush;
 #endif

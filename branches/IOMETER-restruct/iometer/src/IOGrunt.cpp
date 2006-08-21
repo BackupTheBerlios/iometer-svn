@@ -541,7 +541,7 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 		    << access_spec.max_transfer << endl;
 	}
 	// Allocating a larger buffer.
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Growing grunt data buffers from " << data_size << " to " << access_spec.max_transfer << endl;
 #endif
 
@@ -956,7 +956,7 @@ void Grunt::Open_Targets()
 		// we first begin doing I/O.  Close these targets.
 		if (targets[i]->spec.test_connection_rate) {
 			targets[i]->trans_left_in_conn = 0;
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "Defering open for " << targets[i]->spec.name << endl;
 #endif
 			if (!targets[i]->Close(&grunt_state)) {
@@ -1056,7 +1056,7 @@ void Grunt::Do_IOs()
 			// Check to see if we can close the target.  Targets are not closed
 			// until all outstanding I/Os have completed.
 			if (target->outstanding_ios == 0) {
-#if _DEBUG
+#ifdef _DEBUG
 				cout << "Testing connection rate: Closing " << targets[target_id]->spec.name << endl;
 #endif
 
@@ -1085,7 +1085,7 @@ void Grunt::Do_IOs()
 		}
 		// Check to see if we need to open the target.
 		if (target->spec.test_connection_rate && target->trans_left_in_conn <= 0) {
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "Testing connection rate: Opening " << target->spec.name << endl;
 #endif
 			// Set the number of transactions to do before closing.

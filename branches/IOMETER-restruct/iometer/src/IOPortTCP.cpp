@@ -151,7 +151,7 @@ PortTCP::PortTCP(BOOL synch)
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	if (sockets_in_use++ == 0) {
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "Initializing WinSock." << endl << flush;
 #endif
 

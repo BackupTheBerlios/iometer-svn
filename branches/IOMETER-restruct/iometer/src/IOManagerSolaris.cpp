@@ -217,7 +217,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 			strcat(disk_spec[count].name, ", BUF");
 		strcat(disk_spec[count].name, "]");
 
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   Found " << disk_spec[count].name << "." << endl << flush;
 #endif
 		count++;
@@ -300,7 +300,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 			// the physical drive is ready for use.
 			memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
 			d.spec.type = PhysicalDiskType;
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "   Found " << disk_spec[count].name << "." << endl << flush;
 #endif
 			count++;
@@ -348,13 +348,13 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 	memset(file_name, 0, MAX_NAME);
 	// We don't deal directly with slices cXtXdXsX. Never gets that value.
 	sprintf(file_name, "%s/%s", RAW_DEVICE_DIR, name);
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Reporting disk partitions: " << file_name << endl << flush;
 #endif
 
 	fd = open(file_name, O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "  open failed.." << endl << flush;
 #endif
 		return (TRUE);
@@ -362,7 +362,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 
 	if ((bytes_read = read(fd, buffer, 512)) < 512) {
 		// cannot read start sector. Disk might be bad.
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "  read failed.. returning" << endl << flush;
 #endif
 		close(fd);
@@ -381,7 +381,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 	} else {
 		// We do have partitions.
 		strncpy(base_name, name, (strstr(name, "p0") - name));
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   basename: " << base_name << endl << flush;
 #endif
 		for (i = 1; i <= FD_NUMPART; i++) {
@@ -399,7 +399,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 			}
 
 			sprintf(file_name, "%sp%d", base_name, i);
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "   file_name: " << file_name << endl << flush;
 #endif
 			// check if this is a swap device. Search the global string.
@@ -506,7 +506,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 				strcat(disk_spec[*count].name, " ]");
 
 				d.spec.type = PhysicalDiskType;
-#if _DEBUG
+#ifdef _DEBUG
 				cout << "   Found " << disk_spec[*count].name << "." << endl << flush;
 #endif
 				(*count)++;
@@ -515,7 +515,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 					break;
 			} else {
 				// partition access failed.                             
-#if _DEBUG
+#ifdef _DEBUG
 				cout << "   Not found " << file_name << endl << flush;
 #endif
 			}
@@ -550,12 +550,12 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 	memset(file_name, 0, MAX_NAME);
 
 	sprintf(file_name, "%s/%s", RAW_DEVICE_DIR, name);
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "   Reporting vtoc partitions: " << file_name << endl << flush;
 #endif
 	fd = open(file_name, O_RDWR | O_LARGEFILE, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "  open failed.." << endl << flush;
 #endif
 		return (TRUE);
@@ -576,7 +576,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 	}
 
 	strncpy(base_name, name, (strstr(name, "s2") - name));
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "  vtoc basename: " << base_name << endl << flush;
 #endif
 
@@ -679,7 +679,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 		}
 		// Here we do have VTOC parts to report.
 		sprintf(file_name, "%ss%d", base_name, i);
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "  vtoc  file_name: " << file_name << endl << flush;
 #endif
 		// check if this is a swap device. Search the global string.
@@ -769,7 +769,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 			strcat(disk_spec[*count].name, " ]");
 
 			d.spec.type = PhysicalDiskType;
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "   Found " << disk_spec[*count].name << "." << endl << flush;
 #endif
 			(*count)++;
@@ -833,7 +833,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 					strcat(disk_spec[*count].name, " ]");
 
 					d.spec.type = PhysicalDiskType;
-#if _DEBUG
+#ifdef _DEBUG
 					cout << "   Found " << disk_spec[*count].name << "." << endl << flush;
 #endif
 					(*count)++;

@@ -412,12 +412,12 @@ int Manager::Report_TCP(Target_Spec * tcp_spec)
 				sizeof(tcp_spec[count].name) - 1);
 			tcp_spec[count].type = TCPClientType;	// interface to access a client
 
-#if _DEBUG
+#ifdef _DEBUG
 			cout << "   Found " << tcp_spec[count].name << "." << endl;
 #endif
 			count++;
 		} else {
-#if _DEBUG
+#ifdef _DEBUG
 			cerr << "ioctl fail in Manager::Report_TCP()" << endl;
 #endif
 		}

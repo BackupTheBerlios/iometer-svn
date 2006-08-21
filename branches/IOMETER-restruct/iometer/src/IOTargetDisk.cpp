@@ -445,7 +445,7 @@ void TargetDisk::Set_Size(int maximum_size)
 	// reset the disk size.
 	if (new_size && (new_size < size)) {
 		size = new_size;
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "Resetting accessible size of disk " << spec.name << " to " <<
 		    maximum_size << " sectors." << endl << "   " << spec.name << " size = " << size << endl;
 #endif
@@ -462,7 +462,7 @@ void TargetDisk::Set_Starting_Sector(int starting_sector)
 
 	starting_position = (DWORDLONG) starting_sector *(DWORDLONG) spec.disk_info.sector_size;
 
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Moving starting sector of disk " << spec.name << " to " << starting_position << "." << endl;
 #endif
 
@@ -473,7 +473,7 @@ void TargetDisk::Set_Starting_Sector(int starting_sector)
 	if (starting_position + current_size > size) {
 		// Re-adjust the accessible size of the disk to reflect the new starting sector.
 		size -= starting_position;
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "Starting sector size has shrunk the effective size of the disk." << endl;
 #endif
 	} else {
@@ -736,7 +736,7 @@ int TargetDisk::Set_Sizes(BOOL open_disk)
 		size = stbuf64.st_size;
 
 		Set_Sector_Info();
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   " << spec.name << " size = " << size << endl << flush;
 #endif
 		if (open_disk)
@@ -829,7 +829,7 @@ int TargetDisk::Set_Sizes(BOOL open_disk)
 
 		Set_Sector_Info();
 
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   " << spec.name << " size = " << size << endl << flush;
 #endif
 
@@ -877,7 +877,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 		low_size = GetFileSize(disk_file, &high_size);
 		size = (((DWORDLONG) high_size) << 32) | (DWORDLONG) low_size;
 		Set_Sector_Info();
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   " << spec.name << " size = " << size << endl;
 #endif
 		if (open_disk)
@@ -923,7 +923,7 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 		spec.disk_info.sector_size = disk_geo_info.BytesPerSector;
 		Set_Sector_Info();
 
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "   " << spec.name << " size = " << size << endl;
 #endif
 
@@ -969,7 +969,7 @@ int TargetDisk::Set_Sizes(BOOL open_disk)
 		size = stbuf64.st_size;
 
 		Set_Sector_Info();
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "    " << spec.name << " size = " << size << endl << flush;
 #endif
 		if (open_disk)
@@ -1002,7 +1002,7 @@ int TargetDisk::Set_Sizes(BOOL open_disk)
 
 		Set_Sector_Info();
 
-#if _DEBUG
+#ifdef _DEBUG
 		cout << "    " << spec.name << " size = " << size << endl << flush;
 #endif
 
@@ -1140,7 +1140,7 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 				       (DWORDLONG) spec.disk_info.maximum_size) * spec.disk_info.sector_size))) {
 					// A maximum disk size was specified by the user, and the next write 
 					// would go past the specified maximum size.  
-#if _DEBUG
+#ifdef _DEBUG
 					cout << "User-specified maximum size reached!" << endl;
 #endif
 					// Stop writing and break out of the write loop.
@@ -1156,7 +1156,7 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 					// Do the asynchronous write.
 					if (WriteFile(disk_file, (char *)buffer, bytes, &bytes_written, &(olap[i]))) {
 						// It succeeded immediately!
-#if _DEBUG
+#ifdef _DEBUG
 						cout << "Wrote (immediately) " << bytes_written << " of "
 						    << bytes << " bytes to disk " << spec.name << "." << endl;
 #endif
@@ -1177,7 +1177,7 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 							num_outstanding++;
 						} else if (GetLastError() == ERROR_DISK_FULL) {
 							// The disk filled up -- this is an expected error.
-#if _DEBUG
+#ifdef _DEBUG
 							cout << "Disk full (immediately) while writing "
 							    << bytes_written << " of " << bytes << " bytes to disk "
 							    << spec.name << "." << endl;
@@ -1207,7 +1207,7 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 					// Check to see if it has completed
 					if (GetOverlappedResult(disk_file, &(olap[i]), &bytes_written, FALSE)) {
 						// It completed successfully!
-#if _DEBUG
+#ifdef _DEBUG
 						cout << "Wrote (eventually) " << bytes_written << " of " << bytes
 						    << " bytes to disk " << spec.name << "." << endl;
 #endif
@@ -1230,7 +1230,7 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 						;	// Do nothing.
 					} else if (GetLastError() == ERROR_DISK_FULL) {
 						// The disk filled up -- this is an expected error.
-#if _DEBUG
+#ifdef _DEBUG
 						cout << "Disk full (eventually) while writing " << bytes_written <<
 						    " of " << bytes << " bytes to disk " << spec.name << "." << endl;
 #endif
@@ -1449,7 +1449,7 @@ void TargetDisk::Seek(BOOL random, DWORD request_size, DWORD user_alignment, DWO
 				offset += user_alignment - remainder;
 
 				// If we went beyond the end of the disk again, report an error.
-#if _DEBUG
+#ifdef _DEBUG
 				if ((offset + (DWORDLONG) request_size) > ending_position) {
 					cout << "*** Can't align on " << user_alignment << " byte boundaries" << endl;
 
@@ -1480,7 +1480,7 @@ void TargetDisk::Seek(BOOL random, DWORD request_size, DWORD user_alignment, DWO
 					offset += spec.disk_info.sector_size - remainder;
 
 					// If we went beyond the end of the disk again, report an error.
-#if _DEBUG
+#ifdef _DEBUG
 					if ((offset + (DWORDLONG) request_size) > ending_position) {
 						cout << "*** Can't align on " << spec.disk_info.sector_size
 						    << " byte boundaries" << endl;
@@ -1494,7 +1494,7 @@ void TargetDisk::Seek(BOOL random, DWORD request_size, DWORD user_alignment, DWO
 					offset = (offset + spec.disk_info.sector_size) & sector_align_mask;
 
 					// If we went beyond the end of the disk again, report an error.
-#if _DEBUG
+#ifdef _DEBUG
 					if ((offset + (DWORDLONG) request_size) > ending_position) {
 						cout << "*** ERROR: Can't align on " << spec.disk_info.sector_size
 						    << " byte boundaries" << endl;
@@ -1521,7 +1521,7 @@ void TargetDisk::Seek(BOOL random, DWORD request_size, DWORD user_alignment, DWO
 				offset = (offset + user_alignment) & sector_align_mask;
 
 				// If we went beyond the end of the disk again, report an error.
-#if _DEBUG
+#ifdef _DEBUG
 				if ((offset + (DWORDLONG) request_size) > ending_position) {
 					cout << "*** Can't align on " << alignment << " byte boundaries" << endl;
 
@@ -1543,7 +1543,7 @@ ReturnVal TargetDisk::Read(LPVOID buffer, Transaction * trans)
 {
 	DWORD error_no;
 
-#if _DEBUG
+#ifdef _DEBUG
 	// Checking for the access to be a multiple of the sector size.
 	// Avoiding this check during actual testing for performance reasons.
 	if (offset % spec.disk_info.sector_size) {
@@ -1613,7 +1613,7 @@ ReturnVal TargetDisk::Write(LPVOID buffer, Transaction * trans)
 {
 	DWORD error_no;
 
-#if _DEBUG
+#ifdef _DEBUG
 	// Verifying that the amount to be written is a multiple of the sector size.
 	// Avoiding this check during actual testing for performance reasons.
 	if (offset % spec.disk_info.sector_size) {

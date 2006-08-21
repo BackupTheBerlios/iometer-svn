@@ -139,7 +139,7 @@ BOOL TargetTCP::InitClient(Target_Spec * target_info)
 	tcp_socket.SetAddress(CLIENT, spec.name);
 
 	// Create and bind the client socket.
-#if _DEBUG
+#ifdef _DEBUG
 	cout << "Creating socket " << spec.name << "." << endl << flush;
 #endif
 
