@@ -1831,13 +1831,14 @@ static unsigned long long getSizeOfPhysDisk(const char *devName)
 		return 0;
 	}
 	if (ioctl(fd, BLKGETSIZE64, &sz64) < 0) {
-#ifdef _DEBUG
-		cerr << "Fail to get size for " << fullDevName << " by BLKGETSIZE64" << endl;
-#endif
+		//cerr << "Fail to get size for " << fullDevName << " by BLKGETSIZE64" << endl;
+		cerr << "Warning: Reading the device geometry for " << fullDevName << " failed using the ";
+		cerr << "primary detection method - going to try backup method (this puts a 2TB limit ";
+		cerr << "on Iometer for accessing the device)" << endl;
 		if (ioctl(fd, BLKGETSIZE, &sz32) < 0) {
-#ifdef _DEBUG
-			cerr << "Fail to get size for " << fullDevName << "by BLKGETSIZE" << endl;
-#endif
+			//cerr << "Fail to get size for " << fullDevName << "by BLKGETSIZE" << endl;
+			cerr << "ERROR: Reading the device geometry for " << fullDevName << " failed using ";
+			cerr << "the backup detection method - give up (device will not be usable by Iometer)" << endl;
 			sz64 = 0;
 		} else {
 			sz64 = sz32;
