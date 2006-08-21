@@ -63,6 +63,7 @@
 #define PREPARE_TIMER		2
 #define RAMP_TIMER		3
 #define IDLE_TIMER		4
+#define NOTE_TIMER		5
 
 #define DISK_PAGE		0
 #define NETWORK_PAGE		1
@@ -147,6 +148,7 @@ class CGalileoView:public CView {
 
 	// Function to set text in the status bar.
 	void SetStatusBarText(CString text1 = "", CString text2 = "", CString text3 = "");
+	void SetStatusBarPaneText(int paneIndex = 0, CString text = "");
 	void ClearStatusBar();
 	void UpdateTestStatus();
 
@@ -189,6 +191,7 @@ class CGalileoView:public CView {
 	int manager_to_prepare;
 	int worker_to_prepare;
 	CString result_file;
+	int noteTime;
 
 	struct {
 		UINT nID;
@@ -211,6 +214,9 @@ class CGalileoView:public CView {
 	void SaveAccessSpecs();
 	void StartTest();
 	void StartRecording();
+	void StartRemainNotification( int timeRem);
+	void UpdateRemainNotification();
+
       public:
 	void StopTest(ReturnVal test_successful);
       protected:

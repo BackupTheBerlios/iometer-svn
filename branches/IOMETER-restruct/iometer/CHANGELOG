@@ -8,6 +8,8 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
 ==================================
 
 - Applied patches:
+   - Patch by Keith Moyer to add a ramp/run time remaining notification to the 
+     status bar during appropriate periods.
    - Patch by Ming Zhang to support optional display BigMeter when iometer starts.
    - Patch by Ming Zhang to allow iometer and dynamo use specified port.
    - Patch by Ming Zhang to fix 2 memory leaks in ICFOpenDialog and ICFSaveDialog

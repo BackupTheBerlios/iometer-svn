@@ -811,9 +811,10 @@ void CGalileoView::StartTest()
 		return;
 	}
 	// Waiting ramping up period or signaling to start recording results.
-	if (m_pPageSetup->ramp_time)
+	if (m_pPageSetup->ramp_time) {
 		SetTimer(RAMP_TIMER, m_pPageSetup->ramp_time * 1000, NULL);
-	else
+		StartRemainNotification(m_pPageSetup->ramp_time);
+	} else
 		StartRecording();
 
 	// enable Stop and Stop All buttons
@@ -845,6 +846,37 @@ void CGalileoView::StartRecording()
 	// Get update frequency of results display.
 	if (timer_delay = m_pPageDisplay->GetUpdateDelay())
 		SetTimer(DISPLAY_TIMER, timer_delay, NULL);
+
+	// Start "remaining" notification.
+	StartRemainNotification(m_pPageSetup->GetRunTime() / 1000);
+}
+
+//
+// Start the 'time remaining' notification in the status bar.
+//
+void CGalileoView::StartRemainNotification(int timeRem)
+{
+	SetTimer(NOTE_TIMER, 1000, NULL);
+	noteTime = timeRem;
+	UpdateRemainNotification();
+}
+
+//
+// Update the 'time remaining' notification in the status bar.
+//
+void CGalileoView::UpdateRemainNotification(void)
+{
+	CString note;
+
+	if (!noteTime) {
+		KillTimer(NOTE_TIMER);
+		note = "";
+ 	} else if (theApp.test_state == TestRecording)
+		note.Format("Run remaining: %d sec", noteTime);
+	else
+		note.Format("Ramp remaining: %d sec", noteTime);
+	SetStatusBarPaneText(1, note);
+	noteTime--;
 }
 
 //
@@ -907,6 +939,10 @@ void CGalileoView::OnTimer(UINT_PTR nIDEvent)
 		StartRecording();
 		return;
 
+	case NOTE_TIMER:
+		UpdateRemainNotification();
+		return;
+
 	case PREPARE_TIMER:
 		// See if Dynamo has responded that the drive is prepared.
 		if (!theApp.manager_list.GetManager(manager_to_prepare)->Peek(worker_to_prepare))
@@ -966,6 +1002,7 @@ void CGalileoView::StopTest(ReturnVal test_successful)
 	KillTimer(RAMP_TIMER);
 	KillTimer(TEST_TIMER);
 	KillTimer(DISPLAY_TIMER);
+	KillTimer(NOTE_TIMER);
 	theApp.test_state = TestIdle;
 	theApp.manager_list.SendActiveManagers(STOP);
 
@@ -2052,6 +2089,15 @@ void CGalileoView::SetStatusBarText(CString text1, CString text2, CString text3)
 		theApp.m_wndStatusBar.GetStatusBarCtrl().SetText(text2, 1, 0);
 		theApp.m_wndStatusBar.GetStatusBarCtrl().SetText(text3, 2, 0);
 	}
+}
+
+//
+// Updating a pane in the status bar with a single notification message.
+//
+void CGalileoView::SetStatusBarPaneText(int paneIndex, CString text)
+{
+	if (theApp.m_wndStatusBar)
+		theApp.m_wndStatusBar.GetStatusBarCtrl().SetText(text, paneIndex, 0);
 }
 
 //
