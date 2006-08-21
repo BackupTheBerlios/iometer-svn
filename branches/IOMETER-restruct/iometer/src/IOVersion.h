@@ -51,8 +51,7 @@
 /* ##                                                                     ## */
 /* ##  Changes ...: 2004-07-30 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */
-/* ##               2003-12-16 (daniel.scheibli@edelbyte.org)             ## */
-/* ##  Changes ...: 2004-08-21 (daniel.scheibli@edelbyte.org)             ## */
+/* ##               2004-08-21 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to <latest release>-post.       ## */
 /* ##               2003-12-16 (daniel.scheibli@edelbyte.org)             ## */
 /* ##               - Changed the version to current date.                ## */

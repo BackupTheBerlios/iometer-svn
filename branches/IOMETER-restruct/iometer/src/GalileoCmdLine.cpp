@@ -89,7 +89,7 @@ const int CGalileoCmdLine::DefaultTimeout = 10;
 const char CGalileoCmdLine::DefaultConfigFile[] = "iometer.icf";
 
 CGalileoCmdLine::CGalileoCmdLine():m_bSwitches(FALSE), m_bFail(FALSE),
-m_sConfigFile(""), m_sResultFile(""), m_iTimeout(-1), m_bOverrideBatch(FALSE)
+m_sConfigFile(""), m_sResultFile(""), m_iTimeout(-1), m_bOverrideBatch(FALSE), m_iLoginportnumber(0)
 {
 }
 
@@ -175,6 +175,19 @@ void CGalileoCmdLine::ParseParam(const char *pszParam, BOOL bFlag, BOOL bLast)
 				m_iTimeout = atoi(pszParam);
 			} else {
 				Fail("T switch should be followed by an integer timeout value.");
+			}
+			return;
+			// Expecting the port number
+		case 'P':
+			if (m_iLoginportnumber > 0)	// has it already been set?
+			{
+				Fail("Login port number parameter was specified more than once.");
+			} else if (IsValidInteger(pszParam)) {
+				m_iLoginportnumber = atoi(pszParam);
+				if (m_iLoginportnumber < 1 || m_iLoginportnumber > 65535)
+					Fail("P switch should be followed by a valid port value (1-65535).");
+			} else {
+				Fail("P switch should be followed by a valid port value (1-65535).");
 			}
 			return;
 		default:
@@ -284,6 +297,11 @@ int CGalileoCmdLine::GetTimeout()
 		return m_iTimeout;
 	else
 		return CGalileoCmdLine::DefaultTimeout;
+}
+
+int CGalileoCmdLine::GetLoginportnumber()
+{
+	return m_iLoginportnumber;
 }
 
 //

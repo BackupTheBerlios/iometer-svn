@@ -194,7 +194,7 @@ BOOL CGalileoApp::InitInstance()
 	//
 	// iometer ?
 	// iometer [config_file [result_file [timeout_value]]]
-	// iometer [/c config_file] [/r results_file] [/t timeout_value]
+	// iometer [/c config_file] [/r results_file] [/t timeout_value] [/p port_number]
 	//
 	//    ? - show Iometer version number and command line syntax
 	//
@@ -207,6 +207,8 @@ BOOL CGalileoApp::InitInstance()
 	//
 	//    timeout_value - the number of seconds to wait for managers to log in
 	//       when restoring a config file.
+	//
+	//    port_number - allow iometer listen on this port instead of default port.
 	//
 	//    If both config_file and results_file are specified, Iometer will
 	//    attempt to run the test in batch mode, requiring no user intervention
@@ -517,18 +519,25 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 
 	switch (login_state) {
 	case closed:
-		// create and open the port
+		{
+			int login_port_number;
 
-		login_port = new PortTCP(FALSE);	// asynchronous port
-		if (!login_port->Create(NULL, NULL, 0, WELL_KNOWN_TCP_PORT)) {
-			ErrorMessage("Could not create TCP/IP port for Dynamo login!");
-			login_state = failed;
-			return FALSE;	// go away and don't come back (for a while)
+			// create and open the port
+			login_port_number = theApp.cmdline.GetLoginportnumber();
+			if (!login_port_number)
+				login_port_number = WELL_KNOWN_TCP_PORT;
+ 
+			login_port = new PortTCP(FALSE);	// asynchronous port
+			if (!login_port->Create(NULL, NULL, 0, login_port_number)) {
+				ErrorMessage("Could not create TCP/IP port for Dynamo login!");
+				login_state = failed;
+				return FALSE; // go away and don't come back (for a while)
+			}
+
+			login_state = open;
+			return TRUE; // go away and try again later
+			break;
 		}
-
-		login_state = open;
-		return TRUE;	// go away and try again later
-		break;
 
 	case open:
 		if (!login_port->Accept())	// begin accepting...

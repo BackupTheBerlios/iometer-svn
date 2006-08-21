@@ -73,6 +73,7 @@ class CGalileoCmdLine:public CCommandLineInfo {
 	CString GetConfigFile();
 	CString GetResultFile();
 	int GetTimeout();
+	int GetLoginportnumber();
 
 	// Interactive mode is the normal mode of operation for Iometer.
 	// If the user specifies both the config file and the results file
@@ -101,6 +102,7 @@ class CGalileoCmdLine:public CCommandLineInfo {
 	CString m_sConfigFile;	// the specified config file
 	CString m_sResultFile;	// the specified result file
 	int m_iTimeout;		// the specified timeout value
+	int m_iLoginportnumber; // the specified port number
 
 	BOOL m_bOverrideBatch;	// if set, forces IsBatchMode to return FALSE
 };

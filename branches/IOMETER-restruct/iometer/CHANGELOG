@@ -8,6 +8,7 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
 ==================================
 
 - Applied patches:
+   - Patch by Ming Zhang to allow iometer and dynamo use specified port.
    - Patch by Ming Zhang to fix 2 memory leaks in ICFOpenDialog and ICFSaveDialog
      class.
    - Patch by Ming Zhang to exclude the disk if can not detect the disk size
@@ -112,6 +113,7 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
+   -Cleanup the use of _DEBUG and _DETAILS.
    - Renamed Dynamo and Iometer subdirectories to solve the name conflict
      under case insensitive file system.
    - Adjusted some variable types to fit 64bit OS and compiler.

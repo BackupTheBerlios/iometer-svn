@@ -164,6 +164,7 @@ struct dynamo_param {
 	char *manager_exclude_fs;
 	char (*blkdevlist)[MAX_TARGETS][MAX_NAME];
 	unsigned long cpu_affinity;
+	int login_port_number;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -378,6 +379,7 @@ int CDECL main(int argc, char *argv[])
 	param.manager_computer_name = manager.prt->network_name;
 	param.manager_exclude_fs = manager.exclude_filesys;
 	param.blkdevlist = &manager.blkdevlist;
+	param.login_port_number = 0;
 
 	ParseParam(argc, argv, &param);
 
@@ -488,7 +490,7 @@ int CDECL main(int argc, char *argv[])
 	// Dynamo to be reset from Iometer.  If everything works smoothly, resets should be rare.
 	while (TRUE) {
 		// Initializing worker and logging into Iometer director.
-		if (!manager.Login(iometer))
+		if (!manager.Login(iometer, param.login_port_number))
 			break;
 
 		// Manager will continue to run until an error, or stopped by Iometer.
@@ -540,16 +542,17 @@ void Syntax(const char *errmsg /*=NULL*/ )
 #if defined(IOMTR_OS_LINUX)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type] [-d extra_device] [-f extra_device_file] [-l]" << endl;
-	cout << "       [-c cpu_affinity]" << endl;
+	cout << "       [-c cpu_affinity] [-p login_port_number]" << endl;
 #elif defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	cout << "dynamo [-i iometer_computer_name -m manager_computer_name] [-n manager_name]" << endl;
 	cout << "       [-x excluded_fs_type] [-d extra_device] [-f extra_device_file] [-l]" << endl;
+	cout << "       [-p login_port_number]" << endl;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
-	cout << "       [/c cpu_affinity]" << endl;
+	cout << "       [/c cpu_affinity] [/p login_port_number]" << endl;
 #elif defined(IOMTR_OS_NETWARE)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
-	cout << "       [/x excluded_volumes] [/c cpu_affinity]" << endl;
+	cout << "       [/x excluded_volumes] [/c cpu_affinity] [/p login_port_number]" << endl;
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -572,6 +575,9 @@ void Syntax(const char *errmsg /*=NULL*/ )
 	cout << "      NIC." << endl;
 	cout << "      Make sure iometer box can ping this name successfully, otherwise dynamo" << endl;
 	cout << "      and iometer will hang a long time during login." << endl;
+	cout << endl;
+	cout << "   login_port_number - the port number Iometer is listening on. If this" << endl;
+	cout << "      parameter is not given, the default port(" << WELL_KNOWN_TCP_PORT << ") will be used." << endl;
 	cout << endl;
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
@@ -693,6 +699,15 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				return;
 			}
 			strcpy(param->manager_name, argv[I]);
+			break;
+		case 'P':
+			if (argv[I])
+				param->login_port_number = atoi(argv[I]);
+			if (param->login_port_number < 1 || param->login_port_number > 65535) {
+				Syntax("Port number was out of range.");
+				param->login_port_number = 0;
+				return;
+			}
 			break;
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 		case 'X':

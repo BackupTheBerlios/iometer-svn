@@ -122,7 +122,7 @@ class Manager {
 
 	const char *GetVersionString(BOOL fWithDebugIndicator = FALSE);
 	BOOL Process_Message();
-	BOOL Login(char *port_name);
+	BOOL Login(char *port_name, int login_port_number);
 	BOOL Run();
 
 	Port *prt;		// Communication port to Iometer.

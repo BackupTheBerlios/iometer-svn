@@ -208,7 +208,7 @@ const char *Manager::GetVersionString(BOOL fWithDebugIndicator)
 //
 // Logging into Iometer.  Returns success.
 //
-BOOL Manager::Login(char *port_name)
+BOOL Manager::Login(char* port_name, int login_port_number)
 {
 	Port *login_port;
 	Message msg, reply;
@@ -286,7 +286,9 @@ BOOL Manager::Login(char *port_name)
 	if (prt->type == PORT_TYPE_TCP) {
 		login_port = new PortTCP;
 
-		if (!login_port->Connect(port_name)) {
+		if (!login_port_number)
+			login_port_number = WELL_KNOWN_TCP_PORT;
+		if (!login_port->Connect(port_name, login_port_number)) {
 			cout << "*** Could not create TCP/IP port to connect with Iometer!" << endl;
 			return FALSE;
 		}
