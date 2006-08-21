@@ -194,7 +194,7 @@ BOOL CGalileoApp::InitInstance()
 	//
 	// iometer ?
 	// iometer [config_file [result_file [timeout_value]]]
-	// iometer [/c config_file] [/r results_file] [/t timeout_value] [/p port_number]
+	// iometer [/c config_file] [/r results_file] [/t timeout_value] [/p port_number] [/m 1]
 	//
 	//    ? - show Iometer version number and command line syntax
 	//
@@ -209,6 +209,9 @@ BOOL CGalileoApp::InitInstance()
 	//       when restoring a config file.
 	//
 	//    port_number - allow iometer listen on this port instead of default port.
+	//
+	//    specify /m option will have BigMeter shown automatically. The 
+	//       parameter must be 1.
 	//
 	//    If both config_file and results_file are specified, Iometer will
 	//    attempt to run the test in batch mode, requiring no user intervention

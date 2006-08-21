@@ -89,7 +89,7 @@ const int CGalileoCmdLine::DefaultTimeout = 10;
 const char CGalileoCmdLine::DefaultConfigFile[] = "iometer.icf";
 
 CGalileoCmdLine::CGalileoCmdLine():m_bSwitches(FALSE), m_bFail(FALSE),
-m_sConfigFile(""), m_sResultFile(""), m_iTimeout(-1), m_bOverrideBatch(FALSE), m_iLoginportnumber(0)
+m_sConfigFile(""), m_sResultFile(""), m_iTimeout(-1), m_bOverrideBatch(FALSE), m_iLoginportnumber(0), m_bShowBigmeter(FALSE)
 {
 }
 
@@ -188,6 +188,18 @@ void CGalileoCmdLine::ParseParam(const char *pszParam, BOOL bFlag, BOOL bLast)
 					Fail("P switch should be followed by a valid port value (1-65535).");
 			} else {
 				Fail("P switch should be followed by a valid port value (1-65535).");
+			}
+			return;
+			// Check if need to show Bigmeter automatically
+		case 'M':
+			if (m_bShowBigmeter == TRUE)	// has it already been set?
+			{
+				Fail("Show Bigmeter parameter was specified more than once.");
+			} else {
+				int i = atoi(pszParam);
+
+				if (i == 1)
+					m_bShowBigmeter = TRUE;
 			}
 			return;
 		default:
@@ -302,6 +314,11 @@ int CGalileoCmdLine::GetTimeout()
 int CGalileoCmdLine::GetLoginportnumber()
 {
 	return m_iLoginportnumber;
+}
+
+BOOL CGalileoCmdLine::GetShowBigmeter()
+{
+	return m_bShowBigmeter;
 }
 
 //

@@ -797,6 +797,10 @@ void CGalileoView::StartTest()
 
 	m_pPageDisplay->Update();
 
+	// display BigMeter if need
+	if (theApp.cmdline.GetShowBigmeter())
+		m_pPageDisplay->ShowBigMeter(0);
+
 	// Display the current test status.
 	UpdateTestStatus();
 
