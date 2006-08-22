@@ -557,7 +557,7 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 	}
 	errno = 0;
 #if defined(IOMTR_OS_LINUX)
-	if (posix_memalign(&read_data, 4096, access_spec.max_transfer))
+	if (posix_memalign(&read_data, sysconf(_SC_PAGESIZE), access_spec.max_transfer))
 #elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_OSX)
 	if (!(read_data = valloc(access_spec.max_transfer)))
 #else
@@ -591,7 +591,7 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 	}
 	errno = 0;
 #if defined(IOMTR_OS_LINUX)
-        if (posix_memalign(&write_data, 4096, access_spec.max_transfer))
+        if (posix_memalign(&write_data, sysconf(_SC_PAGESIZE), access_spec.max_transfer))
 #elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_OSX)
         if (!(write_data = valloc(access_spec.max_transfer)))
 #else
