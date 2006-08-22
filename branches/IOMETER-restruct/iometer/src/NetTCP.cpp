@@ -577,7 +577,9 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 	struct sockaddr	address;
 	socklen_t addr_len = sizeof( address );
 
-	fd_set		readfds;
+	fd_set readfds;
+	int res;
+
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	struct File    *fp = (struct File *)client_socket;
 #endif
@@ -603,47 +605,41 @@ ReturnVal NetAsyncTCP::WaitForDisconnect()
 
 	// If we're not connected to anything, return.
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	if ( getpeername( fp->fd, &address, &addr_len ) == SOCKET_ERROR ) 
+	res = getpeername(fp->fd, &address, &addr_len);
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
-	if ( getpeername( client_socket, &address, &addr_len ) == SOCKET_ERROR ) 
+	res = getpeername(client_socket, &address, &addr_len);
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-
-	{
+	if (res == SOCKET_ERROR) {
 		#if NETWORK_DETAILS || _DETAILS
 			cout << "Not connected to anything.  Aborting WaitForDisconnect()." << endl;
 		#endif
 		return ReturnSuccess;
 	}
 
-	SetTimeout( 1, 0 );
-	FD_ZERO( &readfds );
+	SetTimeout(1, 0);
+	FD_ZERO(&readfds);
 
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
-	FD_SET( fp->fd, &readfds);
-	if ( select( maxfd, &readfds, NULL, NULL, &timeout ) )
+	FD_SET(fp->fd, &readfds);
+	res = select(maxfd, &readfds, NULL, NULL, &timeout);
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
-	FD_SET( client_socket, &readfds );
-	SetTimeout( 1, 0 );		// wait 1 second for the connection to close
+	FD_SET(client_socket, &readfds);
+	SetTimeout(1, 0);		// wait 1 second for the connection to close
 
-	if ( select( 0, &readfds, NULL, NULL, &timeout ) )
+	res = select(0, &readfds, NULL, NULL, &timeout);
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-
-	{
+	if (res) {
 		// This must mean that client_socket was closed.
 		return ReturnSuccess;
-	}
-	else
-	{
+	} else {
 		// The socket still wasn't closed after one second.
 		return ReturnRetry;
 	}
 }
-
-
 
 //
 // Close both the server and client sockets.  Calls shutdown first.
@@ -793,36 +789,39 @@ DWORD NetAsyncTCP::Peek()
 
 	// we have to provide a buffer, so we provide just one character of buffer
 	char buf[1];
+	int res = 0, t = 0;
 
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
-	if ( recv ( ((struct File *)client_socket)->fd, buf, sizeof(buf), MSG_PEEK ) == ReturnSuccess )
+	res = (int)recv(((struct File *)client_socket)->fd, buf, sizeof(buf), MSG_PEEK);
+	if (res > 0) {
+		bytes_available = res;
+		res = ReturnSuccess;
+	} else
+		t = errno;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	wsa_buf.buf = buf;
 	wsa_buf.len = sizeof(buf);
 
-	if ( Receive( buf, 1, &bytes_available, NULL, MSG_PEEK ) == ReturnSuccess )
+	res = Receive(buf, 1, &bytes_available, NULL, MSG_PEEK);
+	if (res != ReturnSuccess)
+		t = WSAGetLastError();
+
 #else
  #warning ===> WARNING: You have to do some coding here to get the port done! 
 #endif
-	{
+	if (res == ReturnSuccess) {
 		#if NETWORK_DETAILS || _DETAILS
-			cout << "* Peeked " << bytes_available 
-				<< " bytes from socket." << endl;
+			cout << "* Peeked " << bytes_available << " bytes from socket." << endl;
 		#endif
-		return (DWORD) bytes_available;
-	}
-	else
-	{
+		return bytes_available;
+	} else {
 		#if NETWORK_DETAILS || defined(_DEBUG)
-			*errmsg << "*** Error " << WSAGetLastError() 
-					<< " peeking from socket in NetAsyncTCP::Peek()." << ends;
+			*errmsg << "*** Error " << t << " peeking from socket in NetAsyncTCP::Peek()." << ends;
 			OutputErrMsg();
 		#endif
 		return 0;	// no data available at this time, maybe later
 	}
 }
-
-
 
 //
 // Utility function to close a socket.

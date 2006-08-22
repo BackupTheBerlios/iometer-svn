@@ -8,6 +8,7 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
 ==================================
 
 - Applied patches:
+   - Patch by Ming Zhang to fix recv() return value processing error in Peek();
    - Patch by Ming Zhang to allocate memory under Linux as 4KB aligned.
    - Patch by Keith Moyer to add a ramp/run time remaining notification to the 
      status bar during appropriate periods.
