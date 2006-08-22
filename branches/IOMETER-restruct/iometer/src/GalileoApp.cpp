@@ -608,8 +608,7 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 				// versions before 1998.09.23)
 				if (login_msg->data != iometer_version) {
 					// give the user a message box explaining the problem
-					size_t msg_len = 2 * MAX_VERSION_LENGTH + 100;
-					char errmsg[msg_len];
+					char errmsg[2 * MAX_VERSION_LENGTH + 100];
 
 					// versions failed to match...  refuse connection
 
@@ -625,11 +624,11 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 						month = (int)(login_msg->data / 100) - (year * 100);
 						day = login_msg->data - (month * 100) - (year * 10000);
 
-						snprintf(errmsg, msg_len,
+						snprintf(errmsg, 2 * MAX_VERSION_LENGTH + 100,
 							"Iometer %s is not compatible with Dynamo %04d.%02d.%02d",
 							m_pVersionStringWithDebug, year, month, day);
 					} else {
-						snprintf(errmsg, msg_len,
+						snprintf(errmsg, 2 * MAX_VERSION_LENGTH + 100,
 							"Iometer %s is not compatible with Dynamo (unknown version number)",
 							m_pVersionStringWithDebug);
 					}

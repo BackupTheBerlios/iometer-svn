@@ -285,6 +285,11 @@ using namespace std;
   #include "ostream64.h"
  #endif
 #endif
+
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+#define snprintf _snprintf
+#endif
+
 // ----------------------------------------------------------------------------
 #include "IOVersion.h"   // version info definitions
 // ----------------------------------------------------------------------------
