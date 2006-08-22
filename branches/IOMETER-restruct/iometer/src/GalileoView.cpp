@@ -1539,7 +1539,7 @@ BOOL CGalileoView::CycleTargets()
 		targets_to_run += m_pPageSetup->target_cycling.step;
 	} else {
 		targets_to_run = m_pPageSetup->target_cycling.start *
-		    (int)pow((double)m_pPageSetup->target_cycling.step, (double)target_exponent++);
+		    (int)powf((float)m_pPageSetup->target_cycling.step, (float)target_exponent++);
 	}
 
 	// Return TRUE if new targets are now active.
@@ -1593,7 +1593,7 @@ BOOL CGalileoView::CycleWorkers()
 		workers_to_run += m_pPageSetup->worker_cycling.step;
 	} else {
 		workers_to_run = m_pPageSetup->worker_cycling.start *
-		    (int)pow((double)m_pPageSetup->worker_cycling.step, (double)worker_exponent++);
+		    (int)powf((float)m_pPageSetup->worker_cycling.step, (float)worker_exponent++);
 	}
 
 	// Return TRUE if new targets are now active.
@@ -1654,7 +1654,7 @@ int CGalileoView::CycleWorkersTargets()
 			targets_to_run += m_pPageSetup->target_cycling.step;
 		else
 			targets_to_run = m_pPageSetup->target_cycling.start *
-			    (int)pow((double)m_pPageSetup->target_cycling.step, (double)target_exponent++);
+			    (int)powf((float)m_pPageSetup->target_cycling.step, (float)target_exponent++);
 		return worker_count;
 	}
 	// Reset the number of targets to run and add additional workers.
@@ -1665,7 +1665,7 @@ int CGalileoView::CycleWorkersTargets()
 		workers_to_run += m_pPageSetup->worker_cycling.step;
 	else
 		workers_to_run = m_pPageSetup->worker_cycling.start *
-		    (int)pow((double)m_pPageSetup->worker_cycling.step, (double)worker_exponent++);
+		    (int)powf((float)m_pPageSetup->worker_cycling.step, (float)worker_exponent++);
 
 	// Try running with the next set of workers.  If no new workers were set
 	// running, we're done.
@@ -1715,7 +1715,7 @@ BOOL CGalileoView::IncrementTargets()
 		targets_to_run += m_pPageSetup->target_cycling.step;
 	} else {
 		targets_to_run = m_pPageSetup->target_cycling.start *
-		    (int)pow((double)m_pPageSetup->target_cycling.step, (double)target_exponent++);
+		    (int)powf((float)m_pPageSetup->target_cycling.step, (float)target_exponent++);
 	}
 
 	// Return TRUE if new targets are now active.
@@ -1765,7 +1765,7 @@ BOOL CGalileoView::IncrementTargetsSerial()
 		targets_to_run += m_pPageSetup->target_cycling.step;
 	} else {
 		targets_to_run = m_pPageSetup->target_cycling.start *
-		    (int)pow((double)m_pPageSetup->target_cycling.step, (double)target_exponent++);
+		    (int)powf((float)m_pPageSetup->target_cycling.step, (float)target_exponent++);
 	}
 
 	// Return TRUE if new targets are now active.
@@ -1823,7 +1823,7 @@ BOOL CGalileoView::CycleQueue()
 		queue_depth_to_run += m_pPageSetup->queue_cycling.step;
 	else
 		queue_depth_to_run = m_pPageSetup->queue_cycling.start *
-		    (int)pow((double)m_pPageSetup->queue_cycling.step, (double)queue_exponent++);
+		    (int)powf((float)m_pPageSetup->queue_cycling.step, (float)queue_exponent++);
 
 	// Continue to cycle queue depth as long as all workers are not idle.
 	return workers_running;

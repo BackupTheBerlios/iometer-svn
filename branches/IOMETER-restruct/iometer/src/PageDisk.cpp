@@ -691,7 +691,7 @@ void CPageDisk::OnKillfocusEDiskSize()
 	// If the disk size was left blank, use the previous value.
 	if (!m_EDiskSize.LineLength())
 		ShowSettings();
-	else
+	else {
 		// Seeing what kind of item is selected.
 		switch (theApp.pView->m_pWorkerView->GetSelectedType()) {
 		case WORKER:
@@ -707,6 +707,7 @@ void CPageDisk::OnKillfocusEDiskSize()
 			theApp.manager_list.SetDiskSize(GetDlgItemInt(EDiskSize));
 			break;
 		}
+	}
 
 	EnableWindow();
 }
@@ -895,16 +896,14 @@ void CPageDisk::KeyMultiSel(WORD wVKey)
 			// Extend the selection. Clear any other items if the control
 			// key is not pressed.
 			SelectRange(selected, highlighted, !control, TargetChecked);
-		} else if (control)	// toggle.
-		{
+		} else if (control) {	// toggle.
 			// Toggle the selection, but do not clear any other items.
 			if (GetSelectionCheck(highlighted) == TargetChecked) {
 				SelectRange(highlighted, highlighted, FALSE, TargetUnChecked);
 			} else {
 				SelectRange(highlighted, highlighted, FALSE, TargetChecked);
 			}
-		} else		// normal
-		{
+		} else {	// normal
 			// Select only the highlighted item and clear any other.
 			SelectRange(highlighted, highlighted, TRUE, TargetChecked);
 		}

@@ -1220,16 +1220,14 @@ void CPageNetwork::KeyMultiSel(WORD wVKey)
 			// Extend the selection. Clear any other items if the control
 			// key is not pressed.
 			SelectRange(selected, highlighted, !control, TargetChecked);
-		} else if (control)	// toggle.
-		{
+		} else if (control) {	// toggle.
 			// Toggle the selection, but do not clear any other items.
 			if (GetSelectionCheck(highlighted) == TargetChecked) {
 				SelectRange(highlighted, highlighted, FALSE, TargetUnChecked);
 			} else {
 				SelectRange(highlighted, highlighted, FALSE, TargetChecked);
 			}
-		} else		// normal
-		{
+		} else {	// normal
 			// Uniquely select the item with the focus.
 			SelectRange(highlighted, highlighted, TRUE, TargetChecked);
 		}

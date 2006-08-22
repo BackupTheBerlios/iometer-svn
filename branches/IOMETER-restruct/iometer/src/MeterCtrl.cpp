@@ -51,7 +51,7 @@
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
 /* ##  Changes ...: 2006-08-04 (vedrand@yahoo.com)                        ## */
-/* ##               -misc syntactical -- explicit pow() arg typecasts     ## */
+/* ##               - misc syntactical -- explicit pow() arg typecasts    ## */
 /* ##               2004-09-01 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Needed to cast parameters to some functions         ## */
 /* ##                 because latest Visual Studio C++ library has        ## */
@@ -248,9 +248,9 @@ void CMeterCtrl::UpdateScaleInfo()
 		return;
 	}
 	// Calculate the new scale.
-	scale = (int)powf(10.0, floor(log10((float)max_range)));
+	scale = (int)powf(10.0, floorf(log10f((float)max_range)));
 
-	if ((max_range == (int)powf(10.0, floor(log10((float)max_range))))) {
+	if ((max_range == (int)powf(10.0, floorf(log10f((float)max_range))))) {
 		// max_range is a power of 10
 		scale /= 10;
 	}
@@ -280,11 +280,11 @@ void CMeterCtrl::UpdateLabelInfo()
 
 	// Sets the range that the marker labels will span.
 	range_diff = (float) (max_range - min_range);
-	if ((range_diff == powf(10.0, floor(log10(range_diff)))) && (range_diff != 1)) {
+	if ((range_diff == powf(10.0, floorf(log10f(range_diff)))) && (range_diff != 1)) {
 		// range_diff is a power of 10, but is not exactly 1
 		display_range = 10;
 	} else {
-		display_range = range_diff / powf(10.0, floor(log10(range_diff)));
+		display_range = range_diff / powf(10.0, floorf(log10f(range_diff)));
 	}
 
 	// Set the increment from one label to the next.
