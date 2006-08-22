@@ -93,7 +93,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 	int length, volNum;
 	DWORD ret = 0;
 	DWORD next;
-	char disk_name[128];
+	char disk_name[MAX_NAME];
 
 #define MM_DIRECT_ACCESS_DEVICE 0
 	cout << "Reporting drive information..." << endl;
@@ -169,7 +169,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 #ifdef _DEBUG
 			cout << __FUNCTION__ << ": Device is not reserved.\n";
 #endif
-			snprintf(disk_name, 128, "[%d]", next);
+			snprintf(disk_name, MAX_NAME, "[%d]", next);
 			if (d.Init_Physical(disk_name)) {
 				d.spec.type = PhysicalDiskType;
 				memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
