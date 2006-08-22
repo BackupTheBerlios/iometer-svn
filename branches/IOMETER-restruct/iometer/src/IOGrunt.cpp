@@ -556,7 +556,14 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 		free(read_data);
 	}
 	errno = 0;
+#if defined(IOMTR_OS_LINUX)
+	if (posix_memalign(&read_data, 4096, access_spec.max_transfer))
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_OSX)
 	if (!(read_data = valloc(access_spec.max_transfer)))
+#else
+#warning ===> WARNING: You have to do some coding here to get the port done! 
+#endif
+
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if (read_data) {
 		VirtualFree(read_data, 0, MEM_RELEASE);
@@ -583,7 +590,14 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 		free(write_data);
 	}
 	errno = 0;
-	if (!(write_data = valloc(access_spec.max_transfer)))
+#if defined(IOMTR_OS_LINUX)
+        if (posix_memalign(&write_data, 4096, access_spec.max_transfer))
+#elif defined(IOMTR_OS_SOLARIS) || defined(IOMTR_OS_OSX)
+        if (!(write_data = valloc(access_spec.max_transfer)))
+#else
+#warning ===> WARNING: You have to do some coding here to get the port done!
+#endif
+
 #elif defined(IOMTR_OSFAMILY_WINDOWS)
 	if (write_data) {
 		VirtualFree(write_data, 0, MEM_RELEASE);
