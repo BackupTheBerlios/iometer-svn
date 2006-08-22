@@ -1131,7 +1131,7 @@ void Worker::CreateNetClient(Manager * target_manager, TargetType client_type)
 	// Record that I am the client's net_partner and what target it is.
 	net_partner->net_partner = this;
 	net_partner->net_target_index = 0;
-	sprintf(net_partner->name, "[%s]", name);
+	snprintf(net_partner->name, MAX_WORKER_NAME, "[%s]", name);
 
 	// add the new worker to the display - this should be handled by the GUI
 	theApp.pView->m_pWorkerView->AddWorker(net_partner);

@@ -467,7 +467,7 @@ int Manager::Report_VIs(Target_Spec * vi_spec)
 		while (TRUE) {
 			// Form VI NIC name to open.
 			vi_spec[count].type = VIClientType;
-			sprintf(vi_spec[count].name, "%s%i", vi_nic_name[nic_base], vi_nic_name_no[nic_base]++);
+			snprintf(vi_spec[count].name, MAX_NAME, "%s%i", vi_nic_name[nic_base], vi_nic_name_no[nic_base]++);
 
 			// Try opening VI NIC.
 			if (!nic.Open(vi_spec[count].name)) {

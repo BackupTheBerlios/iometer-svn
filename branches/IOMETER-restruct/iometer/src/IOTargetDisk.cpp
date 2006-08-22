@@ -278,12 +278,12 @@ BOOL TargetDisk::Initialize(Target_Spec * target_info, CQ * cq)
 BOOL TargetDisk::Init_Logical(char *drive)
 {
 	// Setting spec.name of the drive.
-	sprintf(spec.name, "%s", drive);
+	snprintf(spec.name, MAX_NAME, "%s", drive);
 
 	if (spec.name[strlen(spec.name) - 1] == ':') {
-		sprintf(file_name, "%s%s", spec.name, TEST_FILE);
+		snprintf(file_name, MAX_NAME, "%s%s", spec.name, TEST_FILE);
 	} else {
-		sprintf(file_name, "%s:%s", spec.name, TEST_FILE);
+		snprintf(file_name, MAX_NAME, "%s:%s", spec.name, TEST_FILE);
 	}
 
 	spec.type = LogicalDiskType;
@@ -309,12 +309,12 @@ BOOL TargetDisk::Init_Logical(char *drive)
 		spec.name[p - drive] = 0;
 	} else
 		// Setting spec.name of the drive.
-		sprintf(spec.name, "%s", drive);
+		snprintf(spec.name, MAX_NAME, "%s", drive);
 
 	if (spec.name[strlen(spec.name) - 1] == '/') {
-		sprintf(file_name, "%s%s", spec.name, TEST_FILE);
+		snprintf(file_name, MAX_NAME, "%s%s", spec.name, TEST_FILE);
 	} else {
-		sprintf(file_name, "%s/%s", spec.name, TEST_FILE);
+		snprintf(file_name, MAX_NAME, "%s/%s", spec.name, TEST_FILE);
 	}
 
 	spec.type = LogicalDiskType;
@@ -334,8 +334,8 @@ BOOL TargetDisk::Init_Logical(char *drive)
 BOOL TargetDisk::Init_Logical(char drive)
 {
 	// Setting spec.name of the drive.
-	sprintf(spec.name, "%c%s", drive, LOGICAL_DISK);
-	sprintf(file_name, "%s%s", spec.name, TEST_FILE);
+	snprintf(spec.name, MAX_NAME, "%c%s", drive, LOGICAL_DISK);
+	snprintf(file_name, MAX_NAME, "%s%s", spec.name, TEST_FILE);
 
 	spec.type = LogicalDiskType;
 	size = 0;
@@ -359,9 +359,9 @@ BOOL TargetDisk::Init_Physical(char *drive)
 	// Setting the spec.name of the drive.
 	printf("TargetDisk::Init_Physical: name=%s, mmID=%X\n", drive, drive1);
 	MM_ReturnObjectGenericInfo(drive1, sizeof(struct IOObjectGenericInfoDef), &info);
-	sprintf(spec.name, "[%d] %s", drive1, info.name);
+	snprintf(spec.name, MAX_NAME, "[%d] %s", drive1, info.name);
 
-	sprintf(file_name, "%d", drive1);
+	snprintf(file_name, MAX_NAME, "%d", drive1);
 
 	spec.type = PhysicalDiskType;
 	size = 0;
@@ -387,13 +387,13 @@ BOOL TargetDisk::Init_Physical(char *drive)
 		spec.name[p - drive] = 0;
 	} else {
 		// Setting spec.name of the drive.
-		sprintf(spec.name, "%s", drive);
+		snprintf(spec.name, MAX_NAME, "%s", drive);
 	}
 
 	if (!strstr(spec.name, RAW_DEVICE_DIR))
-		sprintf(file_name, "%s/%s", RAW_DEVICE_DIR, spec.name);
+		snprintf(file_name, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, spec.name);
 	else
-		sprintf(file_name, "%s", spec.name);
+		snprintf(file_name, MAX_NAME, "%s", spec.name);
 
 	spec.type = PhysicalDiskType;
 	size = 0;
@@ -414,7 +414,7 @@ BOOL TargetDisk::Init_Physical(char *drive)
 BOOL TargetDisk::Init_Physical(int drive)
 {
 	// Setting the spec.name of the drive.
-	sprintf(spec.name, "%s%i", PHYSICAL_DISK, drive);
+	snprintf(spec.name, MAX_NAME, "%s%i", PHYSICAL_DISK, drive);
 	strcpy(file_name, spec.name);
 
 	spec.type = PhysicalDiskType;
@@ -1721,7 +1721,7 @@ DWORDLONG TargetDisk::Get_Partition_Size(char *part_name, int part)
 
 	length = strlen(part_name);
 	part_name[length - 1] = '0';	// Converting cXtXdXpX to cXtXdXp0
-	sprintf(disk_name, "%s/%s", RAW_DEVICE_DIR, part_name);
+	snprintf(disk_name, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, part_name);
 	fd = open(disk_name, O_RDONLY);
 	if (fd < 0) {
 		return (0);
@@ -1752,7 +1752,7 @@ DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
 
 	length = strlen(part_name);
 	part_name[length - 1] = '2';	// Converting cXtXdXsX to cXtXdXs2
-	sprintf(disk_name, "%s/%s", RAW_DEVICE_DIR, part_name);
+	snprintf(disk_name, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, part_name);
 	fd = open(disk_name, O_RDONLY);
 	if (fd < 0) {
 		return (0);
@@ -1775,14 +1775,14 @@ DWORDLONG TargetDisk::Get_Slice_Size(char *part_name, int part)
 
 static int getSectorSizeOfPhysDisk(const char *devName)
 {
-	char devNameBuf[40];
+	char devNameBuf[MAX_NAME];
 	const char *fullDevName;
 	int fd, ssz;
 
 	if (devName[0] == '/') {
 		fullDevName = devName;
 	} else {
-		sprintf(devNameBuf, "%s/%s", RAW_DEVICE_DIR, devName);
+		snprintf(devNameBuf, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, devName);
 		fullDevName = devNameBuf;
 	}
 	if ((fd = open(fullDevName, O_RDWR)) < 0) {
@@ -1823,7 +1823,7 @@ static unsigned long long getSizeOfPhysDisk(const char *devName)
 	if (devName[0] == '/') {
 		fullDevName = devName;
 	} else {
-		sprintf(devNameBuf, "%s/%s", RAW_DEVICE_DIR, devName);
+		snprintf(devNameBuf, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, devName);
 		fullDevName = devNameBuf;
 	}
 	if ((fd = open(fullDevName, O_RDWR)) < 0) {

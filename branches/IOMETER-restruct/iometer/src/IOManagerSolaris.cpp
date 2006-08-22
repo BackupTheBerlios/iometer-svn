@@ -347,7 +347,7 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 	memset(base_name, 0, MAX_NAME);
 	memset(file_name, 0, MAX_NAME);
 	// We don't deal directly with slices cXtXdXsX. Never gets that value.
-	sprintf(file_name, "%s/%s", RAW_DEVICE_DIR, name);
+	snprintf(file_name, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, name);
 #ifdef _DEBUG
 	cout << "   Reporting disk partitions: " << file_name << endl << flush;
 #endif
@@ -391,14 +391,14 @@ BOOL Manager::Report_FDISK_Partitions(char *name, Target_Spec * disk_spec, int *
 				// Do this only once even if you have multiple solaris partitions.
 				// Other Solaris parts are invisible through the disk label/vtoc.
 				has_solaris_parts = TRUE;
-				sprintf(file_name, "%ss2", base_name);
+				snprintf(file_name, MAX_NAME, "%ss2", base_name);
 				if (Report_VTOC_Partitions(file_name, disk_spec, count, logical_count) == TRUE) {
 					VTOC_valid = TRUE;
 					continue;
 				}
 			}
 
-			sprintf(file_name, "%sp%d", base_name, i);
+			snprintf(file_name, MAX_NAME, "%sp%d", base_name, i);
 #ifdef _DEBUG
 			cout << "   file_name: " << file_name << endl << flush;
 #endif
@@ -549,7 +549,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 	memset(base_name, 0, MAX_NAME);
 	memset(file_name, 0, MAX_NAME);
 
-	sprintf(file_name, "%s/%s", RAW_DEVICE_DIR, name);
+	snprintf(file_name, MAX_NAME, "%s/%s", RAW_DEVICE_DIR, name);
 #ifdef _DEBUG
 	cout << "   Reporting vtoc partitions: " << file_name << endl << flush;
 #endif
@@ -666,7 +666,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 #ifdef _DEBUG
 			cerr << "NOTE: Overlapping slices : " << i << ", " << j << endl;
 #endif
-			sprintf(temp, "%ss%d", base_name, j);
+			snprintf(temp, MAX_NAME, "%ss%d", base_name, j);
 			if (Has_File_System(temp, fstype) == TRUE) {
 				// this slice 'i' overlaps with an unmounted file system.
 				continue;
@@ -678,7 +678,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 			// else we are ok. overlapping empty slices is just fine.
 		}
 		// Here we do have VTOC parts to report.
-		sprintf(file_name, "%ss%d", base_name, i);
+		snprintf(file_name, MAX_NAME, "%ss%d", base_name, i);
 #ifdef _DEBUG
 		cout << "  vtoc  file_name: " << file_name << endl << flush;
 #endif
@@ -787,7 +787,7 @@ BOOL Manager::Report_VTOC_Partitions(char *name, Target_Spec * disk_spec, int *c
 		// NOTE: EXTRA LOOP TO GRAB WHOLE SLICE if nothing else left.
 		for (i = 0; i < this_vtoc.v_nparts; i++) {
 			if (this_vtoc.v_part[i].p_tag == V_BACKUP) {
-				sprintf(file_name, "%ss%d", base_name, i);
+				snprintf(file_name, MAX_NAME, "%ss%d", base_name, i);
 				if (d.Init_Physical(file_name)) {
 					if (d.Init_Physical(file_name))
 						// Disk Initialization succeeded,
@@ -857,8 +857,8 @@ BOOL Manager::Has_File_System(char *file_name, char *fstype)
 
 	// Initialize
 	fstype[0] = 0;
-	sprintf(path, "/dev/rdsk/%s", file_name);
-	sprintf(cmd, "/usr/sbin/fstyp %s 2>/dev/null", path);
+	snprintf(path, MAX_NAME, "/dev/rdsk/%s", file_name);
+	snprintf(cmd, MAX_NAME, "/usr/sbin/fstyp %s 2>/dev/null", path);
 	if ((pptr = popen(cmd, "r")) != NULL) {
 		// popen succeeded.
 		fgets(buf, BUFSIZ, pptr);

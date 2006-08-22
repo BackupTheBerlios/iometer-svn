@@ -297,7 +297,7 @@ void CPageSetup::SaveResults(ostream * file)
 	(*file) << "'Time Stamp" << endl;
 	_ftime(&tb);
 	ptm = localtime(&tb.time);
-	sprintf(acDummy, "%04d-%02d-%02d %02d:%02d:%02d:%003d", ptm->tm_year + 1900,
+	snprintf(acDummy, 64, "%04d-%02d-%02d %02d:%02d:%02d:%003d", ptm->tm_year + 1900,
 		ptm->tm_mon + 1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, tb.millitm);
 	(*file) << acDummy << endl;
 }

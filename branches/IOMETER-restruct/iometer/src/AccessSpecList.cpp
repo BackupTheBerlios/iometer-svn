@@ -608,7 +608,7 @@ Test_Spec *AccessSpecList::Copy(Test_Spec * source_spec)
 	name.Format("Copy of %s", spec->name);
 	copy_number = 1;
 	do {
-		sprintf(spec->name, "%s (%d)", name, copy_number++);
+		snprintf(spec->name, MAX_NAME, "%s (%d)", name, copy_number++);
 	} while (RefByName(spec->name) != spec);
 
 	return spec;
@@ -1132,7 +1132,7 @@ void AccessSpecList::NextUntitled(char *name)
 	// Ensure that names are not duplicated.
 	do {
 		// We have the current number, so we add 1 for the next number.
-		sprintf(name, "Untitled %d", ++next_number);
+		snprintf(name, MAX_NAME, "Untitled %d", ++next_number);
 	}
 	while (RefByName(name));
 }
@@ -1191,5 +1191,5 @@ void AccessSpecList::SmartName(Test_Spec * spec)
 	while (RefByName((LPCTSTR) name)) {
 		name.Format("%s %d", name.Left(name_size), ++spec_number);
 	}
-	sprintf(spec->name, "%s", name);
+	snprintf(spec->name, MAX_NAME, "%s", name);
 }

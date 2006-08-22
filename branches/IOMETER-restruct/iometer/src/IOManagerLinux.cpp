@@ -290,7 +290,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 	// "fscanf(... %<nn>s)" has to be "MAX_NAME - 1"
 #endif
 	while ((count < MAX_TARGETS) && (fscanf(file, "%*d %*d %*d %79s", devName) == 1)) {
-		sprintf(paddedDevName, " %s ", devName);
+		snprintf(paddedDevName, MAX_NAME + 2, " %s ", devName);
 #ifdef _DEBUG
 		cout << __FUNCTION__ << ": Found device " << devName << "\n";
 #endif

@@ -118,7 +118,8 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
      (bundles the changes contributed by Lamont Cranston - it introduces
      the new IOManagerWin.cpp file).
 - Cleanup:
-   -Cleanup the use of _DEBUG and _DETAILS.
+   - Use snprintf instead of sprinf to reduce the risk of buffer overrun.
+   - Cleanup the use of _DEBUG and _DETAILS.
    - Renamed Dynamo and Iometer subdirectories to solve the name conflict
      under case insensitive file system.
    - Adjusted some variable types to fit 64bit OS and compiler.

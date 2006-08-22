@@ -96,7 +96,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 	// Reporting physical drives.
 	while (count < MAX_TARGETS) {
 		// See if the physical drive exists.
-		sprintf(d.spec.name, "%s%i", PHYSICAL_DISK, drive_number);
+		snprintf(d.spec.name, MAX_NAME, "%s%i", PHYSICAL_DISK, drive_number);
 		strcpy(d.file_name, d.spec.name);
 		d.spec.type = PhysicalDiskType;
 

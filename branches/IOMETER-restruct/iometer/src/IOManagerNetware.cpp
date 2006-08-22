@@ -169,7 +169,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 #ifdef _DEBUG
 			cout << __FUNCTION__ << ": Device is not reserved.\n";
 #endif
-			sprintf(disk_name, "[%d]", next);
+			snprintf(disk_name, 128, "[%d]", next);
 			if (d.Init_Physical(disk_name)) {
 				d.spec.type = PhysicalDiskType;
 				memcpy(&disk_spec[count], &d.spec, sizeof(Target_Spec));
