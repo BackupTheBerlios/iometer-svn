@@ -759,25 +759,32 @@ inline void reorder(Raw_Result&);
 
 inline char *Strip(char *pcString)
 {
-	size_t uiLength = strlen(pcString); // 64bit version now return qword values!
+	size_t uiLength;
 	size_t I;
 	size_t iIndex = 0;
 	size_t iPos1, iPos2;
 
+	if (!pcString)
+		return pcString;
+	uiLength = strlen(pcString); // 64bit version now return qword values!
+	if (!uiLength)
+		return pcString;
 	for (iPos1 = 0; ((iPos1 < uiLength) && (pcString[iPos1] == (int)' ')); iPos1++) {
 		/* NOP */
 	}
-	for (iPos2 = uiLength - 1; ((iPos2 >= 0) && (pcString[iPos2] == (int)' ')); iPos2--) {
+	for (iPos2 = uiLength - 1; ((iPos2 != 0) && (pcString[iPos2] == (int)' ')); iPos2--) {
 		/* NOP */
 	}
-
+	if ((iPos2 == 0) && (pcString[iPos2] == (int)' '))
+		pcString[0] = '\0';
+	
 	if ((iPos1 != 0) || (iPos2 != (uiLength - 1))) {
 		for (I = iPos1; I <= iPos2; I++) {
 			pcString[iIndex] = pcString[I];
 			iIndex++;
 		}
 		pcString[iIndex] = '\0';
- 	}
+	}
 	return(pcString);
 }
 
