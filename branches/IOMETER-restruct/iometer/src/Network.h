@@ -72,7 +72,7 @@
 #ifndef NETWORK_DEFINED
 #define NETWORK_DEFINED
 
-#ifdef IOMTR_OSFAMILY_WINDOWS
+#if defined(IOMTR_OSFAMILY_WINDOWS) || defined(IOMTR_OSFAMILY_NETWARE)
 namespace std {
 }
 #endif
