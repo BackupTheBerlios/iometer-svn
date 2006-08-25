@@ -1960,38 +1960,40 @@ void CGalileoView::ButtonReset()
 //
 void CGalileoView::ButtonReady()
 {
-	Manager *manager = m_pWorkerView->GetSelectedManager();
-	BOOL new_disk_worker_ok;
-	BOOL new_net_worker_ok;
+	if (theApp.m_wndToolBar) {
+		Manager *manager = m_pWorkerView->GetSelectedManager();
+		BOOL new_disk_worker_ok;
+		BOOL new_net_worker_ok;
 
-	SetButton(ID_FILE_OPEN, TRUE);
-	SetButton(ID_FILE_SAVE, TRUE);
-	SetButton(BNewDynamo, TRUE);
+		SetButton(ID_FILE_OPEN, TRUE);
+		SetButton(ID_FILE_SAVE, TRUE);
+		SetButton(BNewDynamo, TRUE);
 
-	// Only enable the new worker buttons if creating a worker of that kind
-	// is allowed on the given manager or worker's manager.
-	if (manager) {
-		new_disk_worker_ok = manager->InterfaceCount(GenericDiskType);
-		new_net_worker_ok = manager->InterfaceCount(GenericNetType);
-	} else {
-		new_disk_worker_ok = FALSE;
-		new_net_worker_ok = FALSE;
+		// Only enable the new worker buttons if creating a worker of that kind
+		// is allowed on the given manager or worker's manager.
+		if (manager) {
+			new_disk_worker_ok = manager->InterfaceCount(GenericDiskType);
+			new_net_worker_ok = manager->InterfaceCount(GenericNetType);
+		} else {
+			new_disk_worker_ok = FALSE;
+			new_net_worker_ok = FALSE;
+		}
+		SetButton(BNewDiskWorker, new_disk_worker_ok);
+		SetButton(BNewNetWorker, new_net_worker_ok);
+
+		// Enable worker copy button if a worker is selected.
+		SetButton(BCopyWorker, (BOOL) (PtrToLong(m_pWorkerView->GetSelectedWorker())));
+		SetButton(BReset, TRUE);
+		SetButton(BExitOne, TRUE);
+		SetButton(ID_APP_EXIT, TRUE);
+
+		m_pPageDisplay->m_dlgBigMeter.SetButtonState(TRUE, FALSE, FALSE);
+		SetButton(BStart, TRUE);
+		SetButton(BStop, FALSE);
+		SetButton(BStopAll, FALSE);
+
+		theApp.m_wndToolBar.RedrawWindow();
 	}
-	SetButton(BNewDiskWorker, new_disk_worker_ok);
-	SetButton(BNewNetWorker, new_net_worker_ok);
-
-	// Enable worker copy button if a worker is selected.
-	SetButton(BCopyWorker, (BOOL) (PtrToLong(m_pWorkerView->GetSelectedWorker())));
-	SetButton(BReset, TRUE);
-	SetButton(BExitOne, TRUE);
-	SetButton(ID_APP_EXIT, TRUE);
-
-	m_pPageDisplay->m_dlgBigMeter.SetButtonState(TRUE, FALSE, FALSE);
-	SetButton(BStart, TRUE);
-	SetButton(BStop, FALSE);
-	SetButton(BStopAll, FALSE);
-
-	theApp.m_wndToolBar.RedrawWindow();
 }
 
 //
@@ -1999,22 +2001,24 @@ void CGalileoView::ButtonReady()
 //
 void CGalileoView::ButtonPrepare()
 {
-	SetButton(ID_FILE_OPEN, FALSE);
-	SetButton(ID_FILE_SAVE, FALSE);
-	SetButton(BNewDynamo, FALSE);
-	SetButton(BNewDiskWorker, FALSE);
-	SetButton(BNewNetWorker, FALSE);
-	SetButton(BCopyWorker, FALSE);
-	SetButton(BReset, FALSE);
-	SetButton(BExitOne, FALSE);
-	SetButton(ID_APP_EXIT, TRUE);
+	if (theApp.m_wndToolBar) {
+		SetButton(ID_FILE_OPEN, FALSE);
+		SetButton(ID_FILE_SAVE, FALSE);
+		SetButton(BNewDynamo, FALSE);
+		SetButton(BNewDiskWorker, FALSE);
+		SetButton(BNewNetWorker, FALSE);
+		SetButton(BCopyWorker, FALSE);
+		SetButton(BReset, FALSE);
+		SetButton(BExitOne, FALSE);
+		SetButton(ID_APP_EXIT, TRUE);
 
-	m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, FALSE, TRUE);
-	SetButton(BStart, FALSE);
-	SetButton(BStop, FALSE);
-	SetButton(BStopAll, TRUE);
+		m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, FALSE, TRUE);
+		SetButton(BStart, FALSE);
+		SetButton(BStop, FALSE);
+		SetButton(BStopAll, TRUE);
 
-	theApp.m_wndToolBar.RedrawWindow();
+		theApp.m_wndToolBar.RedrawWindow();
+	}
 }
 
 //
@@ -2022,20 +2026,22 @@ void CGalileoView::ButtonPrepare()
 //
 void CGalileoView::ButtonTest()
 {
-	SetButton(ID_FILE_OPEN, FALSE);
-	SetButton(ID_FILE_SAVE, FALSE);
-	SetButton(BNewDynamo, FALSE);
-	SetButton(BNewDiskWorker, FALSE);
-	SetButton(BNewNetWorker, FALSE);
-	SetButton(BCopyWorker, FALSE);
-	SetButton(BReset, FALSE);
-	SetButton(BExitOne, FALSE);
-	SetButton(ID_APP_EXIT, TRUE);
+	if (theApp.m_wndToolBar) {
+		SetButton(ID_FILE_OPEN, FALSE);
+		SetButton(ID_FILE_SAVE, FALSE);
+		SetButton(BNewDynamo, FALSE);
+		SetButton(BNewDiskWorker, FALSE);
+		SetButton(BNewNetWorker, FALSE);
+		SetButton(BCopyWorker, FALSE);
+		SetButton(BReset, FALSE);
+		SetButton(BExitOne, FALSE);
+		SetButton(ID_APP_EXIT, TRUE);
 
-	m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, TRUE, FALSE);
-	SetButton(BStart, FALSE);
-	SetButton(BStop, TRUE);
-	SetButton(BStopAll, FALSE);
+		m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, TRUE, FALSE);
+		SetButton(BStart, FALSE);
+		SetButton(BStop, TRUE);
+		SetButton(BStopAll, FALSE);
+	}
 }
 
 //
@@ -2043,22 +2049,24 @@ void CGalileoView::ButtonTest()
 //
 void CGalileoView::ButtonOff()
 {
-	SetButton(ID_FILE_OPEN, FALSE);
-	SetButton(ID_FILE_SAVE, FALSE);
-	SetButton(BNewDynamo, FALSE);
-	SetButton(BNewDiskWorker, FALSE);
-	SetButton(BNewNetWorker, FALSE);
-	SetButton(BCopyWorker, FALSE);
-	SetButton(BReset, FALSE);
-	SetButton(BExitOne, FALSE);
-	SetButton(ID_APP_EXIT, TRUE);
+	if (theApp.m_wndToolBar) {
+		SetButton(ID_FILE_OPEN, FALSE);
+		SetButton(ID_FILE_SAVE, FALSE);
+		SetButton(BNewDynamo, FALSE);
+		SetButton(BNewDiskWorker, FALSE);
+		SetButton(BNewNetWorker, FALSE);
+		SetButton(BCopyWorker, FALSE);
+		SetButton(BReset, FALSE);
+		SetButton(BExitOne, FALSE);
+		SetButton(ID_APP_EXIT, TRUE);
 
-	m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, FALSE, FALSE);
-	SetButton(BStart, FALSE);
-	SetButton(BStop, FALSE);
-	SetButton(BStopAll, FALSE);
+		m_pPageDisplay->m_dlgBigMeter.SetButtonState(FALSE, FALSE, FALSE);
+		SetButton(BStart, FALSE);
+		SetButton(BStop, FALSE);
+		SetButton(BStopAll, FALSE);
 
-	theApp.m_wndToolBar.RedrawWindow();
+		theApp.m_wndToolBar.RedrawWindow();
+	}
 }
 
 //
