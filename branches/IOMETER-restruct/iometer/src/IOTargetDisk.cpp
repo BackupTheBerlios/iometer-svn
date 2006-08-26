@@ -387,7 +387,8 @@ BOOL TargetDisk::Init_Physical(char *drive)
 		spec.name[p - drive] = 0;
 	} else {
 		// Setting spec.name of the drive.
-		snprintf(spec.name, MAX_NAME, "%s", drive);
+		if (spec.name != drive)
+			snprintf(spec.name, MAX_NAME, "%s", drive);
 	}
 
 	if (!strstr(spec.name, RAW_DEVICE_DIR))
@@ -503,10 +504,8 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 
 	if (open_disk) {
 		if (!Open(NULL)) {
-#ifdef _DEBUG
 			cout << __FUNCTION__ << ": Open on \"" << file_name <<
 			    "\" failed (error " << strerror(errno) << ")." << endl;
-#endif
 			return (FALSE);
 		}
 		fd = ((struct File *)disk_file)->fd;
