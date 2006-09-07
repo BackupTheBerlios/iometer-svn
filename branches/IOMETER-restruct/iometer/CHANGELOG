@@ -141,6 +141,8 @@ ChangeLog (IOMETER2 - 2006.mm.dd):
    - Added the initial drop of the DocBook sources of the first part of
      the Iometer Users Guide (converted from OpenOffice - by James Rogers).
 - Others:
+   - Added a perl script to draw simple graph like what Wizard.mdb does, a
+     free alternative solution.
    - Changed the "Help About..." button of the Iometer Wizard to reflect
      the current status (Open Source,...) of Iometer.
    - Converted the Iometer Wizard to the file format of the 2000 version
