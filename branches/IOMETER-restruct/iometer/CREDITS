@@ -88,3 +88,8 @@ N: Ming Zhang
 E: mingz@ele.uri.edu
 W: http://www.ele.uri.edu/~mingz
 D: Co-maintainer.
+
+N: Ian Brown
+E: ian@zestysoft.com
+D: Provided a perl script to generate graphs.
+
