@@ -1788,13 +1788,17 @@ static int getSectorSizeOfPhysDisk(const char *devName)
 		cerr << "Fail to open device" << endl;
 		return 0;
 	}
+
+	// still leave old comments here but we should use BLKSSZGET. Sector 
+	// size request should be allowed no matter what.
+	//
 	// Use BLKBSZGET here as opposed to BLKSSZGET.  BLKSSZGET returns the
 	// true sector size of the physical disk which should be what we want.
 	// However, Linux will always use the potential cluster size of the 
 	// file system even for raw devices with no file system.  So we use 
 	// BLKBSZGET which returns the (potential) file system cluster size.
 
-	if (ioctl(fd, BLKBSZGET, &ssz) < 0) {
+	if (ioctl(fd, BLKSSZGET, &ssz) < 0) {
 		cerr << "Fail to get sector size for " << fullDevName << endl;
 		close(fd);
 		return 0;
