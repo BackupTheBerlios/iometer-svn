@@ -1,0 +1,59 @@
+TARGETNAME=IOMETER
+TARGETPATH=OBJ
+TARGETTYPE=PROGRAM
+
+MSC_WARNING_LEVEL=/W3 /WX
+USE_MFC=1
+USE_NATIVE_EH=1
+BROWSER_INFO=1
+
+UMTYPE=windows
+
+INCLUDES=$(SDK_INC_PATH); $(MSSDK)\INCLUDE; ..
+C_DEFINES=$(C_DEFINES) -D_GALILEO_ -D_WINDOWS -DDOSWIN32 -DUSING_DDK -DUSE_NEW_DISKS  
+#-D_DETAILS -DDEBUG -D_DEBUG
+ 
+
+TARGETLIBS= $(SDK_LIB_PATH)\KERNEL32.LIB \
+    $(SDK_LIB_PATH)\USER32.LIB		\
+    $(SDK_LIB_PATH)\WSOCK32.LIB		\
+    $(SDK_LIB_PATH)\WS2_32.LIB		\
+    $(SDK_LIB_PATH)\COMCTL32.LIB	\
+    $(SDK_LIB_PATH)\VERSION.LIB		\
+#	$(SDK_LIB_PATH)\MSVCPRTD.LIB	\
+#	$(SDK_LIB_PATH)\MFC42D.LIB		\
+    $(CRT_LIB_PATH)\MSVCPRT.LIB		\
+	$(MFC_LIB_PATH)\MFCS42.LIB
+
+SOURCES=..\AccessDialog.cpp		\
+	..\AccessSpecList.cpp		\
+	..\BigMeter.cpp			\
+	..\GalileoApp.cpp		\
+	..\GalileoCmdLine.cpp		\
+	..\GalileoDoc.cpp		\
+	..\GalileoGlobals.cpp		\
+	..\GalileoView.cpp		\
+	..\ICF_ifstream.cpp		\
+	..\ICFOpenDialog.cpp		\
+	..\ICFSaveDialog.cpp		\
+	..\IOGlobals.cpp		\
+	..\IOPort.cpp			\
+	..\IOPortTCP.cpp		\
+	..\Iotime.cpp			\
+	..\LegalBox.cpp			\
+	..\MainFrm.cpp			\
+	..\Manager.cpp			\
+	..\ManagerList.cpp		\
+	..\ManagerMap.cpp		\
+	..\MeterCtrl.cpp		\
+	..\PageAccess.cpp		\
+	..\PageDisk.cpp			\
+	..\PageDisplay.cpp		\
+	..\PageNetwork.cpp		\
+	..\PageSetup.cpp		\
+	..\StdAfx.cpp			\
+	..\TextDisplay.cpp		\
+	..\WaitingForManagers.cpp	\
+	..\Worker.cpp			\
+	..\WorkerView.cpp		\
+	..\Galileo.rc
