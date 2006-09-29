@@ -116,8 +116,11 @@ void ErrorMessage(LPCTSTR errmsg)
 
 		//Create a copy of the error message string - thread must delete.
 		CString *pErrorMessage = new CString(errmsg);
+		CWinThread *p;
 
-		(void)AfxBeginThread(MessageBoxThread, (LPVOID) pErrorMessage);
+		p = AfxBeginThread(MessageBoxThread, (LPVOID) pErrorMessage);
+		if (!p)
+			delete pErrorMessage;
 	}
 }
 
