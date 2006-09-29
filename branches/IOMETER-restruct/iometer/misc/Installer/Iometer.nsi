@@ -49,10 +49,15 @@
 
 ##### Global settings
 #------------------------------------------------------------------------------
-Name "Iometer 2006.05.31"
 
-OutFile "iometer-2006.05.31.win32.i386-setup.exe"
-InstallDir "$PROGRAMFILES\Iometer.org\Iometer 2006.05.31"
+!define RELDATE "2006.07.27"
+!define PLATF "win32"
+!define ARCH "i386"
+
+Name "Iometer ${RELDATE}"
+
+OutFile "iometer-${RELDATE}.${PLATF}.${ARCH}-setup.exe"
+InstallDir "$PROGRAMFILES\Iometer.org\Iometer ${RELDATE}"
 
 CRCCheck on
 XPStyle on
@@ -126,19 +131,19 @@ SubSectionEnd
 #------------------------------------------------------------------------------
 Section "Start Menu Shortcuts" SectionStartMenu
 
-	CreateDirectory "$SMPROGRAMS\Iometer 2006.05.31"
-	CreateShortCut  "$SMPROGRAMS\Iometer 2006.05.31\Iometer.lnk"                     "$INSTDIR\iometer.exe"   "" "$INSTDIR\iometer.exe"   0
+	CreateDirectory "$SMPROGRAMS\Iometer ${RELDATE}"
+	CreateShortCut  "$SMPROGRAMS\Iometer ${RELDATE}\Iometer.lnk"                     "$INSTDIR\iometer.exe"   "" "$INSTDIR\iometer.exe"   0
         IfFileExists "$INSTDIR\iometer.pdf"   "" +2
-		CreateShortCut "$SMPROGRAMS\Iometer 2006.05.31\Iometer Users Guide.lnk"  "$INSTDIR\iometer.pdf"   "" "$INSTDIR\iometer.pdf"   0
-	CreateShortCut  "$SMPROGRAMS\Iometer 2006.05.31\Import Wizard for MS Access.lnk" "$INSTDIR\Wizard.mdb"    "" "$INSTDIR\Wizard.mdb"    0
-	CreateShortCut  "$SMPROGRAMS\Iometer 2006.05.31\Uninstall Iometer.lnk"           "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+		CreateShortCut "$SMPROGRAMS\Iometer ${RELDATE}\Iometer Users Guide.lnk"  "$INSTDIR\iometer.pdf"   "" "$INSTDIR\iometer.pdf"   0
+	CreateShortCut  "$SMPROGRAMS\Iometer ${RELDATE}\Import Wizard for MS Access.lnk" "$INSTDIR\Wizard.mdb"    "" "$INSTDIR\Wizard.mdb"    0
+	CreateShortCut  "$SMPROGRAMS\Iometer ${RELDATE}\Uninstall Iometer.lnk"           "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 
 SectionEnd
 #------------------------------------------------------------------------------
 Section "Uninstall"
   
-	Delete "$SMPROGRAMS\Iometer 2006.05.31\*.*"
-	RMDir  "$SMPROGRAMS\Iometer 2006.05.31"
+	Delete "$SMPROGRAMS\Iometer ${RELDATE}\*.*"
+	RMDir  "$SMPROGRAMS\Iometer ${RELDATE}"
 
 	Delete "$INSTDIR\Iometer.exe"
 	Delete "$INSTDIR\Dynamo.exe"
