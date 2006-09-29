@@ -290,7 +290,8 @@ void CGalileoCmdLine::Fail(const CString & errmsg)
 	m_sResultFile = "";
 	m_iTimeout = -1;
 	m_bSwitches = FALSE;
-	ErrorMessage("Error processing the command line.  " + errmsg);
+	//ErrorMessage("Error processing the command line.  " + errmsg);
+	MessageBox(NULL, "Error processing the command line.  " + errmsg, "Iometer", 0);
 }
 
 CString CGalileoCmdLine::GetConfigFile()
@@ -313,7 +314,10 @@ int CGalileoCmdLine::GetTimeout()
 
 int CGalileoCmdLine::GetLoginportnumber()
 {
-	return m_iLoginportnumber;
+	if (m_iLoginportnumber)
+		return m_iLoginportnumber;
+	else
+		return WELL_KNOWN_TCP_PORT;
 }
 
 BOOL CGalileoCmdLine::GetShowBigmeter()

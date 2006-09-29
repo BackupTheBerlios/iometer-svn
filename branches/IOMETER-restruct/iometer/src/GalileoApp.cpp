@@ -276,8 +276,8 @@ BOOL CGalileoApp::InitInstance()
 	// contains any spaces, but the "start" command (NEW_WORKER_COMMAND) assumes the
 	// first quoted argument is the window title, so we must provide it twice.
 	new_manager_command_line_format = (CString) NEW_WORKER_COMMAND
-	    + "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "%s\"" + " "
-	    + "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "\"%s";
+	    + "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "%s%s\"" + " "
+	    + "\"" + iometer_path + NEW_WORKER_EXECUTABLE + "\"%s%s";
 
 	if (cmdline.GetConfigFile().IsEmpty()) {
 #ifndef	_DEBUG
@@ -411,12 +411,15 @@ BOOL CGalileoApp::IsAddressLocal(const CString & addr)
 void CGalileoApp::LaunchDynamo(const CString & mgr_name /* ="" */ )
 {
 	CString cmd;
+	CString portparam;
 
 	// Make sure the formatting string was initialized.
 	ASSERT(!theApp.new_manager_command_line_format.IsEmpty());
 
+	portparam.Format(" /p %d ", cmdline.GetLoginportnumber());
+
 	// Create a string with the appropriate command line parameters.
-	cmd.Format(new_manager_command_line_format, mgr_name, mgr_name);
+	cmd.Format(new_manager_command_line_format, mgr_name, portparam, mgr_name, portparam);
 
 	// Launch Dynamo.
 	system(cmd);
@@ -527,8 +530,6 @@ BOOL CGalileoApp::OnIdle(LONG lCount)
 
 			// create and open the port
 			login_port_number = theApp.cmdline.GetLoginportnumber();
-			if (!login_port_number)
-				login_port_number = WELL_KNOWN_TCP_PORT;
  
 			login_port = new PortTCP(FALSE);	// asynchronous port
 			if (!login_port->Create(NULL, NULL, 0, login_port_number)) {
