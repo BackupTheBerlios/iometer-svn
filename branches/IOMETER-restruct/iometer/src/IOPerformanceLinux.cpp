@@ -159,7 +159,7 @@ Performance::~Performance()
 int Performance::Get_Processor_Count()
 {
 	/* glib will do all parsing work for us from /proc/stat */
-	return (sysconf(_SC_NPROCESSORS_CONF));
+	return (sysconf(_SC_NPROCESSORS_ONLN));
 }
 
 //
