@@ -371,7 +371,7 @@ double Performance::Get_Processor_Speed()
 	//#ifdef WIN64_COUNTER_WORKAROUND
 	// *** Removed ***
 	//
-	//currently Win64 uses GetTickCOunt whose units are in milliseconds.
+	//currently Win64 uses GetTickCount whose units are in milliseconds.
 	//
 	//return (double) MILLISECOND;
 	//

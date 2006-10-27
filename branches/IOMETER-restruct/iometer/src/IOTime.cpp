@@ -329,7 +329,17 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
- //#endif //!USING_DDK//////////////////////////////////////////////////////////////////////////////////////  Name:       readITC//  Purpose:    To read the IA64 Itanium's Interval Time Counter (ITC, AR-44).  The//              ITC is equivalent to the IA32 Time Stamp Counter (TSC).  The IA32//              TSC can be read using the IA32 RDTSC instruction (opcode 0F 31h) but//              there is no equivalent IA64 instruction to read the ITC.//  Returns:    The value of the ITC//  Parameters: None./////////////////////////////////////////////////////////////////////////////////////
+ //#endif //!USING_DDK
+
+////////////////////////////////////////////////////////////////////////////////////
+//  Name:       readITC
+//  Purpose:    To read the IA64 Itanium's Interval Time Counter (ITC, AR-44).  The
+//              ITC is equivalent to the IA32 Time Stamp Counter (TSC).  The IA32
+//              TSC can be read using the IA32 RDTSC instruction (opcode 0F 31h) but
+//              there is no equivalent IA64 instruction to read the ITC.
+//  Returns:    The value of the ITC
+//  Parameters: None.
+/////////////////////////////////////////////////////////////////////////////////////
     DWORDLONG rdtsc()
 {
 	// *** Removed ***
