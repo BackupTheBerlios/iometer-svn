@@ -194,6 +194,11 @@ double Performance::Get_Processor_Speed()
 	}
 
 	cpuInfo = fopen("/proc/cpuinfo", "r");
+	if (!cpuInfo) {
+		cerr << "Error determining CPU speed.\n";
+		return (0.0);
+	}
+
 	do {
 		fscanf(cpuInfo, "%7c", label);
 		if (!strncmp(label, "cpu MHz", 7)) {
