@@ -156,10 +156,37 @@ Performance::~Performance()
 {
 }
 
-int Performance::Get_Processor_Count()
+int Performance::Get_Processor_Count(void)
 {
-	/* glib will do all parsing work for us from /proc/stat */
-	return (sysconf(_SC_NPROCESSORS_ONLN));
+	char buf[4096];
+	char *p = "processor\t:";
+	int i = 0;
+	size_t res, j;
+	FILE *cpuinfo;
+
+	cpuinfo = fopen("/proc/cpuinfo", "r");
+	if (cpuinfo) {
+		j = strlen(p);
+	
+		do {
+			memset(buf, 0, 4096);
+			res = fread(buf, 1, 4095, cpuinfo);
+			if (res >= j) {
+				char *c = buf;
+				while ((c = strstr(c, p))) {
+					i++;
+					c += j;
+				};
+				(void)fseek(cpuinfo, -j + 1, SEEK_CUR);
+			}
+		} while (res >= j);
+		(void)fclose(cpuinfo);
+	}
+	if (!i) {
+		/* fall through to the glib way, though sometime it is buggy. */
+		return sysconf(_SC_NPROCESSORS_ONLN);
+	}
+	return i;
 }
 
 //
