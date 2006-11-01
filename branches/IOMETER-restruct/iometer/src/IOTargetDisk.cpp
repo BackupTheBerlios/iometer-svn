@@ -1283,8 +1283,6 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 {
 	// open_flag is a 
 	if (IsType(spec.type, LogicalDiskType)) {
-		// Ignore errors that occur if trying to open a floppy or CD-ROM with
-		// nothing in the drive.
 #if defined(IOMTR_OS_SOLARIS)
 		((struct File *)disk_file)->fd =
 		    open(file_name, O_RDWR | O_CREAT | O_LARGEFILE | open_flag, S_IRUSR | S_IWUSR);
@@ -1296,6 +1294,8 @@ BOOL TargetDisk::Open(volatile TestState * test_state, int open_flag)
 			   &((struct File *)disk_file)->fd);
 		((struct File *)disk_file)->type = LogicalDiskType;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+		// Ignore errors that occur if trying to open a floppy or CD-ROM with
+		// nothing in the drive.
 		SetErrorMode(SEM_FAILCRITICALERRORS);
 		disk_file = CreateFile(file_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ |
 				       FILE_SHARE_WRITE, NULL, OPEN_ALWAYS,

@@ -4,6 +4,20 @@
 
 
 
+ChangeLog (IOMETER2 - 200X.XX.XX):
+==================================
+
+- New features:
+   - Added a simple INSTALL file about how to install iometer and dynamo on 
+     various platforms.
+
+- Bug fixes:
+   - Patch by Ming Zhang to get CPU count from /proc/cpuinfo under Linux. Old
+     glibc way is buggy for 64bit Linux and XEN.
+
+- Cleanup:
+   -
+
 ChangeLog (IOMETER2 - 2006.07.27):
 ==================================
 
