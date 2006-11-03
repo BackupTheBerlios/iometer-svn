@@ -488,6 +488,9 @@ using namespace std;
 
 #define SEND   1
 #define RECV   2
+
+#define SMLBUFSIZE 512 
+
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
  //param does not contain a valid internet address
@@ -519,13 +522,6 @@ using namespace std;
   #define AIO_NOTCANCELED	1
  #endif
 
- #if defined(IOMTR_OS_LINUX)
-  // different Linux kernel has different /proc/stat style.
-  // Currently we only support vanilla 2.4 and 2.6 alike
-  #define PROCSTATUNKNOWN	0x00
-  #define PROCSTAT24STYLE	0x01
-  #define PROCSTAT26STYLE	0x02
- #endif
 #endif
 // ----------------------------------------------------------------------------
 

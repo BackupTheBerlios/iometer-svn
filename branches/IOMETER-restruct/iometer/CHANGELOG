@@ -12,6 +12,8 @@ ChangeLog (IOMETER2 - 200X.XX.XX):
      various platforms.
 
 - Bug fixes:
+   - Patch by Ming Zhang to fix the way to get CPU utilization statistics under
+     Linux.
    - Patch by Ming Zhang to get CPU count from /proc/cpuinfo under Linux. Old
      glibc way is buggy for 64bit Linux and XEN.
 

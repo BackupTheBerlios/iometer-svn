@@ -141,7 +141,6 @@
 #include <synch.h>
 #elif defined(IOMTR_OS_LINUX)
 int kstatfd;
-int procstatstyle = PROCSTATUNKNOWN;
 #elif defined(IOMTR_OS_OSX)
   // nop
 #else
@@ -197,24 +196,6 @@ void CleanupIoctlInterface(int fd)
 {
 	if (fd > 0)
 		close(fd);
-}
-
-int DetectProcStatStyle(void)
-{
-	FILE *fp;
-	unsigned long long x1, x2, x3, x4, x5, x6, x7;
-	int res;
-
-	// a simple work around to detect stat style. should check more customized kernels.
-	fp = fopen("/proc/stat", "r");
-	res = fscanf(fp, "cpu %lld %lld %lld %lld %lld %lld %lld\n", &x1, &x2, &x3, &x4, &x5, &x6, &x7);
-	if (res == 4)
-		return PROCSTAT24STYLE;
-	else if (res == 7)
-		return PROCSTAT26STYLE;
-	else
-		cerr << "Fail to detect the style of /proc/stat output." << endl;
-	return PROCSTATUNKNOWN;
 }
 
 #if defined(IOMTR_CPU_XSCALE)
@@ -355,11 +336,6 @@ int CDECL main(int argc, char *argv[])
 	aioDefaults.aio_threads = 2;
 	aio_init(&aioDefaults);
 	kstatfd = InitIoctlInterface();
-	procstatstyle = DetectProcStatStyle();
-	if (kstatfd < 0 && procstatstyle == -1) {
-		cerr << "IoMeter can not get correct status information" << endl;
-		exit(1);
-	}
 #if defined(IOMTR_CPU_XSCALE)
 	if ((ccntfd = InitCCNTInterface()) < 0) {
 		exit(1);

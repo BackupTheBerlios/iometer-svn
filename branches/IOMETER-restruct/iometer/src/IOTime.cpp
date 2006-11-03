@@ -89,55 +89,38 @@
 /* ##                                                                     ## */
 /* ######################################################################### */
 
-// Include our central headerfile
 #include "IOCommon.h"
 
 #if defined(IOMTR_OS_LINUX)
 #include "iomtr_kstat/iomtr_kstat.h"
 
 extern int kstatfd;
-extern int procstatstyle;
 #endif
 
-#if defined(IOMTR_CPU_PPC)
-#endif
-
-// Implements the time measurment functions
-// for / in the different plattforms
-// ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_LINUX)
 DWORDLONG jiffies(void)
 {
-	DWORDLONG jiffies_user, jiffies_nice, jiffies_system, jiffies_idle, jiffies_iowait, jiffies_irq,
-	    jiffies_softirq;
+	DWORDLONG j[8], jf;
 	FILE *fp;
-	unsigned long long jf;
+	char tmpBuf[SMLBUFSIZE];
+	int i;
 
-	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCURJIFFIES, &jf) >= 0) {
-		//printf("JIFFIE: %llu\n", jf);
-		return (DWORDLONG) jf;
+	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETCURJIFFIES, (unsigned long long*)&jf) >= 0) {
+		return jf;
 	}
 
-	switch (procstatstyle) {
-	case PROCSTAT24STYLE:
-		fp = fopen("/proc/stat", "r");
-		fscanf(fp, "cpu %*s %*s %*s %*s\n");
-		fscanf(fp, "cpu0 %lld %lld %lld %lld\n", &jiffies_user, &jiffies_nice, &jiffies_system, &jiffies_idle);
-		fclose(fp);
-		return (jiffies_user + jiffies_nice + jiffies_system + jiffies_idle);
-	case PROCSTAT26STYLE:
-		fp = fopen("/proc/stat", "r");
-		fscanf(fp, "cpu %*s %*s %*s %*s %*s %*s %*s\n");
-		fscanf(fp, "cpu0 %lld %lld %lld %lld %lld %lld %lld\n", &jiffies_user, &jiffies_nice, &jiffies_system,
-		       &jiffies_idle, &jiffies_iowait, &jiffies_irq, &jiffies_softirq);
-		fclose(fp);
-		return (jiffies_user + jiffies_nice + jiffies_system + jiffies_idle + jiffies_iowait + jiffies_irq +
-			jiffies_softirq);
-	default:
-		// should never be here
-		cerr << "Can not get jiffies value!" << endl;
-	}
-	return 0;
+	for (i = 0; i < 8; i++)
+		j[i] = 0;
+	fp = fopen("/proc/stat", "r");
+	fgets(tmpBuf, SMLBUFSIZE, fp);
+	fgets(tmpBuf, SMLBUFSIZE, fp);
+	sscanf(tmpBuf, "cpu0 %lld %lld %lld %lld %lld %lld %lld %lld\n", 
+			j, j + 1, j + 2, j + 3, j + 4, j + 5, j + 6, j + 7);
+	fclose(fp);
+	jf = 0;
+	for (i = 0; i < 8; i++)
+		jf += j[i];
+	return jf;
 }
 
 #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_X86_64)

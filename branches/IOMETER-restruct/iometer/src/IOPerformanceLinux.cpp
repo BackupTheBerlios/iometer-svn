@@ -115,7 +115,6 @@
 #include "iomtr_kstat/iomtr_kstat.h"
 
 extern int kstatfd;
-extern int procstatstyle;
 
 //
 // Initializing system performance data.
@@ -309,9 +308,10 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 
 void Performance::Get_CPU_Counters(int snapshot)
 {
-	int numScans, c, i;
-	char tmpBuf[100];
-	__int64 jiffiesCpuNiceUtilization, jiffiesCpuidle, jiffiesCpuiowait, jiffiesCpuirq, jiffiesCpusoftirq;
+	int numScans, i;
+	char tmpBuf[SMLBUFSIZE], *b;
+	__int64 jiffiesCpuNiceUtilization, jiffiesCpuidle, jiffiesCpuiowait;
+	__int64 jiffiesCpuirq, jiffiesCpusoftirq, jiffiesCpusteal;
 	FILE *cpuStat;
 	struct cpu_data_type raw_cpu;
 
@@ -328,91 +328,71 @@ void Performance::Get_CPU_Counters(int snapshot)
 	}
 
 	cpuStat = fopen("/proc/stat", "r");
-	assert(cpuStat != NULL);
-	switch (procstatstyle) {
-	case PROCSTAT24STYLE:
-		// First few rows of the /proc/stat output in 2.4 style.
-		// --------------------------------------------------------------------
-		// cpu  20969 2260 50042 1069377
-		// cpu0 20969 2260 50042 1069377
-		// page 1279455 540189
-		// swap 30 483
-		// intr 1896409 1142648 2 0 0 128558 0 0 0 2 0 34836 465132 4 0 91210 34017 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-		// ...
-		// --------------------------------------------------------------------
-		fscanf(cpuStat, "cpu %*s %*s %*s %*s\n");
-		for (i = 0; i < processor_count; i++) {
-			numScans = fscanf(cpuStat, "%s", tmpBuf);
-			if ((numScans == 1) && (strlen(tmpBuf) >= 3) && (strncmp(tmpBuf, "cpu", 3) == 0)) {
-				fscanf(cpuStat, " %lld %lld %lld %*s\n",
-				       &raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot], &jiffiesCpuNiceUtilization,
-				       &raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot]);
-				raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
-				raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] =
-				    raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] +
-				    raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
-				continue;
-			}
-			do {
-				c = getc(cpuStat);
-			} while ((c != '\n') && (c != EOF));
-			break;
-		}
-		for (;;) {
-			numScans = fscanf(cpuStat, "%s", tmpBuf);
-			if ((numScans == 1) && (strlen(tmpBuf) == 4) && (strncmp(tmpBuf, "intr", 4) == 0)) {
-				fscanf(cpuStat, " %lld ", &raw_cpu_data[0][CPU_IRQ][snapshot]);
-				break;
-			}
-			do {
-				c = getc(cpuStat);
-			} while ((c != '\n') && (c != EOF));
-			if (c == EOF) {
-				break;
-			}
-		}
-		break;
-	case PROCSTAT26STYLE:
-		// First feww rows of the /proc/stat output in 2.6 style
-		// cpu  31483 0 87972 461075 9775 1319 200
-		// cpu0 31483 0 87972 461075 9775 1319 200
-		// intr 6473496 5918277 10963 0 0 0 0 0 7 1 2 0 365055 154381 0 24810 0 0 
-		//...
-		fscanf(cpuStat, "cpu %*s %*s %*s %*s %*s %*s %*s\n");
-		for (i = 0; i < processor_count; i++) {
-			numScans = fscanf(cpuStat, "%s", tmpBuf);
-			if ((numScans == 1) && (strlen(tmpBuf) >= 3) && (strncmp(tmpBuf, "cpu", 3) == 0)) {
-				fscanf(cpuStat, " %lld %lld %lld %lld %lld %lld %lld\n",
-				       &raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot],
-				       &jiffiesCpuNiceUtilization,
-				       &raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot],
-				       &jiffiesCpuidle, &jiffiesCpuiowait, &jiffiesCpuirq, &jiffiesCpusoftirq);
-				raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
-				raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot] +=
-				    jiffiesCpuirq + jiffiesCpusoftirq;
-				raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] =
-				    raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] +
-				    raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
-			}
-		}
-		for (;;) {
-			numScans = fscanf(cpuStat, "%s", tmpBuf);
-			if ((numScans == 1) && (strlen(tmpBuf) == 4) && (strncmp(tmpBuf, "intr", 4) == 0)) {
-				fscanf(cpuStat, " %lld ", &raw_cpu_data[0][CPU_IRQ][snapshot]);
-				break;
-			}
-			do {
-				c = getc(cpuStat);
-			} while ((c != '\n') && (c != EOF));
-			if (c == EOF) {
-				break;
-			}
-		}
-		break;
-	default:
-		// should never be here
-		cerr << "Can not get CPU performance data" << endl;
+	if (!cpuStat)
+		goto err_out;
+
+	// different kernel has quite different /proc/stat output. 
+	// First few rows of the /proc/stat output in 2.4 style.
+	// --------------------------------------------------------------------
+	// cpu  20969 2260 50042 1069377
+	// cpu0 20969 2260 50042 1069377
+	// page 1279455 540189
+	// swap 30 483
+	// intr 1896409 1142648 2 0 0 ...
+	// ...
+	// --------------------------------------------------------------------
+	// First few rows of the /proc/stat output in early 2.6 style
+	// cpu  31483 0 87972 461075 9775 1319 200
+	// cpu0 31483 0 87972 461075 9775 1319 200
+	// intr 6473496 5918277 10963 0 0 0 0 0 7 1 2 0 365055 154381 0 24810 0 0 
+	//...
+	// --------------------------------------------------------------------
+	// First few rows of the /proc/stat output in 2.6.11 or later style
+	// cpu  152192 5922 18433 1509327 67908 3064 5273 0
+	// cpu0 152192 5922 18433 1509327 67908 3064 5273 0
+	// intr 644038....
+	//
+	// followed code gain idea from procps package.
+
+	memset(tmpBuf, 0, SMLBUFSIZE);
+	b = fgets(tmpBuf, SMLBUFSIZE, cpuStat);
+	if (!b)
+		goto err_out;
+	
+	for (i = 0; i < processor_count; i++) {
+		int cpuid;
+
+		b = fgets(tmpBuf, SMLBUFSIZE, cpuStat);
+		if (!b)
+			goto err_out;
+		jiffiesCpuiowait = jiffiesCpuirq = jiffiesCpusoftirq = jiffiesCpusteal = 0;
+		numScans = sscanf(tmpBuf, "cpu%d %lld %lld %lld %lld %lld %lld %lld %lld\n",
+					&cpuid,
+					&raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot],
+					&jiffiesCpuNiceUtilization,
+					&raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot],
+					&jiffiesCpuidle, &jiffiesCpuiowait, &jiffiesCpuirq, 
+					&jiffiesCpusoftirq, &jiffiesCpusteal);
+		if (numScans < 4)
+			goto err_out;
+
+		raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] += jiffiesCpuNiceUtilization;
+		raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot] +=
+			jiffiesCpuirq + jiffiesCpusoftirq;
+		raw_cpu_data[i][CPU_TOTAL_UTILIZATION][snapshot] =
+			raw_cpu_data[i][CPU_USER_UTILIZATION][snapshot] +
+			raw_cpu_data[i][CPU_PRIVILEGED_UTILIZATION][snapshot];
+		
 	}
+	fread(tmpBuf, sizeof(char), SMLBUFSIZE, cpuStat);
+	b = strstr(tmpBuf, "intr");
+	if (b)
+		sscanf(b,  "intr %Lu", &raw_cpu_data[0][CPU_IRQ][snapshot]);
+
+	goto out;
+err_out:
+	cerr << "Can not get CPU performance data" << endl;
+out:
 	fclose(cpuStat);
 }
 
@@ -421,20 +401,17 @@ void Performance::Get_TCP_Counters(int snapshot)
 	FILE *fp;
 	__int64 insegs, outsegs, retranssegs;
 	struct tcp_data_type raw_tcp;
+	char tmpBuf[SMLBUFSIZE];
+	int i;
 
 	if (kstatfd > 0 && ioctl(kstatfd, IM_IOC_GETTCPDATA, &raw_tcp) >= 0) {
 		raw_tcp_data[TCP_SEGMENTS_RESENT][snapshot] = raw_tcp.retranssegs;
 		return;
 	}
-	// DF: a kind of stupid workable solution. :)
 	fp = fopen("/proc/net/snmp", "r");
-	fscanf(fp, "Ip: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
-	fscanf(fp, "Ip: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
-	fscanf(fp,
-	       "Icmp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
-	fscanf(fp,
-	       "Icmp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
-	fscanf(fp, "Tcp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s\n");
+	for (i = 0; i < 5; i++)
+		fgets(tmpBuf, SMLBUFSIZE, fp);
+	retranssegs = 0;
 	fscanf(fp, "Tcp: %*s %*s %*s %*s %*s %*s %*s %*s %*s %lld %lld %lld %*s %*s\n", &insegs, &outsegs,
 	       &retranssegs);
 	raw_tcp_data[TCP_SEGMENTS_RESENT][snapshot] = retranssegs;
