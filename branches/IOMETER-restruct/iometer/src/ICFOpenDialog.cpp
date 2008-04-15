@@ -121,7 +121,7 @@ IMPLEMENT_DYNAMIC(CICFOpenDialog, CFileDialog)
 CICFOpenDialog::~CICFOpenDialog()
 {
 	if (m_ofn.lpstrTitle)
-		delete m_ofn.lpstrTitle;
+		delete (void*)m_ofn.lpstrTitle;
 }
 
 void CICFOpenDialog::DoDataExchange(CDataExchange * pDX)

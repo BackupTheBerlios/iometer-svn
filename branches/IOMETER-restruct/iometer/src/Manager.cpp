@@ -651,7 +651,9 @@ void Manager::SaveResults(ostream * file, int access_index, int result_type)
 	for (stat = 0; stat < CPU_UTILIZATION_RESULTS; stat++)
 		(*file) << "," << results[WHOLE_TEST_PERF].CPU_utilization[stat];
 
-	(*file) << "," << processor_speed << "," << results[WHOLE_TEST_PERF].CPU_utilization[CPU_IRQ]
+		(*file) << "," << timer_resolution
+		
+		<< "," << results[WHOLE_TEST_PERF].CPU_utilization[CPU_IRQ]
 	    << "," << results[WHOLE_TEST_PERF].CPU_effectiveness;
 
 	for (stat = 0; stat < NI_COMBINE_RESULTS; stat++)
@@ -669,8 +671,9 @@ void Manager::SaveResults(ostream * file, int access_index, int result_type)
 		for (stat = 0; stat < CPU_UTILIZATION_RESULTS; stat++)
 			(*file) << "," << results[WHOLE_TEST_PERF].individual_CPU_utilization[cpu][stat];
 
-		(*file) << "," << processor_speed
-		    << "," << results[WHOLE_TEST_PERF].individual_CPU_utilization[cpu][CPU_IRQ]
+		(*file) << "," << timer_resolution
+
+			<< "," << results[WHOLE_TEST_PERF].individual_CPU_utilization[cpu][CPU_IRQ]
 		    << ",";	// Space for CPU_effectiveness (no way to calculate IOs per processor)
 
 		for (stat = 0; stat < NI_COMBINE_RESULTS + TCP_RESULTS; stat++)
@@ -853,28 +856,29 @@ void Manager::UpdateResults(int which_perf)
 	if (results[which_perf].raw.read_count || results[which_perf].raw.write_count) {
 		results[which_perf].ave_latency =
 		    (double)(_int64) (results[which_perf].raw.read_latency_sum +
-				      results[which_perf].raw.write_latency_sum)
-		    * (double)1000 / processor_speed / (double)(_int64) (results[which_perf].raw.read_count +
-									 results[which_perf].raw.write_count);
+			results[which_perf].raw.write_latency_sum)
+		    * (double)1000 / timer_resolution /
+			(double)(_int64) (results[which_perf].raw.read_count +
+			results[which_perf].raw.write_count);
 
 		if (results[which_perf].raw.read_count)
 			results[which_perf].ave_read_latency =
-			    (double)(_int64) results[which_perf].raw.read_latency_sum * (double)1000 / processor_speed /
-			    (double)(_int64) results[which_perf].raw.read_count;
+			    (double)(_int64) results[which_perf].raw.read_latency_sum * (double)1000 / 
+				timer_resolution / (double)(_int64) results[which_perf].raw.read_count;
 		else
 			results[which_perf].ave_read_latency = (double)0;
 
 		if (results[which_perf].raw.write_count)
 			results[which_perf].ave_write_latency =
 			    (double)(_int64) results[which_perf].raw.write_latency_sum * (double)1000 /
-			    processor_speed / (double)(_int64) results[which_perf].raw.write_count;
+				timer_resolution / (double)(_int64) results[which_perf].raw.write_count;
 		else
 			results[which_perf].ave_write_latency = (double)0;
 
 		if (results[which_perf].raw.transaction_count) {
 			results[which_perf].ave_transaction_latency =
 			    (double)(_int64) results[which_perf].raw.transaction_latency_sum * (double)1000 /
-			    processor_speed / (double)(_int64) (results[which_perf].raw.transaction_count);
+				timer_resolution / (double)(_int64) (results[which_perf].raw.transaction_count);
 		} else {
 			results[which_perf].ave_transaction_latency = (double)0;
 		}
@@ -888,8 +892,8 @@ void Manager::UpdateResults(int which_perf)
 	// Calculating average connection time.
 	if (results[which_perf].raw.connection_count) {
 		results[which_perf].ave_connection_latency =
-		    (double)(_int64) (results[which_perf].raw.connection_latency_sum) * (double)1000 / processor_speed /
-		    (double)(_int64) results[which_perf].raw.connection_count;
+		    (double)(_int64) (results[which_perf].raw.connection_latency_sum) * (double)1000 / 
+			timer_resolution / (double)(_int64) results[which_perf].raw.connection_count;
 	} else {
 		results[which_perf].ave_connection_latency = (double)0;
 	}

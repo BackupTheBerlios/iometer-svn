@@ -94,6 +94,7 @@
 /* ######################################################################### */
 
 #include "IOGrunt.h"
+#include "IOCommon.h"
 #include "IOTargetDisk.h"
 #include "IOTargetTCP.h"
 
@@ -459,8 +460,8 @@ void Grunt::Record_On()
 	if (!target_count || idle || critical_error)
 		return;
 
-	worker_performance.time[FIRST_SNAPSHOT] = rdtsc();
-	prev_worker_performance.time[LAST_SNAPSHOT] = rdtsc();
+	worker_performance.time[FIRST_SNAPSHOT] = timer_value();
+	prev_worker_performance.time[LAST_SNAPSHOT] = timer_value();
 
 	InterlockedExchange(IOMTR_MACRO_INTERLOCK_CAST(int)&grunt_state, (int)TestRecording);
 }
@@ -474,7 +475,8 @@ void Grunt::Record_Off()
 		return;
 
 	InterlockedExchange(IOMTR_MACRO_INTERLOCK_CAST(int)&grunt_state, (int)TestRampingDown);
-	worker_performance.time[LAST_SNAPSHOT] = rdtsc();
+
+	worker_performance.time[LAST_SNAPSHOT] = timer_value();
 }
 
 //
@@ -865,7 +867,7 @@ void Grunt::Record_IO(Transaction * transaction, DWORDLONG end_IO)
 			// If ramp_up_ios_pending just went to ZERO and the grunt is in the
 			// recording state, set the test's start_counter to the current time.
 			if ((ramp_up_ios_pending <= 0) && (grunt_state == TestRecording)) {
-				worker_performance.time[FIRST_SNAPSHOT] = rdtsc();
+				worker_performance.time[FIRST_SNAPSHOT] = timer_value();
 			}
 		}
 	}
@@ -1076,7 +1078,8 @@ void Grunt::Do_IOs()
 
 				// Close target and record connection time.
 				target->Close(&grunt_state);
-				conn_time = rdtsc() - target->conn_start_time;
+
+				conn_time = timer_value() - target->conn_start_time;
 
 				// Since target is closed, it is no longer closing.
 				target->is_closing = FALSE;
@@ -1104,8 +1107,10 @@ void Grunt::Do_IOs()
 #endif
 			// Set the number of transactions to do before closing.
 			target->trans_left_in_conn = target->spec.trans_per_conn;
+			
 			// Record the start time for the transaction.
-			target->conn_start_time = rdtsc();
+			target->conn_start_time = timer_value();
+
 			// Open the target.
 			target->Open(&grunt_state);
 
@@ -1170,7 +1175,7 @@ void Grunt::Do_IOs()
 								  user_alignment, user_align_mask);
 		}
 
-		transaction->start_IO = (grunt_state == TestRecording) ? rdtsc() : 0;
+		transaction->start_IO = (grunt_state == TestRecording) ? timer_value() : 0;
 
 		// If the transaction start time hasn't been set,
 		// this is the first I/O of this transaction.  Set the start time.
@@ -1193,6 +1198,7 @@ void Grunt::Do_IOs()
 			if (transaction->is_read) {
 				transfer_result = target->Read(read_data, transaction);
 			} else {
+				memset(write_data, rand(), transaction->size);
 				transfer_result = target->Write(write_data, transaction);
 			}
 
@@ -1238,7 +1244,7 @@ void Grunt::Do_IOs()
 
 			// An I/O completed successfully and will not go to the completion 
 			// queue.  Record the request as done.
-			Record_IO(transaction, rdtsc());
+			Record_IO(transaction, timer_value());
 			break;
 		default:
 			// see whether it should record the error
@@ -1299,7 +1305,7 @@ ReturnVal Grunt::Complete_IO(int timeout)
 		if (bytes < (int)trans_slots[trans_id].size)
 			Do_Partial_IO(&trans_slots[trans_id], bytes);
 		else
-			Record_IO(&trans_slots[trans_id], rdtsc());
+			Record_IO(&trans_slots[trans_id], timer_value());
 		return ReturnSuccess;
 
 	case ReturnAbort:

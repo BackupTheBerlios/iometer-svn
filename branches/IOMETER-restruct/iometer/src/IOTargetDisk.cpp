@@ -1152,6 +1152,10 @@ BOOL TargetDisk::Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, 
 					// Set its address.
 					olap[i].Offset = (DWORD) * prepare_offset;
 					olap[i].OffsetHigh = (DWORD) (*prepare_offset >> 32);
+
+					// Fill the buffer with some new random data so we aren't writing all zeros each time
+					memset(buffer, rand(), bytes);
+
 					// Do the asynchronous write.
 					if (WriteFile(disk_file, (char *)buffer, bytes, &bytes_written, &(olap[i]))) {
 						// It succeeded immediately!

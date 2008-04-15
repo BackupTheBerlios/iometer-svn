@@ -526,7 +526,7 @@ BOOL Worker::SetTargets()
 		target = GetTarget(i, ActiveType);
 
 		// Initialize random number generator.
-		target->spec.random = rdtsc();
+		target->spec.random = timer_value();
 
 		// Initialize unique discriminator for VI targets.
 		if (IsType(target->spec.type, VIClientType)) {
@@ -537,8 +537,8 @@ BOOL Worker::SetTargets()
 
 #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_IA64) || defined(IOMTR_CPU_X86_64)
 			// Intel processor (little-endian) -- use the first VI_DISCRIMINATOR_SIZE bytes 
-			// (least significant bytes) of the current 64-bit system time as the discriminator.
-			vi_discriminator = (VI_DISCRIMINATOR_TYPE) rdtsc();
+			// (least significant bytes) of the current counter/clock
+			vi_discriminator = (VI_DISCRIMINATOR_TYPE) timer_value();
 
 			// Copy the first vi_discriminator_length bytes of the generated discriminator
 			// to the VI_Spec's local_address.
@@ -723,7 +723,7 @@ void Worker::SaveResults(ostream * file, int access_index, int result_type)
 	for (stat = 0; stat < CPU_UTILIZATION_RESULTS; stat++)
 		(*file) << ",";	// Space for CPU utilization
 
-	(*file) << "," << manager->processor_speed << ",,";	// Space for IRQ/sec, CPU_effectiveness
+	(*file) << "," <<  manager->timer_resolution << ",,"; // Space for IRQ/sec, CPU_effectiveness
 
 	for (stat = 0; stat < NI_COMBINE_RESULTS + TCP_RESULTS; stat++) {
 		(*file) << ",";	// Space for network results
@@ -847,7 +847,8 @@ void Worker::SaveResults(ostream * file, int access_index, int result_type)
 
 		for (stat = 0; stat < CPU_UTILIZATION_RESULTS; stat++)
 			(*file) << ",";	// Space for CPU utilization
-		(*file) << "," << manager->processor_speed << ",,";	// Space for IRQ/sec and CPU_effectiveness.
+
+		(*file) << "," << manager->timer_resolution << ",,"; // Space for IRQ/sec and CPU_effectiveness.		
 
 		for (stat = 0; stat < NI_COMBINE_RESULTS + TCP_RESULTS; stat++)
 			(*file) << ",";	// Space for network results
@@ -870,14 +871,14 @@ void Worker::UpdateResults(int which_perf)
 	Results *device_results;	// Results for a specific target.
 	Raw_Result *raw;	// Raw results stored for the worker.
 	Raw_Result *raw_device_results;	// Raw results returned for a single device.
-	double processor_speed;
+	double timer_resolution;
 
 	if ((which_perf < 0) || (which_perf >= MAX_PERF))
 		return;
 
 	// Initializing worker's results.
 	ResetResults(which_perf);
-	processor_speed = manager->processor_speed;
+	timer_resolution = manager->timer_resolution;
 
 	// Receive the update from Dynamo.  The manager should have already made
 	// the request.
@@ -887,7 +888,8 @@ void Worker::UpdateResults(int which_perf)
 	new_wkr_results = &(data_msg.data.worker_results);
 	raw = &(results[which_perf].raw);
 	raw->counter_time = new_wkr_results->time[LAST_SNAPSHOT] - new_wkr_results->time[FIRST_SNAPSHOT];
-	run_time = ((double)raw->counter_time) / processor_speed;
+	
+	run_time = ((double)raw->counter_time) / timer_resolution;
 
 	// Network clients do not *have* targets, but rather, *are* the targets.
 	if (IsType(Type(), GenericClientType))
@@ -919,17 +921,17 @@ void Worker::UpdateResults(int which_perf)
 		//
 		// Determining maximum latencies of device.
 		device_results->max_read_latency = ((double)(_int64)
-						    raw_device_results->max_raw_read_latency) * (double)1000 /
-		    processor_speed;
+						    raw_device_results->max_raw_read_latency) * (double)1000 / timer_resolution;
+
 		device_results->max_write_latency = ((double)(_int64)
-						     raw_device_results->max_raw_write_latency) * (double)1000 /
-		    processor_speed;
+						     raw_device_results->max_raw_write_latency) * (double)1000 / timer_resolution;
+
 		device_results->max_transaction_latency = ((double)(_int64)
-							   raw_device_results->max_raw_transaction_latency) *
-		    (double)1000 / processor_speed;
+							   raw_device_results->max_raw_transaction_latency) * (double)1000 / timer_resolution;
+
 		device_results->max_connection_latency = ((double)(_int64)
-							  raw_device_results->max_raw_connection_latency) *
-		    (double)1000 / processor_speed;
+							  raw_device_results->max_raw_connection_latency) * (double)1000 / timer_resolution;
+
 		if (device_results->max_read_latency > device_results->max_write_latency) {
 			device_results->max_latency = device_results->max_read_latency;
 		} else {
@@ -1009,16 +1011,14 @@ void Worker::UpdateResults(int which_perf)
 		// Determining average latencies of transfers to a single drive.
 		if (raw_device_results->read_count || raw_device_results->write_count) {
 			device_results->ave_latency = ((double)(_int64)
-						       (raw_device_results->read_latency_sum +
-							raw_device_results->write_latency_sum))
-			    * (double)1000 / processor_speed / (double)(_int64)
-			    (raw_device_results->read_count + raw_device_results->write_count);
+				(raw_device_results->read_latency_sum +
+				raw_device_results->write_latency_sum)) * (double)1000 / timer_resolution 
+				/ (double)(_int64)(raw_device_results->read_count + raw_device_results->write_count);
 
 			if (raw_device_results->read_count) {
 				device_results->ave_read_latency = ((double)(_int64)
-								    raw_device_results->read_latency_sum) * (double)1000
-				    / processor_speed / (double)(_int64)
-				    raw_device_results->read_count;
+					raw_device_results->read_latency_sum) * (double)1000 / timer_resolution
+					/ (double)(_int64)raw_device_results->read_count;
 				raw->read_latency_sum += raw_device_results->read_latency_sum;
 			} else {
 				device_results->ave_read_latency = (double)0;
@@ -1026,9 +1026,8 @@ void Worker::UpdateResults(int which_perf)
 
 			if (raw_device_results->write_count) {
 				device_results->ave_write_latency = ((double)(_int64)
-								     raw_device_results->write_latency_sum) *
-				    (double)1000 / processor_speed / (double)(_int64)
-				    raw_device_results->write_count;
+					raw_device_results->write_latency_sum) * (double)1000 / timer_resolution
+					/ (double)(_int64)raw_device_results->write_count;
 				raw->write_latency_sum += raw_device_results->write_latency_sum;
 			} else {
 				device_results->ave_write_latency = (double)0;
@@ -1036,10 +1035,8 @@ void Worker::UpdateResults(int which_perf)
 
 			if (raw_device_results->transaction_count) {
 				device_results->ave_transaction_latency = ((double)(_int64)
-									   raw_device_results->
-									   transaction_latency_sum) * (double)
-				    1000 / processor_speed / (double)(_int64)
-				    (raw_device_results->transaction_count);
+					raw_device_results->transaction_latency_sum) * (double) 1000 / 
+					timer_resolution / (double)(_int64)(raw_device_results->transaction_count);
 				raw->transaction_latency_sum += raw_device_results->transaction_latency_sum;
 			} else {
 				device_results->ave_transaction_latency = (double)0;
@@ -1055,9 +1052,8 @@ void Worker::UpdateResults(int which_perf)
 		if (raw_device_results->connection_count) {
 			// Calculate the average connection time.
 			device_results->ave_connection_latency = ((double)(_int64)
-								  (raw_device_results->connection_latency_sum)) *
-			    (double)1000 / processor_speed / (double)(_int64)
-			    (raw_device_results->connection_count);
+				(raw_device_results->connection_latency_sum)) * (double)1000 / 
+				timer_resolution / (double)(_int64)(raw_device_results->connection_count);
 			raw->connection_latency_sum += raw_device_results->connection_latency_sum;
 		} else {
 			device_results->ave_connection_latency = (double)0;
@@ -1067,26 +1063,28 @@ void Worker::UpdateResults(int which_perf)
 	// Calculating average latencies for the worker.
 	if (raw->read_count || raw->write_count) {
 		results[which_perf].ave_latency = (double)(_int64) (raw->read_latency_sum +
-								    raw->write_latency_sum) * (double)1000 /
-		    processor_speed / (double)(_int64) (raw->read_count + raw->write_count);
+			raw->write_latency_sum) * (double)1000 / timer_resolution
+			/ (double)(_int64) (raw->read_count + raw->write_count);
 
 		if (raw->read_count) {
 			results[which_perf].ave_read_latency = (double)(_int64)
-			    raw->read_latency_sum * (double)1000 / processor_speed / (double)(_int64) raw->read_count;
+			    raw->read_latency_sum * (double)1000 / timer_resolution
+				/ (double)(_int64) raw->read_count;
 		} else {
 			results[which_perf].ave_read_latency = (double)0;
 		}
 
 		if (raw->write_count) {
 			results[which_perf].ave_write_latency = (double)(_int64)
-			    raw->write_latency_sum * (double)1000 / processor_speed / (double)(_int64) raw->write_count;
+			    raw->write_latency_sum * (double)1000 / timer_resolution
+				/ (double)(_int64) raw->write_count;
 		} else {
 			results[which_perf].ave_write_latency = (double)0;
 		}
 
 		if (raw->transaction_count) {
 			results[which_perf].ave_transaction_latency = (double)(_int64)
-			    raw->transaction_latency_sum * (double)1000 / processor_speed
+			    raw->transaction_latency_sum * (double)1000 / timer_resolution
 			    / (double)(_int64) (raw->transaction_count);
 		} else {
 			results[which_perf].ave_transaction_latency = (double)0;
@@ -1101,8 +1099,8 @@ void Worker::UpdateResults(int which_perf)
 	// Calculating taverage connection time for the worker.
 	if (raw->connection_count) {
 		results[which_perf].ave_connection_latency = (double)(_int64)
-		    raw->connection_latency_sum * (double)1000
-		    / processor_speed / (double)(_int64) raw->connection_count;
+		    raw->connection_latency_sum * (double)1000 /
+			timer_resolution / (double)(_int64) raw->connection_count;
 	} else {
 		results[which_perf].ave_connection_latency = (double)0;
 	}

@@ -96,8 +96,8 @@ class Manager {
 	int GetIndex();
 	TargetType Type();
 	//
-	double processor_speed;	// Speed of manager's system processors in Hz.
-	int processors;		// Number of processors in manager's system.
+	double	timer_resolution;		// Speed of manager's system high performance times in tic\sec or processor frequency.
+	int		processors;		// Number of processors in manager's system.
 	//
 	///////////////////////////////////////////////////////////////////////////
 

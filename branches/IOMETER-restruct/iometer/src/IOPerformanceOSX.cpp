@@ -77,13 +77,13 @@ Performance::Performance()
 {
 	// Obtaining the number of CPUs in the system and their speed.
 	processor_count = Get_Processor_Count();
-	processor_speed = Get_Processor_Speed();
+	timer_resolution = Get_Timer_Resolution();
 
 	// Network performance statistics are disabled by default.  Assume this unless later
 	// performance calls succeed.  Then, set the correct number of interfaces.
 	network_interfaces = 0;
 
-	if (!processor_speed || !processor_count) {
+	if (!timer_resolution || !processor_count) {
 		cout << "*** Unable to initialize needed performance data." << endl
 		    << "This error may indicate that you are trying to run on an unsupported" << endl
 		    << "processor or OS.  See the Iometer User's Guide for information on" << endl
@@ -158,7 +158,7 @@ int Performance::Get_Processor_Count()
 //
 // Getting the speed of the processors in Hz.
 //
-double Performance::Get_Processor_Speed()
+double Performance::Get_Timer_Resolution()
 {
 	// Note: When adding entries, make sure you also incerement the upper
 	// bound of the index in the for loop below.

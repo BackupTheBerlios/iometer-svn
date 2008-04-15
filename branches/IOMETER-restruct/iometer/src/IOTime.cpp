@@ -124,7 +124,7 @@ DWORDLONG jiffies(void)
 }
 
 #if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_X86_64)
-DWORDLONG rdtsc(void)
+DWORDLONG timer_value(void)
 {
 	// Original code (returning the cpu cycle counter)
 	unsigned int lo, hi;
@@ -163,7 +163,7 @@ DWORD get_tbu()
 	return ccc;
 }
 
-DWORDLONG rdtsc(void)
+DWORDLONG timer_value(void)
 {
 	// Original code (returning the cpu cycle counter)
 
@@ -184,7 +184,7 @@ DWORDLONG rdtsc(void)
 #define CCNT_IOC_GETCCNT	_IOR(CCNT_IOC_MAGIC, 1, unsigned long long)
 extern int ccntfd;
 
-DWORDLONG rdtsc(void)
+DWORDLONG timer_value(void)
 {
 	unsigned long long ccnt;
 
@@ -194,7 +194,7 @@ DWORDLONG rdtsc(void)
 	return (ccnt);
 }
 #elif defined(IOMTR_CPU_IA64)
-DWORDLONG rdtsc(void)
+DWORDLONG timer_value(void)
 {
 	unsigned long temp;
 
@@ -214,7 +214,7 @@ DWORDLONG rdtsc(void)
 #elif defined(IOMTR_OSFAMILY_NETWARE)
 #if defined(IOMTR_CPU_I386)
 __declspec(naked)
-extern DWORDLONG rdtsc()
+extern DWORDLONG timer_value()
 {
 	__asm__ {
 		_emit 0Fh	// Store low  32-bits of counter in EAX.
@@ -228,7 +228,7 @@ extern DWORDLONG rdtsc()
 // ----------------------------------------------------------------------------
 #elif defined(IOMTR_OS_SOLARIS)
 #if defined(IOMTR_CPU_I386)
-unsigned long long rdtsc()
+unsigned long long timer_value()
 {
 	asm(".byte 0x0f, 0x31");
 }
@@ -236,7 +236,7 @@ unsigned long long rdtsc()
 #include <sys/types.h>
 #include <sys/time.h>
 double processor_speed_to_nsecs;
-unsigned long long rdtsc()
+unsigned long long timer_value()
 {
 	return (DWORDLONG) ((double)gethrtime() * (double)processor_speed_to_nsecs);
 }
@@ -244,14 +244,16 @@ unsigned long long rdtsc()
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
 // ----------------------------------------------------------------------------
-#elif defined(IOMTR_OS_WIN32) && defined(IOMTR_CPU_I386)
- //
- // In WIN32 to read the IA32 Time Stamp Counter (TSC)
- // Use the opcode since MSFT compiler doesn't recognize the RDTSC instruction.
- //
-__declspec(naked)
-extern DWORDLONG rdtsc()
+#elif defined(IOMTR_OSFAMILY_WINDOWS)
+
+#if defined(IOMTR_OS_WIN32) && defined(IOMTR_CPU_I386)
+
+// Only x86 can have the QueryPerfCounter as the default
+timer_type TimerType = TIMER_OSHPC;
+
+ULONGLONG rdtsc()
 {
+
 	_asm {
 		_emit 0Fh	// Store low  32-bits of counter in EAX.
 		_emit 31h	// Store high 32-bits of counter in EDX.
@@ -261,58 +263,33 @@ extern DWORDLONG rdtsc()
 
 // ----------------------------------------------------------------------------
 #elif defined(IOMTR_OS_WIN64) && defined(IOMTR_CPU_IA64)
- //
- // Comment the next line out if you are building an application with the SDK and
- // are not using the DDK to build a driver.
- //
- //#define USING_DDK
 
- // Ved: USING_DDK macro is here for unknown reasons. I use it to differentiate builds
- // from visual studio (and the sdk) vs the ddk. 
- // Either way, including a kernel mode header in user mode is not possible. Therefore, 
- // we wish to use the !USING_DDK path here for all cases, even though USING_DDK 
- // will really be defined in the ddk env. Get it?!?
+// Define the default timer
+timer_type TimerType = TIMER_RDTSC;
 
- //#ifdef USING_DDK     // Driver
- //#include <ia64reg.h> // from IA64 DDK
- //#include <wdm.h>     // from IA64 DDK
- //#endif // USING_DDK
+//
+// DDK definitions for ITC intrinsics and ia64 registers...
+//
 
- //#ifndef USING_DDK    // Application
-
- //
- // Including the typedef that I need from DDK 'ia64reg.h' here so that we don't
- // have to include the DDK in the build path.  There are lots of additional
- // registers defined but we don't need them here.
- //
-
- //
- // Register set for Intel IA64
- //
 typedef enum IA64_REG_INDEX {
 	// ... Bunch of registers deleted here...
 	CV_IA64_ApITC = 3116,	// Interval Time Counter (ITC, AR-44)
 	// ... Bunch of registers deleted here...
 } IA64_REG_INDEX;
 
- //
- // Including the defn that I need from DDK 'wdm.h' here so that we don't have to
- // include the DDK in the build path.
- //
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	unsigned __int64 __getReg(int);
-
-#if defined(IOMTR_CPU_IA64)
 #pragma intrinsic (__getReg)
-#endif				// _M_IA64
+	
+	unsigned __int64 __getReg(int);
 
 #ifdef __cplusplus
 }
 #endif
- //#endif //!USING_DDK
 
 ////////////////////////////////////////////////////////////////////////////////////
 //  Name:       readITC
@@ -323,22 +300,8 @@ extern "C" {
 //  Returns:    The value of the ITC
 //  Parameters: None.
 /////////////////////////////////////////////////////////////////////////////////////
-    DWORDLONG rdtsc()
+DWORDLONG rdtsc()
 {
-	// *** Removed ***
-	// GetTickCount() is a temporary function used to get a number for getting Time
-	// Metrics for IA64 until a better function is found that works.  Unfortunately
-	// the resoultion of this timer function isn't small enough.  It's in milliseconds.
-	//
-	// Also need to change Performance::Get_Processor_Speed() in IOPerformanc.cpp to
-	// use milliseconds instead of using the CPU's speed if using GetTickCount().
-	//
-	// IMPORTANT: If GetTickCount() is added back in then search IOPerformance.cpp for
-	// WIN64_COUNTER_WORKAROUND for other changes that need to be added back in.
-	//
-	//return (DWORDLONG)GetTickCount();
-	// *** End removed ***
-
 	//
 	// Should read the Itanium's Interval Time Counter (ITC - AR44).
 	// This is equivalent to the IA32 Time Stamp Counter (TSC) that is read by
@@ -354,9 +317,8 @@ extern "C" {
 // ----------------------------------------------------------------------------
 #elif defined(IOMTR_OS_WIN64) && defined(IOMTR_CPU_X86_64)
 
- // Same as above, but less comments. Same story; defs are from the ddk.
-
-unsigned __int64 __rdtsc(void);
+// Define the default timer
+timer_type TimerType = TIMER_RDTSC;
 
 #pragma intrinsic(__rdtsc)
 
@@ -364,13 +326,54 @@ DWORDLONG rdtsc()
 {
 	return __rdtsc();
 }
+#endif
+
+//
+// Windows arch independent code to allow for more programmatic timer usage
+//
+
+// Abstract the OS high perf counter/frequency, so other OSs can use the 
+// rdtsc_freq and timer_* code. These 2 are just wrappers around 
+// QueryPerfCounter/Frequency
+
+LONGLONG oshpc()
+{
+	LARGE_INTEGER perf_count;
+
+	if (!QueryPerformanceCounter(&perf_count))
+	{
+#if _DETAILS
+		cerr << "QueryPerformanceCounter failed with error " << GetLastError() << 
+			    ", dynamo results are invalid." << endl;
+#endif
+		return 1;
+	}
+
+	return perf_count.QuadPart;
+}
+
+LONGLONG oshpc_freq()
+{
+	LARGE_INTEGER perf_freq;
+
+	if (!QueryPerformanceFrequency(&perf_freq))
+	{
+#if _DETAILS
+		cerr << "QueryPeformanceFrequency failed with error " << GetLastError() << 
+			    ", dynamo results are invalid." << endl;
+#endif 
+		return 1;
+	}
+
+	return perf_freq.QuadPart;
+}
 
 // ----------------------------------------------------------------------------
 #elif defined(IOMTR_OS_OSX)
 #if defined(IOMTR_CPU_PPC)
 #include <Carbon/Carbon.h>
 double processor_speed_to_nsecs;	// declared as extern double in IOCommon.h
-DWORDLONG rdtsc()
+DWORDLONG timer_value()
 {
 	DWORDLONG temp;
 	AbsoluteTime now;
@@ -394,3 +397,170 @@ DWORDLONG rdtsc()
 #error ===> ERROR: You have to do some coding here to get the port done!
 #endif
 // ----------------------------------------------------------------------------
+
+
+//
+// COMMON TIMER CODE
+//
+// Assumes the timer conventions as defined by the above windows section.
+// Summary:
+// 1. TimerType controls the runtime type of the timer. Each OS needs to instantiate 
+//    a TimerType of type timer_type and set its default. 
+// 2. timer_value and timer_frequency() (below) are top level routines that mind TimerType
+// 3. timer_type enum in iocommon.h and timer_value()/timer_frequeny() need to be 
+//    modified for any new timer added. 
+// 4. Define a {timer_name}() and {timer_name}_freq() functions for a desired timer 
+// 5. oshpc() and oshpc_freq() are minimum no matter what counter they really expose
+// 6. rdtsc() becomes an optional timer, and rdtsc_freq (below) would use it 
+//
+
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+
+// __int64 rdtsc_freq()
+//
+// The main problem is that TSC/ITC frequency may not match the internal 
+// processor clock, so we derive it here based on another known counter--
+// oshpc() in this case. 
+// While ding that, we can also detect speed stepping but not 100% reliably.
+//
+// Note: -assumes we are running on one processor; caller should affinitize. 
+//       -oshpc() is used to measure the TSC/ITC since we know its period. 
+//		 -falls back to oshpc_freq() in case we find speed stepping.
+//		 -abstracted for non-windows OS (at least those that support rdtsc)
+
+LONGLONG rdtsc_freq()
+{
+	enum {SLEEP_CASE=0, SPIN_CASE=1, MAX_CASE=2};
+	ULONG types = MAX_CASE;
+	LONGLONG start_count, end_count;
+	LONGLONG stop_count, spin_count;
+	LONGLONG start_stamp, end_stamp;
+	LONGLONG new_freq[MAX_CASE];
+	LONGLONG perf_freq;
+	LONGLONG frequency = 0;
+
+	// This is the frequency that QueryPerformanceCounter() is based on
+	perf_freq = oshpc_freq();
+
+	if (perf_freq != 1)
+	{
+#if _DETAILS
+		cout << "Performance counter frequency: " << (perf_freq / 1000000.00) << "MHz." << endl;
+#endif
+	}
+	else 
+	{
+		// Should never really get here.
+		cerr << "Could not query performance frequency, exiting." << endl;
+		exit(1); 
+	}
+
+	//
+	// Derive a sleeping and a spinning frequencies in case they differ
+	//
+	while (types--)
+	{
+		start_stamp = rdtsc();
+		start_count = oshpc();
+
+		if (types == SLEEP_CASE)
+			Sleep(1000);
+
+		else if (types == SPIN_CASE)
+		{
+			stop_count = start_count + perf_freq;  // freq is cycles in 1 second
+			do {
+				spin_count = oshpc(); 
+			} while (stop_count > spin_count);				
+		}
+
+		end_stamp = rdtsc();
+		end_count = oshpc();
+
+		// calculate interval
+		end_stamp = end_stamp - start_stamp;
+		end_count = end_count - start_count;
+
+		// store the derived frequency for a given type
+		new_freq[types] = perf_freq * end_stamp / end_count; // overflow??
+	}
+
+	// Catch speed-stepping CPUs
+	if ( (max(new_freq[SLEEP_CASE], new_freq[SPIN_CASE]) 
+		- min(new_freq[SLEEP_CASE], new_freq[SPIN_CASE])) * 100.0 / 
+		         max(new_freq[SLEEP_CASE], new_freq[SPIN_CASE]) > 5.0)
+	{
+
+		cout << "##########################################################################" << endl;
+		cout << " Detected speed-stepping CPU. Disable power saving mode when using IOmeter." << endl;
+		cout << "##########################################################################" << endl;
+
+		// Fallback to OSHPC?
+		cout << " Using performance counter frequency: " << (perf_freq / 1000000.00) << "MHz." << endl;
+
+		TimerType = TIMER_OSHPC;
+		frequency = perf_freq; 
+	}
+	else if ( (max(new_freq[SPIN_CASE], perf_freq) 
+			 - min(new_freq[SPIN_CASE], perf_freq)) * 100.0 / 
+				   max(new_freq[SPIN_CASE], perf_freq) > 5.0)
+	{
+		// if it's not close, we use the new spin frequency
+		cout << "Using RDTSC frequency: " << (new_freq[0] / 1000000.00) << "MHz." << endl;
+		frequency = new_freq[SPIN_CASE];
+	}
+	else
+	{
+		// if it's close, lets trust the original perf frequency
+		cout << " Using performance counter frequency: " << (perf_freq / 1000000.00) << "MHz." << endl;
+		frequency = perf_freq;
+	}
+
+	return frequency;
+}
+
+DWORDLONG timer_value()
+{
+	switch(TimerType) // global
+	{
+		case TIMER_RDTSC:
+			return rdtsc();
+			break;
+
+		case TIMER_OSHPC:
+		case TIMER_HPET: // fall through the default for now
+		default:
+			return oshpc();
+			break;
+	}
+}
+
+double timer_frequency()
+{
+	double timerFreq = 1.0;		//init to very rare flag value
+
+	switch(TimerType)
+	{
+		case TIMER_RDTSC:
+			timerFreq = (double) rdtsc_freq();
+			break;
+
+		case TIMER_OSHPC:
+		case TIMER_HPET: // fall through the default for now
+		default:
+			timerFreq = (double) oshpc_freq();
+
+			if (timerFreq == 1)
+			{
+				// This call really has to work!
+				cerr << "Could not obtain peformance frequency, exiting." << endl;
+				exit(1);
+			}
+			cout << " Using performance counter frequency: " << (timerFreq / 1000000.00) << "MHz." << endl;
+			break;
+    }
+
+	return timerFreq;
+}
+
+#endif

@@ -245,6 +245,7 @@ BOOL Manager::Login(char* port_name, int login_port_number)
 		name_size = strlen(data_msg.data.manager_info.names[0]);
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		GetComputerName(manager_name, (LPDWORD) & name_size);
+		data_msg.data.manager_info.timer_resolution = perf_data[WHOLE_TEST_PERF].timer_resolution;
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -252,7 +253,7 @@ BOOL Manager::Login(char* port_name, int login_port_number)
 	}
 	strcpy(data_msg.data.manager_info.names[1], prt->network_name);
 	data_msg.data.manager_info.port_number = prt->network_port;
-	data_msg.data.manager_info.processor_speed = perf_data[WHOLE_TEST_PERF].processor_speed;
+	data_msg.data.manager_info.timer_resolution = perf_data[WHOLE_TEST_PERF].timer_resolution;
 	data_msg.data.manager_info.processors = perf_data[WHOLE_TEST_PERF].processor_count;
 
 #if defined(IOMTR_CPU_SPARC)
@@ -687,7 +688,7 @@ void Manager::Report_Results(int which_perf)
 
 			// If recording, update the ending results for the worker's drive performance.
 			if (grunts[g]->grunt_state == TestRecording) {
-				worker_results->time[LAST_SNAPSHOT] = rdtsc();
+				worker_results->time[LAST_SNAPSHOT] = timer_value();
 			}
 
 			if (which_perf == LAST_UPDATE_PERF) {
@@ -738,7 +739,7 @@ void Manager::Report_Results(int which_perf)
 				       sizeof(Worker_Results));
 
 				// Record time of last update.
-				grunts[g]->prev_worker_performance.time[LAST_SNAPSHOT] = rdtsc();
+				grunts[g]->prev_worker_performance.time[LAST_SNAPSHOT] = timer_value();
 
 				// Clear "max_" values in prev_worker_performance.
 				for (i = 0; i < worker_results->target_results.count; i++) {

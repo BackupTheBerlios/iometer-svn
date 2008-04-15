@@ -298,9 +298,12 @@ static int iomtr_set_cpu_affinity(unsigned long affinity_mask)
 	res = SetProcessAffinityMask(GetCurrentProcess(), affinity_mask);
 	if (!res) {
 		res = GetLastError();
-		cout << "Set cpu affinity fail with" << res << endl;
-		// default to CPU 1
-		res = SetProcessAffinityMask(GetCurrentProcess(), 1);
+		cout << "Set cpu affinity failed with" << res << endl;
+		
+		
+		// // default to CPU 1
+		// Do nothing if errors
+		// res = SetProcessAffinityMask(GetCurrentProcess(), 1);
 	}
 #elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	// nop  

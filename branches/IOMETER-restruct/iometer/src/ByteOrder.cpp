@@ -182,7 +182,7 @@ void double_wordswap(double *d)
 //
 void Manager_Info_double_swap(struct Manager_Info *p)
 {
-	double_wordswap(&(p->processor_speed));
+	double_wordswap(&(p->timer_resolution));
 }
 
 void Manager_Results_double_swap(struct Manager_Results *p)
@@ -322,7 +322,7 @@ void reorder(Data_Message & var, int uniontype, int send_recv)
 #endif
 		reorder(var.data.manager_info.port_number);
 		reorder(var.data.manager_info.processors);
-		reorder(var.data.manager_info.processor_speed);
+		reorder(var.data.manager_info.timer_resolution);
 		break;
 
 	case DATA_MESSAGE_TARGET_SPEC:

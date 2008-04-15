@@ -169,7 +169,7 @@ Manager *ManagerList::AddManager(Manager_Info * manager_info)
 
 	strcpy(manager->name, manager->computer_name);
 	manager->processors = manager_info->processors;
-	manager->processor_speed = (double)manager_info->processor_speed;
+	manager->timer_resolution = (double)manager_info->timer_resolution;
 
 	// Connect to the new manager using TCP/IP as appropriate
 	if (theApp.login_port->type == PORT_TYPE_TCP) {
@@ -585,17 +585,16 @@ void ManagerList::UpdateResults(int which_perf)
 		}
 
 		read_latency_sum += (double)(_int64)
-		    manager->results[which_perf].raw.read_latency_sum / (double)
-		    manager->processor_speed;
+		    manager->results[which_perf].raw.read_latency_sum / (double)manager->timer_resolution;
+
 		write_latency_sum += (double)(_int64)
-		    manager->results[which_perf].raw.write_latency_sum / (double)
-		    manager->processor_speed;
+		    manager->results[which_perf].raw.write_latency_sum / (double)manager->timer_resolution;
+
 		transaction_latency_sum += (double)(_int64)
-		    manager->results[which_perf].raw.transaction_latency_sum / (double)
-		    manager->processor_speed;
+		    manager->results[which_perf].raw.transaction_latency_sum / (double)manager->timer_resolution;
+
 		connection_latency_sum += (double)(_int64)
-		    manager->results[which_perf].raw.connection_latency_sum / (double)
-		    manager->processor_speed;
+		    manager->results[which_perf].raw.connection_latency_sum / (double)manager->timer_resolution;
 
 		for (stat = 0; stat < CPU_RESULTS; stat++) {
 			results[which_perf].CPU_utilization[stat] += manager->results[which_perf].CPU_utilization[stat];

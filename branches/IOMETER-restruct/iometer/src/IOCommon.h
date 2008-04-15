@@ -281,7 +281,7 @@ using namespace std;
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
  #include <sys/timeb.h>
- #if (_MSC_VER < 1300) || defined(USING_DDK)
+ #if (_MSC_VER < 1300) || defined(USING_DDK) // not needed for vista ddk using stl70
   #include "ostream64.h"
  #endif
 #endif
@@ -378,7 +378,7 @@ using namespace std;
 #endif 
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
- #ifndef USING_DDK
+#ifndef LONG_PTR
   #if defined(IOMTR_OS_WIN32)
    // dps: Was __int32 in before, but conflicts while conversion
    //      from unsigned __int32 to unsigned long for instance
@@ -392,7 +392,7 @@ using namespace std;
    typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
    typedef ULONG_PTR        DWORD_PTR;
   #endif
- #endif // USING_DDK
+#endif // LONG_PTR
  //  The places in the Iometer code that now use CONNECTION used to use
  //  SOCKET. But SOCKET is a defined type in winsock2.h used for network
  //  access. Iometer defined a type called SOCKET used in NetTCP.cpp but 
@@ -429,14 +429,17 @@ using namespace std;
 
 #define KILOBYTE   1024
 #define MEGABYTE   1048576
+#define GIGABYTE   1073741824
+#define TERABYTE   1099511627776
+
 
 #define MAX_NAME	      80   // xca1019: Was 64 - changed according to
                                    // the Solaris 2.6 man page for swapctl(2)
-#define	MAX_CPUS	      32
-#define	MAX_WORKERS	      100
+#define	MAX_CPUS	      64
+#define	MAX_WORKERS	      128
 #define MAX_TARGETS	      512
 #define MAX_NETWORK_NAME      128
-#define MAX_NUM_INTERFACES    32
+#define MAX_NUM_INTERFACES    64
 #define MAX_WORKER_NAME	      128
 #define MAX_EXCLUDE_FILESYS   128
 
@@ -565,8 +568,8 @@ struct Manager_Info
 #if defined(IOMTR_OSFAMILY_NETWARE)	
 	char pad[2];
 #endif	
-	int	       	   processors;
-	double	       processor_speed;
+	int	       processors;
+	double	       timer_resolution;
 };
 // Basic result information stored by worker threads.
 struct Raw_Result
@@ -928,7 +931,7 @@ inline int IsBigEndian(void)
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_LINUX)
  extern DWORDLONG jiffies(void);
- extern DWORDLONG rdtsc(void);
+ extern DWORDLONG timer_value(void);
 
  #if defined(IOMTR_CPU_PPC)
   extern DWORD get_tbl();
@@ -977,17 +980,20 @@ inline int IsBigEndian(void)
  }
  #endif
 
- extern DWORDLONG rdtsc(void); 
+ extern DWORDLONG timer_value(void); 
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
- extern "C" DWORDLONG rdtsc();
+ extern "C" DWORDLONG timer_value();
 #endif
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
- extern DWORDLONG rdtsc();
+ extern ULONGLONG timer_value();
+ extern double timer_frequency();
 #endif
 // ----------------------------------------------------------------------------
 
+typedef enum {TIMER_NONE=0, TIMER_OSHPC=1, TIMER_RDTSC=2,  TIMER_HPET=3, TIMER_MAX=3} timer_type;
+extern timer_type TimerType;
 
 #endif	// ___IOCOMMON_H_DEFINED___

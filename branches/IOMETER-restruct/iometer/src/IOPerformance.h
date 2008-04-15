@@ -168,7 +168,7 @@ class Performance {
 	void Calculate_TCP_Stats(Net_Results * net_results);
 	void Calculate_NI_Stats(Net_Results * net_results);
 
-	double processor_speed;	// Frequency (Hz) of system processors.
+	double timer_resolution;		// Frequency (tic/second) of system high performance timer or processor speed.
 	int processor_count;	// Number of system processors.
 	int network_interfaces;	// Number of (virtual) NICs in the system.
 
@@ -185,6 +185,7 @@ class Performance {
 	long long timediff;
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	DWORDLONG timediff;
+
 #elif defined(IOMTR_OS_OSX)
 	double timediff;
 	char nic_names[MAX_NUM_INTERFACES][IFNAMSIZ];
@@ -194,7 +195,7 @@ class Performance {
 
       private:
 	int Get_Processor_Count();
-	double Get_Processor_Speed();
+	double Get_Timer_Resolution();
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	void Extract_Counters(DWORD perf_data_type, int snapshot);

@@ -125,13 +125,13 @@ Performance::Performance()
 
 	// Obtaining the number of CPUs in the system and their speed.
 	processor_count = Get_Processor_Count();
-	processor_speed = Get_Processor_Speed();
+	timer_resolution = Get_Timer_Resolution();
 
 	// Network performance statistics are disabled by default.  Assume this unless later
 	// performance calls succeed.  Then, set the correct number of interfaces.
 	network_interfaces = 0;
 
-	if (!processor_speed || !processor_count) {
+	if (!timer_resolution || !processor_count) {
 		cout << "*** Unable to initialize needed performance data." << endl
 		    << "This error may indicate that you are trying to run on an unsupported" << endl
 		    << "processor or OS.  See the Iometer User's Guide for information on" << endl
@@ -294,10 +294,11 @@ int Performance::Get_Processor_Count()
 }
 
 #define SPEED_VALUE_COUNT 117
+
 //
 // Getting the speed of the processors in Hz.
 //
-double Performance::Get_Processor_Speed()
+double Performance::Get_Timer_Resolution()
 {
 	// Note: When adding entries, make sure you also incerement the upper
 	// bound of the index in the for loop below.
@@ -319,6 +320,14 @@ double Performance::Get_Processor_Speed()
 	DWORD speed;
 
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+
+#if 1 // was WIN_USE_RDTSC
+	//
+	// Delete the old code once this works reliably -- ved
+	return timer_frequency(); // iotime.cpp
+
+#else
+
 	int speed_magnitude;	/* 0=MHz,1=GHz */
 	DWORD type;
 	DWORD size_of_speed = sizeof(DWORD);
@@ -329,20 +338,15 @@ double Performance::Get_Processor_Speed()
 	// Try RDTSC and see if it causes an exception.  (This code is NT-specific 
 	// because Solaris does not support __try/__except.)
 	__try {
-		rdtsc();
+		timer_value();
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER) {
 		rdtsc_supported = FALSE;
 	}
 
 	if (!rdtsc_supported) {
-#if defined(IOMTR_CPU_I386) || defined(IOMTR_CPU_X86_64)
-		cout << "*** Processor does not support RDTSC instruction!" << endl <<
+		cout << "*** Processor does not support RDTSC/ITC instruction!" << endl <<
 		    "    Dynamo requires this for high-resolution timing." << endl;
-#elif defined(IOMTR_CPU_IA64)
-		cout << "*** Processor does not support ITC instruction!" << endl <<
-		    "    Dynamo requires this for high-resolution timing." << endl;
-#endif
 		return (double)0.0;
 	}
 	// Retrieving the estimated speed from the NT system registry.
@@ -368,14 +372,8 @@ double Performance::Get_Processor_Speed()
 	if (speed_magnitude == 1) {
 		speed *= 1000;	/* convert the GHz value to MHz */
 	}
-	//#ifdef WIN64_COUNTER_WORKAROUND
-	// *** Removed ***
-	//
-	//currently Win64 uses GetTickCount whose units are in milliseconds.
-	//
-	//return (double) MILLISECOND;
-	//
-	// *** End Removed ***
+#endif // WIN_USE_RDTSC
+
 #elif defined(IOMTR_OS_SOLARIS)
 	processor_info_t infop;
 	int j, status;
@@ -542,7 +540,10 @@ void Performance::Get_Perf_Data(DWORD perf_data_type, int snapshot)
 		// Yes, get the update frequency.
 		perf_update_freq = (_int64) ((PERF_DATA_BLOCK *) perf_data)->PerfFreq.QuadPart;
 #if PERFORMANCE_DETAILS || _DETAILS
-		cout << "   Performance update frequency = " << perf_update_freq << endl << flush;
+		cout << "   Performance update frequency = " 
+			<< perf_update_freq 
+			<< endl
+			<< flush;
 #endif
 
 		// Calculate the length of time that measurements were taken.
