@@ -1176,7 +1176,7 @@ void Worker::SetValue( TargetType type, int offset, int value )
 }
 */
 
-void Worker::SetDiskSize(int disk_size)
+void Worker::SetDiskSize(DWORDLONG disk_size)
 {
 	int i, target_count;
 
@@ -1189,7 +1189,7 @@ void Worker::SetDiskSize(int disk_size)
 	}
 }
 
-void Worker::SetDiskStart(int disk_start)
+void Worker::SetDiskStart(DWORDLONG disk_start)
 {
 	int i, target_count;
 
@@ -1420,7 +1420,7 @@ int Worker::GetConnectionRate(TargetType type)
 		return DISABLED_VALUE;
 }
 
-int Worker::GetDiskStart(TargetType type)
+DWORDLONG Worker::GetDiskStart(TargetType type)
 {
 	if (!IsType(Type(), type))
 		return AMBIGUOUS_VALUE;
@@ -1429,7 +1429,7 @@ int Worker::GetDiskStart(TargetType type)
 	return spec.disk_info.starting_sector;
 }
 
-int Worker::GetDiskSize(TargetType type)
+DWORDLONG Worker::GetDiskSize(TargetType type)
 {
 	if (!IsType(Type(), type))
 		return AMBIGUOUS_VALUE;
@@ -2114,6 +2114,7 @@ BOOL Worker::LoadConfigDefault(ICF_ifstream & infile)
 	CString key, value;
 	CString token;
 	int temp_number;
+	__int64 temp_num64;
 
 	while (1) {
 		if (!infile.GetPair(key, value)) {
@@ -2162,21 +2163,21 @@ BOOL Worker::LoadConfigDefault(ICF_ifstream & infile)
 				return FALSE;
 			}
 
-			if (!ICF_ifstream::ExtractFirstInt(value, temp_number)) {
+			if (!ICF_ifstream::ExtractFirstInt64(value, temp_num64)) {
 				ErrorMessage("Error while reading file.  "
 					     "\"Disk maximum size\" should be specified as an integer value.");
 				return FALSE;
 			}
 
-			SetDiskSize(temp_number);
+			SetDiskSize(temp_num64);
 
-			if (!ICF_ifstream::ExtractFirstInt(value, temp_number)) {
+			if (!ICF_ifstream::ExtractFirstInt64(value, temp_num64)) {
 				ErrorMessage("Error while reading file.  "
 					     "\"Starting sector\" should be specified as an integer value.");
 				return FALSE;
 			}
 
-			SetDiskStart(temp_number);
+			SetDiskStart(temp_num64);
 		} else if (key.CompareNoCase("'Local network interface") == 0) {
 			if (!IsType(Type(), GenericNetType)) {
 				ErrorMessage("Error restoring worker " + (CString) name + ".  "

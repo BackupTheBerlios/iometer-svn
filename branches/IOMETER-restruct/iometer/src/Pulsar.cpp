@@ -134,6 +134,7 @@
 #include "IOCommon.h"
 #include "IOManager.h"
 
+extern timer_type TimerType;
 #if defined(IOMTR_OSFAMILY_UNIX)
 #include <sys/resource.h>
 #include <ctype.h>
@@ -156,15 +157,9 @@ int kstatfd;
 int do_syslog = FALSE;
 #endif
 
-struct dynamo_param {
-	char *iometer;
-	char *manager_name;
-	char *manager_computer_name;
-	char *manager_exclude_fs;
-	char (*blkdevlist)[MAX_TARGETS][MAX_NAME];
-	unsigned long cpu_affinity;
-	int login_port_number;
-};
+
+struct dynamo_param param;	// global scope so other modules have access to it
+							// needed specifically for timer_type and disk_contorl
 
 /////////////////////////////////////////////////////////////////////////////
 // Forward declarations
@@ -251,7 +246,7 @@ int check_dev(char *devname)
 #endif
 
 #if defined(IOMTR_SETTING_CPU_AFFINITY)
-static int iomtr_set_cpu_affinity(unsigned long affinity_mask)
+static int iomtr_set_cpu_affinity(ULONG_PTR affinity_mask)
 {
 	int res = -1;
 
@@ -299,11 +294,7 @@ static int iomtr_set_cpu_affinity(unsigned long affinity_mask)
 	if (!res) {
 		res = GetLastError();
 		cout << "Set cpu affinity failed with" << res << endl;
-		
-		
-		// // default to CPU 1
 		// Do nothing if errors
-		// res = SetProcessAffinityMask(GetCurrentProcess(), 1);
 	}
 #elif defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_SOLARIS)
 	// nop  
@@ -329,7 +320,7 @@ int CDECL main(int argc, char *argv[])
 {
 	Manager manager;
 	char iometer[MAX_NETWORK_NAME];
-	struct dynamo_param param;
+	// struct dynamo_param param; //move up to global scope
 
 #if defined(IOMTR_OS_LINUX)
 	struct aioinit aioDefaults;
@@ -359,6 +350,23 @@ int CDECL main(int argc, char *argv[])
 	param.manager_exclude_fs = manager.exclude_filesys;
 	param.blkdevlist = &manager.blkdevlist;
 	param.login_port_number = 0;
+
+#if defined(IOMTR_SETTING_CPU_AFFINITY)
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+	SYSTEM_INFO system_info;
+	GetSystemInfo(&system_info);
+
+	// Set the affinity mask to all processors by default
+	param.cpu_affinity = system_info.dwActiveProcessorMask;
+#else
+#error ===> ERROR: You have to set default affinity values here
+	// TODO for non-Windows
+	param.cpu_affinity = 1; // get the current affinity value
+#endif
+#endif // IOMTR_SETTING_CPU_AFFINITY
+
+	param.timer_type = TIMER_UNDEFINED; // use the default
+	param.disk_control = RAWDISK_VIEW_NOPART; // do not show raw disks with partitions
 
 	ParseParam(argc, argv, &param);
 
@@ -623,7 +631,6 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 			return;
 		}
 		// Ensure that the each parameter has a leading switch
-
 		if ((argv[I][0] != '-') && (argv[I][0] != '/')) {
 			Syntax("Exactly one letter must follow a switch character.\n"
 			       "Switch characters are \"-\" and \"/\".");
@@ -631,9 +638,37 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 		}
 
 		if (strlen(argv[I]) != 2) {
-			Syntax("Exactly one letter must follow a switch character.\n"
-			       "Switch characters are \"-\" and \"/\".");
-			return;
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+			// TODO for non-Windows
+			//
+			// This should be turned on for all OSes, but I am not sure about the underscode in _stricmp
+			//
+			if (!_stricmp(&argv[I][1], "force_raw"))
+			{
+				param->disk_control = RAWDISK_VIEW_FULL;
+				continue;
+			}
+			else if (!_stricmp(&argv[I][1], "no_rdtsc"))
+			{
+				param->timer_type = TIMER_OSHPC;
+
+				//
+				// Kludge, we don't really need the above param->timer_type since we can 
+				// directly access the TimerType global defines in IoTime.h. This should
+				// be cleaned up better.
+				//
+				if (param->timer_type != TIMER_UNDEFINED && param->timer_type < TIMER_MAX)
+					TimerType = (timer_type) param->timer_type;
+
+				continue;
+			}
+			else
+#endif
+			{
+				Syntax("Exactly one letter must follow a switch character.\n"
+					   "Switch characters are \"-\" and \"/\".");
+				return;
+			}
 		}
 		// Ensure that each parameter has a value following the switch
 
@@ -738,9 +773,36 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 #if defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 		case 'C':
 			if (argv[I])
-				param->cpu_affinity = (unsigned long)atol(argv[I]);
+			{
+				// Lets use sscanf below to support hex input
+				//param->cpu_affinity = (unsigned long)atol(argv[I]);
+				ULONG_PTR tempMask;
+				
+				//
+				// Always deposit to a 64bit variable. We will just truncate 
+				// in case of 32bit OS. Handle both hex and decimal values.
+				//
+				if (argv[I][0] == '0' && argv[I][1] == 'x')
+					sscanf(argv[I],"0x%I64x", &tempMask);
+				else
+					sscanf(argv[I],"%I64d", &tempMask);
+
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+				// TODO for non-Windows
+				// Until someone initializes the param.cpu_affinity (above) to the 
+				// current affinity mask for other OSs, this stays for Windows only
+				if ((tempMask & param->cpu_affinity) != tempMask)
+				{
+					cerr << "Warning: Invalid cpu_affinity mask specified, ignoring." << endl;
+					cerr << "Value nust be within: 0x" << hex << param->cpu_affinity << endl;
+				}
+				else
+#endif
+					param->cpu_affinity = tempMask;
+			}
 			break;
 #endif
+
 		default:
 			{
 				char tmpary[2] = { cSwitchKey, 0 };

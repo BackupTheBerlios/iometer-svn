@@ -72,6 +72,10 @@
 
 class Manager;			// forward declaration
 
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 //
 // Structure to store information about a worker's targets.
 //
@@ -81,6 +85,10 @@ struct Target {
 	// Results of last run test.
 	Results results[MAX_PERF];
 };
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
 
 #define AMBIGUOUS_VALUE	-1
 #define DISABLED_VALUE	0
@@ -148,8 +156,8 @@ class Worker {
 	// Retrieving/setting information about a worker's targets.
 	//
 	int GetConnectionRate(TargetType type);
-	int GetDiskSize(TargetType type);
-	int GetDiskStart(TargetType type);
+	DWORDLONG GetDiskSize(TargetType type);
+	DWORDLONG GetDiskStart(TargetType type);
 	char *GetLocalNetworkInterface();
 	int GetQueueDepth(TargetType type);
 	int GetMaxSends(TargetType type);
@@ -158,8 +166,8 @@ class Worker {
 	//      int                     GetValue( TargetType type, int offset );
 	//
 	void SetConnectionRate(BOOL test_connection_rate);
-	void SetDiskSize(int disk_size);
-	void SetDiskStart(int disk_start);
+	void SetDiskSize(DWORDLONG disk_size);
+	void SetDiskStart(DWORDLONG disk_start);
 	void SetLocalNetworkInterface(int iface_index, TargetType type = GenericNetType);
 	void SetLocalNetworkInterface(const CString & iface_name);
 	void SetQueueDepth(int queue_depth);

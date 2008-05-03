@@ -79,6 +79,11 @@
 
 #define PHYSICAL_DRIVE_PREFIX	"PHYSICALDRIVE:"
 
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 //
 // Specifications for a single test for one worker.
 //
@@ -99,6 +104,22 @@ enum TargetType {
 	// Disk...              0x-X000000
 	GenericDiskType = 0x88000000,
 	PhysicalDiskType = 0x8C000000,
+
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+	// 
+	// By tagging the raw disk with this type tells iometer to chain
+	// it under the preceding logical disk. This means, that following
+	// a logical disk you would insert a physical disk with this type
+	// if you wanted iometer to display it. For a software raid, you 
+	// would insert all of the disks belonging to that logical disk.
+	//
+	// If you have multiple striped partitions over the same group of 
+	// physical disks, it is up to you if you duplicate the physical
+	// disks after every logical disk, or just show them once.
+	//
+	PhysicalDiskTypeHasPartitions = 0x8C100000, 
+#endif
+
 	LogicalDiskType = 0x8A000000,
 
 	// Network...           0x-00X0000
@@ -132,12 +153,30 @@ const int NETWORK_COMPATIBILITY_MASK = GenericTCPType | GenericVIType;
 // Disk specific specifications for drives accessed during a test.
 //
 struct Disk_Spec {
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+	//
+	// Maintain better packing: ; with MS the underlying datatype is always 32bit
+	// Though we don't really need to define the reserved field, it's there just becuase
+	//
+	unsigned has_partitions : 1;// rawdisk has partitions (set in TargetDisk::Set_Sizes)
+	unsigned ready : 1;		   // migrated the member from below
+	unsigned not_mounted : 1; // volume is recognized but unmounted (set in iomanager)
+							 // add whatever else and deduct from reserved
+	unsigned reserved : 29; // assuming int is 32bits
+
+	// This member is used during the Windows disk discovery phase.
+	// It was easiest to put it here. Can be used by other OSes for 
+	// additional per disk context. e.g. scsi address, etc...
+	// todo: byteordering!
+	DWORD disk_reserved[5];
+
+#else
 	BOOL ready;
+#endif
 
 	int sector_size;
-	int maximum_size;
-
-	int starting_sector;
+	DWORDLONG maximum_size;
+	DWORDLONG starting_sector;
 };
 
 //
@@ -145,10 +184,10 @@ struct Disk_Spec {
 //
 struct TCP_Spec {
 	// Address of local and remote TCP connection.
-	unsigned short local_port;
+	unsigned int local_port;
 
 	char remote_address[MAX_NAME];
-	unsigned short remote_port;
+	unsigned int remote_port;
 };
 
 #define VI_ADDRESS_SIZE				16
@@ -175,10 +214,14 @@ struct VI_Spec {
 	int max_transfer_size;
 	int max_connections;
 	int outstanding_ios;
+#ifndef FORCE_STRUCT_ALIGN
+	// Different compilers have different structure member alignment rules, w/out
+	// an alignment directive, this is the behavior you see!
 #if defined(IOMTR_OSFAMILY_NETWARE)
 	char padnw[2];		// this has to keep changing and I do not know why
 	// orginally it was none, had to make it 4 to work with NetWare now 2??
 	// somebodies data size is changing on me and I don't know whose  or why
+#endif
 #endif
 
 };
@@ -188,7 +231,19 @@ struct VI_Spec {
 //
 struct Target_Spec {
 	// Name and type of target.
-	char name[MAX_NAME];
+	char name[MAX_NAME]; // Device name -- for Windows, this is used to display the friendly name
+						 // that has no resembelance to the string representing the device.
+
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+	char actual_name[MAX_NAME]; // For Windows, this is the real device string
+	char basic_name[MAX_NAME]; // For Windows, used internally for sorting.
+
+	// Maintain better packing; see comment above
+	unsigned read_only:1; // self explanatory
+	unsigned test_connection_rate:1; // same as below
+	unsigned reserved:30;
+#endif
+
 	TargetType type;
 
 	// Target type specific specifications.
@@ -200,13 +255,22 @@ struct Target_Spec {
 
 	// Target independent test specifications.
 	int queue_depth;
+
+#ifndef USE_NEW_DISCOVERY_MECHANISM // move above
 	BOOL test_connection_rate;
+#endif
+
 	int trans_per_conn;
 
+#ifndef FORCE_STRUCT_ALIGN
 	char padding[4];	// xscale and ia32 arch difference. need this padding.
-
+#endif
 	// Random value used to keep connections in synch.
 	DWORDLONG random;
 };
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
 
 #endif

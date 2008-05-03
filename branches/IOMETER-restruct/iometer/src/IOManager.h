@@ -149,6 +149,12 @@ class Manager {
 	char *m_pVersionString;
 	char *m_pVersionStringWithDebug;
 
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+	//SYSTEM_INFO   m_SystemInfo;
+	OSVERSIONINFO m_OsVersionInfo;
+#endif
+
+
 	// Performance results functions and data.
 	void Report_Results(int which_perf);
 	void Get_Performance(int which_perf, int snapshot);

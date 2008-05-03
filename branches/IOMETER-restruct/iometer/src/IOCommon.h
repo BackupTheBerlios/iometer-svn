@@ -560,14 +560,21 @@ enum {
 	RecordNone
 };
 // ----------------------------------------------------------------------------
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 struct Manager_Info
 {
 	char	       version[MAX_VERSION_LENGTH];
 	char	       names[2][MAX_NETWORK_NAME];
 	unsigned short port_number;   // used only with TCP/IP.
+#ifndef FORCE_STRUCT_ALIGN
 #if defined(IOMTR_OSFAMILY_NETWARE)	
 	char pad[2];
 #endif	
+#endif 
 	int	       processors;
 	double	       timer_resolution;
 };
@@ -596,7 +603,9 @@ struct Raw_Result
 struct Target_Results
 {
 	int	   count;    // Number of targets.
+#ifndef FORCE_STRUCT_ALIGN
 	char	   pad[4];   // padding
+#endif
 	Raw_Result result[MAX_TARGETS];
 };
 // Storing results for a worker.  This includes the worker's target results.
@@ -609,7 +618,9 @@ struct Worker_Results
 struct CPU_Results
 {
 	int    count;	 // Number of processors.
+#ifndef FORCE_STRUCT_ALIGN
 	char   pad[4];   // padding
+#endif
 	double CPU_utilization[MAX_CPUS][CPU_RESULTS];
 };
 // All network related results are stored in a single structure.
@@ -617,7 +628,9 @@ struct Net_Results
 {
 	double tcp_stats[TCP_RESULTS];
 	int    ni_count;   // Number of NICs.
+#ifndef FORCE_STRUCT_ALIGN
 	char   pad[4];     // padding
+#endif
 	double ni_stats[MAX_NUM_INTERFACES][NI_RESULTS];
 };
 // Results SPECIFIC to a single system.  This is NOT compiled system results.
@@ -657,6 +670,11 @@ struct Results
 	double	     ave_connection_latency;
 	double	     max_connection_latency;
 };
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
+
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_UNIX) || defined(IOMTR_OSFAMILY_NETWARE)
  // This LPOVERLAPPED typedef is from WINBASE.H
@@ -993,7 +1011,26 @@ inline int IsBigEndian(void)
 #endif
 // ----------------------------------------------------------------------------
 
-typedef enum {TIMER_NONE=0, TIMER_OSHPC=1, TIMER_RDTSC=2,  TIMER_HPET=3, TIMER_MAX=3} timer_type;
-extern timer_type TimerType;
+// Defines various timer types supported, see iotime.c
+typedef enum {TIMER_UNDEFINED=0, TIMER_OSHPC=1, TIMER_RDTSC=2,  TIMER_HPET=3, TIMER_MAX=3} timer_type;
 
+// #ifdef USE_NEW_DETECTION_MECHANISM
+// Controls the disk view options in the new disk detection code. Not ifdefed beuase it is tied
+// to the dynamo_param relocation which is not ifdefed either.
+typedef enum {RAWDISK_VIEW_COMPAT=0, RAWDISK_VIEW_NOPART=1, RAWDISK_VIEW_FULL=2} diskview_type;
+
+// Moved to a global location so that other classes can get access 
+// to it w/out complicated C++ relationships
+struct dynamo_param {
+	char *iometer;
+	char *manager_name;
+	char *manager_computer_name;
+	char *manager_exclude_fs;
+	char (*blkdevlist)[MAX_TARGETS][MAX_NAME];
+	ULONG_PTR cpu_affinity; // Needs to be 64bits on 64bit systems!
+							// Someone needs to fix the linux definitions
+	int login_port_number;
+	int timer_type; // control timer used from cmdline
+	int disk_control; // control what disk get displayed in iometer from cmdline
+};
 #endif	// ___IOCOMMON_H_DEFINED___

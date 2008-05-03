@@ -142,15 +142,15 @@ class ManagerList {
 	///////////////////////////////////////////////////////////////////////////
 	// Functions to set/retrieve worker target information
 	int GetConnectionRate(TargetType type);
-	int GetDiskStart(TargetType type);
-	int GetDiskSize(TargetType type);
+	DWORDLONG GetDiskStart(TargetType type);
+	DWORDLONG GetDiskSize(TargetType type);
 	int GetQueueDepth(TargetType type);
 	int GetMaxSends(TargetType type);
 	int GetTransPerConn(TargetType type);
 	//
 	void SetConnectionRate(BOOL connection_rate, TargetType type);
-	void SetDiskSize(int disk_size);
-	void SetDiskStart(int disk_start);
+	void SetDiskSize(DWORDLONG disk_size);
+	void SetDiskStart(DWORDLONG disk_start);
 	void SetQueueDepth(int queue_size, TargetType type);
 	void SetMaxSends(int max_sends);
 	void SetTransPerConn(int trans_per_conn, TargetType type);

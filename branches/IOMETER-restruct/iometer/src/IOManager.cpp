@@ -152,6 +152,22 @@ Manager::Manager()
 	record = FALSE;
 	grunt_count = 0;
 	memset(blkdevlist, 0, sizeof(char) * MAX_TARGETS * MAX_NAME);
+
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+	//GetSystemInfo(&m_SystemInfo);
+
+	m_OsVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+	if (!GetVersionEx(&m_OsVersionInfo))
+	{
+		// non-fatal
+	#ifdef _DEBUG
+		cout << " Could not get Windows version info, error=" << GetLastError() << "." << endl;
+	#endif	
+		ZeroMemory(&m_OsVersionInfo, sizeof(m_OsVersionInfo));
+	}
+#endif
+
 }
 
 //
@@ -221,7 +237,7 @@ BOOL Manager::Login(char* port_name, int login_port_number)
 	msg.purpose = LOGIN;
 	strcpy(data_msg.data.manager_info.version, m_pVersionStringWithDebug);
 #ifdef _DEBUG
-	cout << "dynamo version: " << data_msg.data.manager_info.version << endl;
+	cout << "dynamo version: " << data_msg.data.manager_info.version << ", data_msg size: " << sizeof(data_msg) << endl;
 #endif
 	sscanf(data_msg.data.manager_info.version, "%d.%d.%d", &year, &month, &day);
 	msg.data = (year * 10000) + (month * 100) + day;
@@ -979,12 +995,13 @@ void Manager::Start_Test(int target)
 	cout << "Starting..." << endl << flush;
 
 	// Start all the grunts.  This creates the grunt threads.
+	// Pass as argument the index of the Target. Can be used for affinity.
 	if (target == ALL_WORKERS) {
 		for (g = 0; g < grunt_count; g++) {
-			grunts[g]->Start_Test();
+			grunts[g]->Start_Test(g);
 		}
 	} else {
-		grunts[target]->Start_Test();
+		grunts[target]->Start_Test(target);
 	}
 #ifdef _DEBUG
 	cout << "   Started." << endl << flush;

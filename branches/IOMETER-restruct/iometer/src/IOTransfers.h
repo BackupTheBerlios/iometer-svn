@@ -69,13 +69,18 @@
 #endif
 #include "vipl.h"
 
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 //
 // Generic structure to hold information that may be passed to a thread.
 //
 struct Thread_Info {
 	int id;			// Thread's identification.  Used by thread to
 	// determine what work it is to do, such as which disk to access.
-	void *parent;		// Pointer used to get parent object.
+	//void *parent;		// Pointer used to get parent object.
+	DWORDLONG parent; // force this to always be 8bytes for x-architecture differences?
 };
 
 //
@@ -110,5 +115,8 @@ struct Transaction {
 	int remaining_requests;	// PING (number of requests remaining in this transaction)
 	int remaining_replies;	// PONG (number of replies remaining in this transaction)
 };
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
 
 #endif

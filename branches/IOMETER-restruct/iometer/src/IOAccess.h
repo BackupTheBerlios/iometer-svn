@@ -62,6 +62,10 @@
 					    // byte alignment (because the alignment isn't a
 					    // power of two)
 
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 typedef struct {
 	int random;
 	int read;
@@ -86,6 +90,10 @@ struct Access_Spec {
 	DWORD reply;
 	DWORD size;
 };
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
 
 #define Access_Specs Access_Spec*
 #define MAX_ACCESS_SPECS	100	// Maximum number of specs in a total specification.

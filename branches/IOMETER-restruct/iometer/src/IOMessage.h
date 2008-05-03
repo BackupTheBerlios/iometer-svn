@@ -115,6 +115,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 // Different data a message can contain.
 union Message_Data {
 	Manager_Info manager_info;
@@ -143,9 +147,15 @@ struct Message {
 
 struct Data_Message {
 	int count;		// Number of data items in the message.
+#ifdef FORCE_STRUCT_ALIGN
 	char pad[4];		// coz of Solaris - NT differences
+#endif
 	Message_Data data;	// Detailed data sent with the data message.
 };
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
 
 #define MESSAGE_SIZE		sizeof( Message )
 #define DATA_MESSAGE_SIZE	sizeof( Data_Message )

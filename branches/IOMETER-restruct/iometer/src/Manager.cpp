@@ -907,7 +907,7 @@ void Manager::UpdateResults(int which_perf)
 // calls the workers function.
 //
 ///////////////////////////////////////////////////////////////////////////////
-void Manager::SetDiskSize(int disk_size)
+void Manager::SetDiskSize(DWORDLONG disk_size)
 {
 	int w, wkr_count;
 
@@ -917,7 +917,7 @@ void Manager::SetDiskSize(int disk_size)
 		GetWorker(w, GenericDiskType)->SetDiskSize(disk_size);
 }
 
-void Manager::SetDiskStart(int disk_start)
+void Manager::SetDiskStart(DWORDLONG disk_start)
 {
 	int w, wkr_count;
 
@@ -1044,9 +1044,10 @@ int Manager::GetTransPerConn(TargetType type)
 // Returns a valid disk start value if all the manager's disk workers
 // have the same value.
 //
-int Manager::GetDiskStart(TargetType type)
+DWORDLONG Manager::GetDiskStart(TargetType type)
 {
-	int w, wkr_count, wkr_result;
+	int w, wkr_count;
+	DWORDLONG wkr_result;
 
 	// If there are no workers, return immediately.
 	if (!(wkr_count = WorkerCount(type)))
@@ -1070,9 +1071,10 @@ int Manager::GetDiskStart(TargetType type)
 // Returns a valid disk start value if all the manager's disk workers
 // have the same value.
 //
-int Manager::GetDiskSize(TargetType type)
+DWORDLONG Manager::GetDiskSize(TargetType type)
 {
-	int w, wkr_count, wkr_result;
+	int w, wkr_count;
+	DWORDLONG wkr_result;
 
 	// If there are no workers, return immediately.
 	if (!(wkr_count = WorkerCount(type)))

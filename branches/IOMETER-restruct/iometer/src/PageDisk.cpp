@@ -298,6 +298,7 @@ void CPageDisk::ShowTargets()
 	Manager *manager;
 	Target_Spec *disk;
 	TV_INSERTSTRUCT tvstruct;
+	HTREEITEM hLastLogicalParent, hLastPhysicalParent;
 
 	manager = theApp.pView->m_pWorkerView->GetSelectedManager();
 	if (!manager)
@@ -309,7 +310,7 @@ void CPageDisk::ShowTargets()
 	tvstruct.item.stateMask = TVIS_STATEIMAGEMASK;
 
 	// position the disk in the tree
-	tvstruct.hParent = TVI_ROOT;
+	//tvstruct.hParent = TVI_ROOT;
 	tvstruct.hInsertAfter = TVI_LAST;
 
 	// Clear the contents.
@@ -319,14 +320,43 @@ void CPageDisk::ShowTargets()
 	for (i = 0; i < iface_count; i++) {
 		// name the disk
 		disk = manager->GetInterface(i, GenericDiskType);
+		
+		tvstruct.hParent = TVI_ROOT;
 		tvstruct.item.pszText = disk->name;
 
 		// set the icon associated with the disk
 		switch (disk->type) {
+		case PhysicalDiskTypeHasPartitions:
+			// If we know the physical disk has partitions, and the checkbox has not been
+			// selected, exclude this disk.
+			//if (IsDlgButtonChecked(m_CShowAllPhysical) == 0)
+			//	continue;
+
+			tvstruct.hParent = hLastLogicalParent; // continue on
+
 		case PhysicalDiskType:
+			// If this is an orphaned disk, we can still have valueable data on
+			// unrecognized partitions, so check the checkbox here again.
+			//if (IsDlgButtonChecked(m_CShowAllPhysical) == 0 && disk->disk_info.has_partitions) 
+			//	continue;
+
 			tvstruct.item.iImage = TARGET_ICON_PHYSDISK;
 			tvstruct.item.iSelectedImage = TARGET_ICON_PHYSDISK;
+			tvstruct.item.state = INDEXTOSTATEIMAGEMASK(TARGET_STATE_UNKNOWN);
+
+			hLastPhysicalParent = m_TTargets.InsertItem(&tvstruct); 
+			
+			if (hLastPhysicalParent	== NULL) {
+				ErrorMessage("InsertItem() failed in CPageDisk::ShowTargets() for physical disk");
+				return;
+			}
+
+			// Expand the items rooted at the prior
+			if (disk->type == PhysicalDiskTypeHasPartitions)
+				m_TTargets.Expand(hLastLogicalParent, TVE_EXPAND);
+
 			break;
+
 		case LogicalDiskType:
 			if (disk->disk_info.ready) {
 				tvstruct.item.iImage = TARGET_ICON_LOGDISK_PREPARED;
@@ -335,17 +365,19 @@ void CPageDisk::ShowTargets()
 				tvstruct.item.iImage = TARGET_ICON_LOGDISK_UNPREPARED;
 				tvstruct.item.iSelectedImage = TARGET_ICON_LOGDISK_UNPREPARED;
 			}
+
+			tvstruct.item.state = INDEXTOSTATEIMAGEMASK(TARGET_STATE_UNKNOWN);
+
+			hLastLogicalParent = m_TTargets.InsertItem(&tvstruct);
+
+			if (hLastLogicalParent == NULL) {
+				ErrorMessage("InsertItem() failed in CPageDisk::ShowTargets() for logical disk");
+				return;
+			}
+
 			break;
 		default:
 			ErrorMessage("Unexpected disk type in CPageDisk::ShowTargets()");
-			return;
-		}
-
-		tvstruct.item.state = INDEXTOSTATEIMAGEMASK(TARGET_STATE_UNKNOWN);
-
-		// finally, insert the disk into the tree control
-		if (m_TTargets.InsertItem(&tvstruct) == NULL) {
-			ErrorMessage("InsertItem() failed in CPageDisk::ShowTargets()");
 			return;
 		}
 	}
@@ -379,7 +411,7 @@ void CPageDisk::ShowTargetSelection()
 			else
 				SetSelectionCheck(hiface, TargetUnChecked);
 
-			hiface = m_TTargets.GetNextSiblingItem(hiface);
+			hiface = GetNextTreeObject(hiface);
 		}
 		break;
 
@@ -408,8 +440,10 @@ void CPageDisk::ShowTargetSelection()
 					}
 				}
 			}
+			
 			SetSelectionCheck(hiface, state);
-			hiface = m_TTargets.GetNextSiblingItem(hiface);
+			
+			hiface = GetNextTreeObject(hiface);
 		}
 		break;
 	default:
@@ -480,8 +514,8 @@ void CPageDisk::ShowSettings()
 {
 	Manager *manager;
 	Worker *worker;
-	int disk_size;
-	int disk_start;
+	DWORDLONG disk_size;
+	DWORDLONG disk_start;
 	int queue_depth;
 
 	// Get the values for the disk settings from memory.
@@ -510,7 +544,7 @@ void CPageDisk::ShowSettings()
 		m_EDiskSize.Invalidate();
 	} else {
 		m_EDiskSize.SetPasswordChar(0);
-		SetDlgItemInt(EDiskSize, disk_size);
+		SetDlgItemInt64(EDiskSize, disk_size);
 	}
 
 	if (disk_start == AMBIGUOUS_VALUE) {
@@ -518,7 +552,7 @@ void CPageDisk::ShowSettings()
 		m_EDiskStart.Invalidate();
 	} else {
 		m_EDiskStart.SetPasswordChar(0);
-		SetDlgItemInt(EDiskStart, disk_start);
+		SetDlgItemInt64(EDiskStart, disk_start);
 	}
 
 	if (queue_depth == AMBIGUOUS_VALUE) {
@@ -535,12 +569,18 @@ void CPageDisk::ShowSettings()
 //
 void CPageDisk::ShowFocus()
 {
-	for (HTREEITEM hdisk = m_TTargets.GetRootItem(); hdisk; hdisk = m_TTargets.GetNextSiblingItem(hdisk)) {
+	HTREEITEM hdisk;
+	
+	hdisk = m_TTargets.GetRootItem();
+	// recurse into tree; assumes only 2 levels!!!
+	while(hdisk) {
 		if (hdisk == highlighted) {
 			m_TTargets.SetItemState(hdisk, TVIS_SELECTED, TVIS_SELECTED);
 		} else {
 			m_TTargets.SetItemState(hdisk, NULL, TVIS_SELECTED);
 		}
+
+		hdisk = GetNextTreeObject(hdisk);
 	}
 }
 
@@ -579,7 +619,9 @@ void CPageDisk::SelectRange(HTREEITEM hstart, HTREEITEM hend, BOOL replace, Targ
 	// all the targets the specified selection type until we reach the end or
 	// start (whichever we didn't get before).
 	in_range = FALSE;
-	for (hdisk = m_TTargets.GetRootItem(); hdisk; hdisk = m_TTargets.GetNextSiblingItem(hdisk)) {
+	hdisk = m_TTargets.GetRootItem();
+	// recurse into tree; assumes only 2 levels!!!
+	while(hdisk) {
 		// Do we have either the previously selected item or the
 		// clicked item?                        
 		if (hdisk == hstart || hdisk == hend)
@@ -587,6 +629,8 @@ void CPageDisk::SelectRange(HTREEITEM hstart, HTREEITEM hend, BOOL replace, Targ
 
 		if (in_range || hdisk == hstart || hdisk == hend)
 			SetSelectionCheck(hdisk, state);
+
+		hdisk = GetNextTreeObject(hdisk);
 	}
 }
 
@@ -611,7 +655,10 @@ void CPageDisk::SetSelectionCheck(HTREEITEM hitem, TargetSelType selection)
 	}
 	// set the interface icon's associated state icon
 	if (!m_TTargets.SetItemState(hitem, state, TVIS_STATEIMAGEMASK))
+	{
+		DWORD error = GetLastError();
 		ErrorMessage("SetItemState() failed in CPageDisk::SetSelectionCheck()");
+	}
 }
 
 //
@@ -638,9 +685,13 @@ void CPageDisk::SetAllCheck(TargetSelType selection)
 	HTREEITEM hdisk;
 
 	// Get the first manager item of the target tree
-	for (hdisk = m_TTargets.GetRootItem(); hdisk; hdisk = m_TTargets.GetNextSiblingItem(hdisk)) {
+	hdisk = m_TTargets.GetRootItem();
+	// recurse into tree; assumes only 2 levels!!!
+	while(hdisk) {
 		SetSelectionCheck(hdisk, selection);
+		hdisk = GetNextTreeObject(hdisk);
 	}
+
 }
 
 //
@@ -728,14 +779,14 @@ void CPageDisk::OnKillfocusEDiskStart()
 		switch (theApp.pView->m_pWorkerView->GetSelectedType()) {
 		case WORKER:
 			worker = theApp.pView->m_pWorkerView->GetSelectedWorker();
-			worker->SetDiskStart(GetDlgItemInt(EDiskStart));
+			worker->SetDiskStart(GetDlgItemInt64(EDiskStart));
 			break;
 		case MANAGER:
 			manager = theApp.pView->m_pWorkerView->GetSelectedManager();
-			manager->SetDiskStart(GetDlgItemInt(EDiskStart));
+			manager->SetDiskStart(GetDlgItemInt64(EDiskStart));
 			break;
 		case ALL_MANAGERS:
-			theApp.manager_list.SetDiskStart(GetDlgItemInt(EDiskStart));
+			theApp.manager_list.SetDiskStart(GetDlgItemInt64(EDiskStart));
 			break;
 		}
 
@@ -928,6 +979,14 @@ void CPageDisk::SetFocusUp()
 	HTREEITEM hdisk;
 
 	hdisk = m_TTargets.GetPrevSiblingItem(highlighted);
+
+	if (!hdisk) 
+		hdisk = m_TTargets.GetParentItem(highlighted);
+	else if (m_TTargets.ItemHasChildren(hdisk)) {
+		while (m_TTargets.GetChildItem(hdisk)) {
+			hdisk = m_TTargets.GetNextSiblingItem(hdisk);
+		}
+	}
 	// Does the currently selected interface have a previous sibling?
 	if (!hdisk)
 		return;
@@ -944,7 +1003,10 @@ void CPageDisk::SetFocusDown()
 {
 	HTREEITEM hdisk;
 
-	hdisk = m_TTargets.GetNextSiblingItem(highlighted);
+	//hdisk = m_TTargets.GetNextSiblingItem(highlighted);
+	
+	hdisk = GetNextTreeObject(highlighted);
+
 	// Does the currently selected disk have a next sibling?
 	if (!hdisk)
 		return;
@@ -1023,11 +1085,24 @@ void CPageDisk::StoreTargetSelection()
 		// Assign the targets to the selected worker in the order that they
 		// appear in the GUI.
 		worker->RemoveTargets(GenericDiskType);
+#if 0
 		for (hdisk = m_TTargets.GetRootItem(); hdisk; hdisk = m_TTargets.GetNextSiblingItem(hdisk)) {
 			if (GetSelectionCheck(hdisk) == TargetChecked)
 				worker->AddTarget(manager->GetInterface(target, GenericDiskType));
 			target++;
 		}
+#else
+		hdisk = m_TTargets.GetRootItem();
+		// recurse into tree; assumes only 2 levels!!!
+		while(hdisk) {
+			if (GetSelectionCheck(hdisk) == TargetChecked)
+				worker->AddTarget(manager->GetInterface(target, GenericDiskType));
+			target++;
+
+			//hdisk = GetNextTreeObject(hdisk);
+			hdisk = m_TTargets.GetNextVisibleItem(hdisk);
+		}
+#endif
 	} else {
 		// Clear the assigned targets from all the manager's workers.
 		manager->RemoveTargets(GenericDiskType);
@@ -1036,10 +1111,9 @@ void CPageDisk::StoreTargetSelection()
 		worker = manager->GetWorker(0, GenericDiskType);
 		next_worker = 0;
 
-		// Assign the targets to the workers of the selected manager.
-		for (hdisk = m_TTargets.GetRootItem(); hdisk; hdisk = m_TTargets.GetNextSiblingItem(hdisk)) {
-			// If the disk is selected in the GUI, assign it to the expected
-			// worker.
+		hdisk = m_TTargets.GetRootItem();
+		// recurse into tree; assumes only 2 levels!!!
+		while(hdisk) {
 			if (GetSelectionCheck(hdisk) == TargetChecked) {
 				worker->AddTarget(manager->GetInterface(target, GenericDiskType));
 
@@ -1049,6 +1123,8 @@ void CPageDisk::StoreTargetSelection()
 				worker = manager->GetWorker(next_worker, GenericDiskType);
 			}
 			target++;
+
+			hdisk = m_TTargets.GetNextVisibleItem(hdisk); //GetNextTreeObject(hdisk);
 		}
 	}
 	ShowTargetSelection();
@@ -1160,4 +1236,82 @@ void CPageDisk::OnSelchangingTTargets(NMHDR * pNMHDR, LRESULT * pResult)
 	// Return 1 so that the control doesn't update the selection since
 	// we are managing it.
 	*pResult = 1;
+}
+
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+HTREEITEM CPageDisk::GetNextTreeObject(HTREEITEM hnode)
+{
+	HTREEITEM htemp;
+
+	// Always go depth-first, so try a child first
+	if (m_TTargets.ItemHasChildren(hnode))
+		htemp = m_TTargets.GetChildItem(hnode);
+	else if (m_TTargets.GetNextSiblingItem(hnode))
+		htemp = m_TTargets.GetNextSiblingItem(hnode);
+	else {
+		 // to handle more than 2 level
+		htemp = m_TTargets.GetParentItem(hnode);
+		while (htemp) {
+			if (m_TTargets.GetNextSiblingItem(htemp)) {
+				htemp = m_TTargets.GetNextSiblingItem(htemp);
+				break;
+			}
+			else
+				htemp = m_TTargets.GetParentItem(htemp);
+		}
+	}
+
+	return htemp;
+}
+#endif
+
+DWORDLONG CPageDisk::GetDlgItemInt64(int nID, BOOL* lpTrans, BOOL bSigned, int *lpRadix )
+{
+	CString dlgCString;
+	unsigned __int64 dlgUInt64 = 0;
+	BOOL bSuccess = FALSE;
+	LPSTR dlgString;
+	int radix = 10;
+
+	if (GetDlgItemText(nID, dlgCString))
+	{
+		dlgCString.MakeLower();
+		dlgString = dlgCString.GetBuffer(10);
+
+		// lets only resolve hex vs decimal
+		if (dlgString[0] == '0' && dlgString[1] == 'x')
+		{
+			sscanf(dlgString, "0x%I64x", &dlgUInt64);
+			radix = 16;
+		}
+		else
+			sscanf(dlgString, "%I64d", &dlgUInt64);
+		
+		dlgCString.ReleaseBuffer();
+
+		bSuccess = TRUE;
+	}
+	
+	if (lpTrans)
+		*lpTrans = bSuccess;
+
+	if (lpRadix)
+		*lpRadix = radix;
+
+	return dlgUInt64;
+}
+
+void CPageDisk::SetDlgItemInt64(int nID, __int64 nValue, BOOL bSigned, int nRadix) 
+{
+	CString dlgCString;
+	LPSTR lpString = dlgCString.GetBuffer(32); // preallocate enough space
+	unsigned __int64 unValue = (unsigned __int64) nValue; // setup an unsigned version
+
+	if (bSigned)
+		_i64toa(nValue, lpString, nRadix);
+	else
+		_ui64toa(unValue, lpString, nRadix);
+	
+	SetDlgItemText(nID, lpString);
+	dlgCString.ReleaseBuffer();
 }

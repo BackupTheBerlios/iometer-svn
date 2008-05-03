@@ -151,12 +151,20 @@
 
 #define MILLISECOND                    		1000
 
+#ifdef FORCE_STRUCT_ALIGN
+#include "pack8.h"
+#endif
+
 struct Perf_Counter_Info {
 	DWORD index;		// identification of counter
 	int offset;		// offset of counter from counter block header
 	DWORD type;		// information retrieved about the counter's type,
 	// such as its update frequency, size, etc.
 };
+
+#ifdef FORCE_STRUCT_ALIGN
+#include "unpack8.h"
+#endif
 
 class Performance {
       public:

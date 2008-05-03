@@ -98,6 +98,8 @@
 #include "IOTargetDisk.h"
 #include "IOTargetTCP.h"
 
+extern struct dynamo_param param;
+
 #if defined(IOMTR_SETTING_VI_SUPPORT)
 #include "IOTargetVI.h"
 #endif
@@ -628,6 +630,65 @@ BOOL Grunt::Set_Access(const Test_Spec * spec)
 	return TRUE;
 }
 
+#if defined(IOMTR_SETTING_CPU_AFFINITY)
+//
+// The idea is to set each of the worker threads to their own CPU, within the 
+// constraint of any other cpu affinity we have been passed at the cmd line.
+//
+void Grunt::Set_Affinity()
+{
+	int found_bits = -1; // seed this guy so the first ++ starts at 0 to help with 0-based index
+	int effective_procs = 0;
+	int effective_index = 0;
+	ULONG_PTR effective_affinity = 1;
+	ULONG_PTR affinity = param.cpu_affinity;
+
+
+	// Calculate effective_procs, whcih  may be equal to or less 
+	// then actual number of procs, depending on the mask specified
+	// and never greater
+	while (affinity)
+	{
+		if (affinity & 0x1)
+			effective_procs++;
+		affinity = affinity >> (ULONG_PTR) 1;
+	}
+
+	// Both index values are 0-based. Round-robin the threads
+	// if their number exceeds number processors.
+	effective_index = worker_index % effective_procs;
+	
+	affinity = param.cpu_affinity;
+	
+	while (effective_affinity)
+	{
+		if (affinity & effective_affinity)
+			found_bits++;
+
+		if (effective_index == found_bits)
+		{
+			// We have a match for our index, so set the affinity for the thread
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+			SetThreadAffinityMask(GetCurrentThread(), effective_affinity);
+//#else if
+			// must do something here
+#endif
+
+#ifdef _DETAILS
+			cout << "Worker " << worker_index << ", setting thread affinity mask to " 
+				 << hex << effective_affinity << endl;
+#endif
+			break;
+		}
+		effective_affinity = effective_affinity << 0x1;
+	}
+}
+#else
+void Grunt::Set_Affinity()
+{
+	;
+}
+#endif //IOMTR_SETTING_CPU_AFFINITY
 //
 // Starting threads to prepare disks for tests.  Returning TRUE if we
 // successfully started the disk preparation.
@@ -662,7 +723,7 @@ BOOL Grunt::Prepare_Disks()
 
 	for (int i = 0; i < target_count; i++) {
 		if (IsType(targets[i]->spec.type, LogicalDiskType)) {
-			prepare_thread[i].parent = this;
+			prepare_thread[i].parent = (DWORDLONG)this;
 			prepare_thread[i].id = i;
 			cout << "   " << targets[i]->spec.name << " preparing." << endl;
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
@@ -931,6 +992,8 @@ void Grunt::Asynchronous_Delay(int transfer_delay)
 //
 void CDECL Grunt_Thread_Wrapper(void *grunt)
 {
+	((Grunt *) grunt)->Set_Affinity();
+
 	// open targets
 	((Grunt *) grunt)->Open_Targets();
 
@@ -1359,7 +1422,7 @@ void Grunt::Do_Partial_IO(Transaction * transaction, int bytes_done)
 //
 // Start threads to access targets.
 //
-void Grunt::Start_Test()
+void Grunt::Start_Test(int index)
 {
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
 	pthread_t newThread;
@@ -1379,6 +1442,8 @@ void Grunt::Start_Test()
 		return;
 
 	ramp_up_ios_pending = 0;
+
+	worker_index = index; // save off our index
 
 	Initialize_Transaction_Arrays();
 

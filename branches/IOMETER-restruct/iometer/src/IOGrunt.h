@@ -107,12 +107,13 @@ class Grunt {
 	//
 	BOOL Set_Targets(int count, Target_Spec * target_specs = NULL);
 	BOOL Set_Access(const Test_Spec * spec);
-	void Start_Test();
+	void Start_Test(int index);
 	void Begin_IO();
 	void Record_On();
 	void Record_Off();
 	void Stop_Test();
 	void Wait_For_Stop();
+	void Set_Affinity();
 	//
 	///////////////////////////////////////////////////////////////////////////
 
@@ -214,6 +215,8 @@ class Grunt {
 	int targets_closing_count;
 	//
 	///////////////////////////////////////////////////////////////////////////
+
+	int worker_index; // use for per-thread affinity
 
 	// Random number generation functions
 	void Srand(DWORDLONG seed);

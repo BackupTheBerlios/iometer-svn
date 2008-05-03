@@ -664,7 +664,7 @@ void ManagerList::UpdateResults(int which_perf)
 // calls the managers function.
 //
 ////////////////////////////////////////////////////////////////////////////////////
-void ManagerList::SetDiskSize(int disk_size)
+void ManagerList::SetDiskSize(DWORDLONG disk_size)
 {
 	int i, mgr_count;
 
@@ -674,7 +674,7 @@ void ManagerList::SetDiskSize(int disk_size)
 		GetManager(i, GenericDiskType)->SetDiskSize(disk_size);
 }
 
-void ManagerList::SetDiskStart(int disk_start)
+void ManagerList::SetDiskStart(DWORDLONG disk_start)
 {
 	int i, mgr_count;
 
@@ -776,9 +776,10 @@ int ManagerList::GetTransPerConn(TargetType type)
 	return mgr_result;
 }
 
-int ManagerList::GetDiskStart(TargetType type)
+DWORDLONG ManagerList::GetDiskStart(TargetType type)
 {
-	int m, mgr_count, mgr_result;
+	int m, mgr_count;
+	DWORDLONG mgr_result;
 
 	if (!(mgr_count = ManagerCount(type)))
 		return AMBIGUOUS_VALUE;
@@ -796,9 +797,10 @@ int ManagerList::GetDiskStart(TargetType type)
 	return mgr_result;
 }
 
-int ManagerList::GetDiskSize(TargetType type)
+DWORDLONG ManagerList::GetDiskSize(TargetType type)
 {
-	int m, mgr_count, mgr_result;
+	int m, mgr_count;
+	DWORDLONG mgr_result;
 
 	if (!(mgr_count = ManagerCount(type)))
 		return AMBIGUOUS_VALUE;

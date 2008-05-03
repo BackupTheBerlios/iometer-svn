@@ -121,20 +121,30 @@ class TargetDisk:public Target {
 
 	BOOL Initialize(Target_Spec * target_info, CQ * cq);
 
+#ifndef USE_NEW_DISCOVERY_MECHANISM
+
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	// Initialize logical disks (e.g. C:, D:, E:, etc.).
 	BOOL Init_Logical(char drive);
 	// Initialize physical (system) disks (e.g. physicaldisk0, physicaldisk1, etc.).
 	BOOL Init_Physical(int drive);
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
+
 	BOOL Init_Logical(char *drive);
 	BOOL Init_Physical(char *drive);
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
+#else
+	// All systems should use the same interface
+	BOOL Init_Logical(char *drive);
+	BOOL Init_Physical(char *drive);
+#endif
 
-	void Set_Size(int maximum_size = 0);
-	void Set_Starting_Sector(int starting_sector = 0);
+
+
+	void Set_Size(DWORDLONG maximum_size = 0);
+	void Set_Starting_Sector(DWORDLONG starting_sector = 0);
 
 	BOOL Prepare(void *buffer, DWORDLONG * prepare_offset, DWORD bytes, volatile TestState * test_state);
 

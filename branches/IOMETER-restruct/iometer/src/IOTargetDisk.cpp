@@ -192,6 +192,8 @@ TargetDisk::TargetDisk()
 		exit(1);
 	}
 #endif
+
+	memset(&spec, 0, sizeof(spec));
 }
 
 TargetDisk::~TargetDisk()
@@ -216,10 +218,17 @@ BOOL TargetDisk::Initialize(Target_Spec * target_info, CQ * cq)
 
 	// Initializing logical disks.
 #if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+	if (IsType(target_info->type, LogicalDiskType))
+		retval = Init_Logical(spec.actual_name);
+	else if (IsType(target_info->type, PhysicalDiskType))
+		retval = Init_Physical(spec.actual_name);
+#else
 	if (IsType(target_info->type, LogicalDiskType))
 		retval = Init_Logical(spec.name[0]);
 	else if (IsType(target_info->type, PhysicalDiskType))
 		retval = Init_Physical(atoi(spec.name + 14));
+#endif
 #elif defined(IOMTR_OS_LINUX) || defined(IOMTR_OS_NETWARE) || defined(IOMTR_OS_OSX) || defined(IOMTR_OS_SOLARIS)
 	if (IsType(target_info->type, LogicalDiskType))
 		retval = Init_Logical(spec.name);
@@ -327,6 +336,33 @@ BOOL TargetDisk::Init_Logical(char *drive)
 	return (Set_Sizes());
 }
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+BOOL TargetDisk::Init_Logical( char *drive )
+{
+	// Setting spec.name of the drive.
+	//sprintf( spec.name, "%s", drive);
+	strcpy(spec.name, drive);
+
+	// Save the name to the actual partition device: \\.\c:, not the file path
+	if (drive[0] != '\\')
+	{
+		sprintf(spec.actual_name, "\\\\.\\%s", drive);
+	}
+	else
+	{
+		//sprintf(spec.actual_name, "%s", drive);
+		strcpy(spec.actual_name, drive);
+	}
+
+	// Whack the trailing slash.
+	if (spec.actual_name[strlen(spec.actual_name) - 1] == '\\')
+	{
+		spec.actual_name[strlen(spec.actual_name) - 1] = '\0';
+	}
+
+	sprintf( file_name, "%s\\%s", spec.actual_name, TEST_FILE );
+	
+#else
 //
 // Initialize a logical disk drive.  Logical drives are accessed through
 // a drive letter and may be local or remote.
@@ -337,6 +373,8 @@ BOOL TargetDisk::Init_Logical(char drive)
 	snprintf(spec.name, MAX_NAME, "%c%s", drive, LOGICAL_DISK);
 	snprintf(file_name, MAX_NAME, "%s%s", spec.name, TEST_FILE);
 
+#endif //USE_NEW_DISCOVERY_MECHANISM
+
 	spec.type = LogicalDiskType;
 	size = 0;
 	starting_position = 0;
@@ -346,6 +384,8 @@ BOOL TargetDisk::Init_Logical(char drive)
 	// Getting size information about the drive.
 	return (Set_Sizes());
 }
+
+ 
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -412,12 +452,20 @@ BOOL TargetDisk::Init_Physical(char *drive)
 // occur.  To prevent this, only drives which contain nothing but free space
 // are accessible.
 //
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+BOOL TargetDisk::Init_Physical(char *drive)
+{
+	strcpy(spec.name, drive);
+	strcpy(spec.actual_name, drive); // may be redundant?
+	strcpy(file_name, spec.actual_name);
+
+#else
 BOOL TargetDisk::Init_Physical(int drive)
 {
 	// Setting the spec.name of the drive.
 	snprintf(spec.name, MAX_NAME, "%s%i", PHYSICAL_DISK, drive);
 	strcpy(file_name, spec.name);
-
+#endif // USE_NEW_DISCOVERY_MECHANISM
 	spec.type = PhysicalDiskType;
 	size = 0;
 	starting_position = 0;
@@ -427,6 +475,7 @@ BOOL TargetDisk::Init_Physical(int drive)
 	// Getting information about the size of the drive.
 	return (Set_Sizes());
 }
+
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -434,7 +483,7 @@ BOOL TargetDisk::Init_Physical(int drive)
 //
 // Setting the maximum amount of disk space to access during testing.
 //
-void TargetDisk::Set_Size(int maximum_size)
+void TargetDisk::Set_Size(DWORDLONG maximum_size)
 {
 	DWORDLONG new_size;
 
@@ -457,7 +506,7 @@ void TargetDisk::Set_Size(int maximum_size)
 // Setting the starting sector of the disk where accesses should begin.
 // This needs to be called after setting the size of the disk (call to Set_Size).
 //
-void TargetDisk::Set_Starting_Sector(int starting_sector)
+void TargetDisk::Set_Starting_Sector(DWORDLONG starting_sector)
 {
 	DWORDLONG current_size;
 
@@ -852,8 +901,6 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 	DWORD low_size, high_size;
 	DWORD sectors_per_cluster, free_clusters, total_clusters;
 	DWORD sector_size;
-	DRIVE_LAYOUT_INFORMATION disk_layout_info[MAX_PARTITIONS];
-	DISK_GEOMETRY disk_geo_info;
 	DWORD disk_info_size;
 
 	// Logical and physical drives are treated differently.
@@ -863,8 +910,12 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 	}
 
 	if (IsType(spec.type, LogicalDiskType)) {
+		char temp_name[MAX_NAME];
+
+		sprintf(temp_name, "%s\\", spec.name);
+
 		// Getting physical information about the drive.
-		if (!GetDiskFreeSpace(spec.name, &sectors_per_cluster, &sector_size, &free_clusters, &total_clusters)) {
+		if (!GetDiskFreeSpace(temp_name, &sectors_per_cluster, &sector_size, &free_clusters, &total_clusters)) {
 			cout << "Error getting sector size of drive " << spec.name << "." << endl;
 			if (open_disk)
 				Close(NULL);
@@ -896,30 +947,90 @@ BOOL TargetDisk::Set_Sizes(BOOL open_disk)
 		// Dealing with a physical drive.
 		// Checking for a partition to exist on the physical drive.
 		// If one is there, then disallowing access to the drive.
-		SetLastError(0);
-		DeviceIoControl(disk_file, IOCTL_DISK_GET_DRIVE_LAYOUT, NULL, 0,
-				disk_layout_info, sizeof(disk_layout_info), &disk_info_size, NULL);
 
-		// Checking that drive contains nothing but free space.
-		for (i = 0; i < disk_layout_info[0].PartitionCount; i++) {
-			if (disk_layout_info[0].PartitionEntry[i].PartitionLength.HighPart ||
-			    disk_layout_info[0].PartitionEntry[i].PartitionLength.LowPart) {
-				if (open_disk)
-					Close(NULL);
-				cout << "Physical disk \'" << spec.name << "\' contains partition information." << endl;
-				return FALSE;
+		// This is more data than we need, but its ok
+		DRIVE_LAYOUT_INFORMATION disk_layout_info[MAX_PARTITIONS];
+		DRIVE_LAYOUT_INFORMATION_EX disk_layout_info_ex[MAX_PARTITIONS];
+		DISK_GEOMETRY disk_geo_info;
+		DISK_GEOMETRY_EX disk_geo_info_ex;
+
+		SetLastError(0);
+		
+		// Try the EX version first
+		if (DeviceIoControl(disk_file, IOCTL_DISK_GET_DRIVE_LAYOUT_EX, NULL, 0,
+				disk_layout_info_ex, sizeof(disk_layout_info_ex), &disk_info_size, NULL)){
+
+			// Checking that drive contains nothing but free space.
+			for (i = 0; i < disk_layout_info_ex[0].PartitionCount; i++) {
+				if (disk_layout_info_ex[0].PartitionEntry[i].PartitionLength.HighPart ||
+					disk_layout_info_ex[0].PartitionEntry[i].PartitionLength.LowPart) 
+				{
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+					// Make the decision about whether to display this disk elsewhere...
+					spec.disk_info.has_partitions = TRUE;
+					break;
+#else					
+					if ( open_disk )
+						Close( NULL );				
+					cout << "Physical disk \'" << spec.name << "\' contains partition information." << endl;
+					return FALSE;
+#endif
+				}
 			}
 		}
-		// Getting information on the size of the drive.
-		DeviceIoControl(disk_file, IOCTL_DISK_GET_DRIVE_GEOMETRY, NULL, 0,
-				&disk_geo_info, sizeof(disk_geo_info), &disk_info_size, NULL);
+		else if (DeviceIoControl(disk_file, IOCTL_DISK_GET_DRIVE_LAYOUT, NULL, 0,
+				disk_layout_info, sizeof(disk_layout_info), &disk_info_size, NULL))	{
 
-		// Calculating the size of the physical drive..
-		size = (((DWORDLONG) disk_geo_info.Cylinders.HighPart) << 32) |
-		    ((DWORDLONG) disk_geo_info.Cylinders.LowPart);
-		size *= (_int64) disk_geo_info.TracksPerCylinder *
-		    (_int64) disk_geo_info.SectorsPerTrack * (_int64) disk_geo_info.BytesPerSector;
-		spec.disk_info.sector_size = disk_geo_info.BytesPerSector;
+			// Checking that drive contains nothing but free space.
+			for (i = 0; i < disk_layout_info[0].PartitionCount; i++) {
+				if (disk_layout_info[0].PartitionEntry[i].PartitionLength.HighPart ||
+					disk_layout_info[0].PartitionEntry[i].PartitionLength.LowPart) 
+				{
+#ifdef USE_NEW_DISCOVERY_MECHANISM
+					// Make the decision about whether to display this disk elsewhere...
+					spec.disk_info.has_partitions = TRUE;
+					break;
+#else					
+					if ( open_disk )
+						Close( NULL );				
+					cout << "Physical disk \'" << spec.name << "\' contains partition information." << endl;
+					return FALSE;
+#endif
+				}
+			}
+		}
+		else {
+			cout << "TargetDisk::Set_Sizes() Failed getting drive layout info, error " 
+				 << GetLastError() << "." << endl;
+			return FALSE;
+		}
+
+		// Getting information on the size of the drive.
+		
+		// Try the EX version first
+		if (DeviceIoControl(disk_file, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX, NULL, 0,
+			&disk_geo_info_ex, sizeof(disk_geo_info_ex), &disk_info_size, NULL)) {
+
+			size = disk_geo_info_ex.DiskSize.QuadPart;
+			spec.disk_info.sector_size = disk_geo_info_ex.Geometry.BytesPerSector;
+		}
+		else if(DeviceIoControl(disk_file, IOCTL_DISK_GET_DRIVE_GEOMETRY, NULL, 0,
+			&disk_geo_info, sizeof(disk_geo_info), &disk_info_size, NULL)) {
+
+			// Calculating the size of the physical drive..
+			size = (((DWORDLONG) disk_geo_info.Cylinders.HighPart) << 32) |
+				((DWORDLONG) disk_geo_info.Cylinders.LowPart);
+			size *= (_int64) disk_geo_info.TracksPerCylinder *
+				(_int64) disk_geo_info.SectorsPerTrack * (_int64) disk_geo_info.BytesPerSector;
+			spec.disk_info.sector_size = disk_geo_info.BytesPerSector;
+		}
+		else {
+			// print some warning and return error
+			cout << "TargetDisk::Set_Sizes() Failed getting drive geometry, error " 
+				 << GetLastError() << "." << endl;
+			return FALSE;
+		}
+
 		Set_Sector_Info();
 
 #ifdef _DEBUG

@@ -126,16 +126,16 @@ class Manager {
 	// Retrieving/setting information about a worker's targets.
 	//
 	int GetConnectionRate(TargetType type);
-	int GetDiskStart(TargetType type);
-	int GetDiskSize(TargetType type);
+	DWORDLONG GetDiskStart(TargetType type);
+	DWORDLONG GetDiskSize(TargetType type);
 	char *GetLocalNetworkInterface();
 	int GetQueueDepth(TargetType type);
 	int GetMaxSends(TargetType type);
 	int GetTransPerConn(TargetType type);
 	//
 	void SetConnectionRate(BOOL test_connection_rate, TargetType type);
-	void SetDiskSize(int disk_size);
-	void SetDiskStart(int disk_start);
+	void SetDiskSize(DWORDLONG disk_size);
+	void SetDiskStart(DWORDLONG disk_start);
 	void SetLocalNetworkInterface(int iface_index);
 	void SetQueueDepth(int queue_depth, TargetType type);
 	void SetMaxSends(int max_sends);
