@@ -354,7 +354,9 @@ void reorder(Data_Message & var, int uniontype, int send_recv)
 			}
 			// Now re-order the other stuff.
 			reorder(var.data.targets[i].queue_depth);
+#ifndef USE_NEW_DISCOVERY_MECHANISM // part of the bitwise char
 			reorder(var.data.targets[i].test_connection_rate);
+#endif
 			reorder(var.data.targets[i].trans_per_conn);
 			reorder(var.data.targets[i].random);
 

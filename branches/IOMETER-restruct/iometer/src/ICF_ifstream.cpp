@@ -328,6 +328,47 @@ BOOL ICF_ifstream::ExtractFirstInt(CString & string, int &number)
 	return TRUE;
 }
 
+BOOL ICF_ifstream::ExtractFirstInt64(CString & string, __int64 &number)
+{
+	const CString backup_string = string;
+	CString substring;
+	int pos;
+
+	number = 0;
+
+	if ((pos = string.FindOneOf("-1234567890")) == -1) {
+		ErrorMessage("File is improperly formatted.  Expected an " "integer value.");
+		return FALSE;
+	}
+	// Cleave off everything before the first number.
+	string = string.Right(string.GetLength() - pos);
+
+	substring = string.SpanIncluding("-1234567890");	// get the int as a string
+	string = string.Right(string.GetLength() - substring.GetLength());
+
+	// If there are any negative signs after the first character, fail.
+	if (substring.Right(substring.GetLength() - 1).Find('-') != -1) {
+		ErrorMessage("File is improperly formatted.  An integer value "
+			     "has a negative sign in the middle or on the end of it.");
+		string = backup_string;	// restore string's old value
+		return FALSE;
+	}
+
+	number = _atoi64((LPCTSTR) substring);
+
+	// Prepare string for further processing.  Eat whitespace.
+	string.TrimLeft();
+
+	// If there's a trailing comma, eat it.
+	if (!string.IsEmpty() && string.GetAt(0) == ',')
+		string = string.Right(string.GetLength() - 1);
+
+	// Eat any space following the comma.
+	string.TrimLeft();
+
+	return TRUE;
+}
+
 BOOL ICF_ifstream::ExtractFirstIntVersion(CString & string, int &number)
 {
 	const CString backup_string = string;
