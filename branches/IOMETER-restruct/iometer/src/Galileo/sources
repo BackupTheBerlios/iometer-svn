@@ -2,28 +2,36 @@ TARGETNAME=IOMETER
 TARGETPATH=OBJ
 TARGETTYPE=PROGRAM
 
-MSC_WARNING_LEVEL=/W3 /WX
 USE_MFC=1
+USE_STL=1 		# requires to use revision stl70 unless using nolibs
 USE_NATIVE_EH=1
-BROWSER_INFO=1
-
+USE_LIBCMT=1
 UMTYPE=windows
 
-INCLUDES=$(SDK_INC_PATH); $(MSSDK)\INCLUDE; ..
-C_DEFINES=$(C_DEFINES) -D_GALILEO_ -D_WINDOWS -DDOSWIN32 -DUSING_DDK -DUSE_NEW_DISKS  
-#-D_DETAILS -DDEBUG -D_DEBUG
- 
+MSC_WARNING_LEVEL=/W2
+#/W3 /WX
 
-TARGETLIBS= $(SDK_LIB_PATH)\KERNEL32.LIB \
-    $(SDK_LIB_PATH)\USER32.LIB		\
-    $(SDK_LIB_PATH)\WSOCK32.LIB		\
-    $(SDK_LIB_PATH)\WS2_32.LIB		\
-    $(SDK_LIB_PATH)\COMCTL32.LIB	\
-    $(SDK_LIB_PATH)\VERSION.LIB		\
-#	$(SDK_LIB_PATH)\MSVCPRTD.LIB	\
-#	$(SDK_LIB_PATH)\MFC42D.LIB		\
-    $(CRT_LIB_PATH)\MSVCPRT.LIB		\
-	$(MFC_LIB_PATH)\MFCS42.LIB
+#        newer DDKS have some SDK components
+#        |                new for Vista DDK, ok to use stl70
+#        |                |                          still requires headers from the real SDK
+#        |                |                          |
+INCLUDES=$(SDK_INC_PATH); $(SDK_INC_PATH)\crt\stl70; $(MSSDK)\INCLUDE; ..
+
+C_DEFINES=$(C_DEFINES) -D_GALILEO_ -D_WINDOWS -DDOSWIN32 -D_DETAILS -DUSE_NEW_DISCOVERY_MECHANISM -DFORCE_STRUCT_ALIGN 
+# -DUSE_NEW_DISCOVERY_MECHANISM (for new disk detect)
+# -DFORCE_STRUCT_ALIGN (structure member alignment)
+# -D_DETAILS (for more verbosity)
+# -D_DEBUG (for normal debug)
+# -DDEBUG (for DEBUG_NEW only)
+# -DUSING_DDK (not needed with vista ddk)
+
+
+TARGETLIBS=$(SDK_LIB_PATH)\COMCTL32.LIB	\
+	$(SDK_LIB_PATH)\VERSION.LIB	\
+	$(SDK_LIB_PATH)\WSOCK32.LIB	\
+	$(SDK_LIB_PATH)\WS2_32.LIB
+
+LINKER_STACKSIZE=-stack:0x80000,0x4000
 
 SOURCES=..\AccessDialog.cpp		\
 	..\AccessSpecList.cpp		\
