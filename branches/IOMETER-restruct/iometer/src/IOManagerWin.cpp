@@ -1183,8 +1183,8 @@ int Report_RawDisks( Target_Spec *disk_spec, int start_count, int view_type )
 
 		memset(&d.spec, 0, sizeof(d.spec));
 
-		// The last char in our dev_list link string is the physicaldrive number
-		drive_number = atoi(&dev_list.list[i].link[strlen(dev_list.list[i].link) - 1]);
+		// The last chars in our dev_list link string are the physicaldrive number
+		drive_number = atoi(&dev_list.list[i].link[strlen("PhysicalDrive")]);
 
 		// We already have the string (but w/out \\.\, so regenerate is here.
 		sprintf( d.spec.name, "%s%i", PHYSICAL_DISK, drive_number );
