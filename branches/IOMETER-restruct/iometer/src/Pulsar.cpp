@@ -289,7 +289,6 @@ static int iomtr_set_cpu_affinity(ULONG_PTR affinity_mask)
 	if (!affinity_mask) {
 		affinity_mask = 1;
 	}
-	// not &affinity_mask, MSDN API Doc error.
 	res = SetProcessAffinityMask(GetCurrentProcess(), affinity_mask);
 	if (!res) {
 		res = GetLastError();
@@ -361,7 +360,7 @@ int CDECL main(int argc, char *argv[])
 #else
 #error ===> ERROR: You have to set default affinity values here
 	// TODO for non-Windows
-	param.cpu_affinity = 1; // get the current affinity value
+	param.cpu_affinity = 1; // get the current process affinity mask
 #endif
 #endif // IOMTR_SETTING_CPU_AFFINITY
 
@@ -787,10 +786,10 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				else
 					sscanf(argv[I],"%I64d", &tempMask);
 
-#if defined(IOMTR_OSFAMILY_WINDOWS)
+#if defined (IOMTR_SETTING_CPU_AFFINITY)
+
 				// TODO for non-Windows
-				// Until someone initializes the param.cpu_affinity (above) to the 
-				// current affinity mask for other OSs, this stays for Windows only
+				// This will not work if you ignored initializing cpu_affinity above
 				if ((tempMask & param->cpu_affinity) != tempMask)
 				{
 					cerr << "Warning: Invalid cpu_affinity mask specified, ignoring." << endl;

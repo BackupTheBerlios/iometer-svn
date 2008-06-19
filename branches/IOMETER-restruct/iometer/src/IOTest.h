@@ -107,14 +107,18 @@ enum TargetType {
 
 #ifdef USE_NEW_DISCOVERY_MECHANISM
 	// 
-	// By tagging the raw disk with this type tells iometer to chain
+	// Optional TODO for other OSes.
+	//
+
+	// By tagging the raw disk with this type tells iometer GUI to chain
 	// it under the preceding logical disk. This means, that following
 	// a logical disk you would insert a physical disk with this type
-	// if you wanted iometer to display it. For a software raid, you 
-	// would insert all of the disks belonging to that logical disk.
+	// if you wanted iometer to associate them. For a software raid, you 
+	// would insert all of the disks belonging to that logical disk with this
+	// type.
 	//
 	// If you have multiple striped partitions over the same group of 
-	// physical disks, it is up to you if you duplicate the physical
+	// physical disks, it is up to you if you duplicate the same physical
 	// disks after every logical disk, or just show them once.
 	//
 	PhysicalDiskTypeHasPartitions = 0x8C100000, 

@@ -48,7 +48,10 @@
 /* ##                                                                     ## */
 /* ## ------------------------------------------------------------------- ## */
 /* ##                                                                     ## */
-/* ##  Changes ...: 2005-04-18 (raltherr@apple.com)                       ## */
+/* ##  Changes ...: 2008-06-18 (vedrand@yahoo.com)                        ## */
+/* ##               -redesigned the code to support multiple timers       ## */
+/* ##                for Windows - needs work for others (comments below) ## */
+/* ##               2005-04-18 (raltherr@apple.com)                       ## */
 /* ##               - Support for MacOS X                                 ## */
 /* ##               2005-01-12 (henryx.w.tieman@intel.com)                ## */
 /* ##               - Added code for Linux on Intel Itanium (ia64).       ## */
@@ -333,7 +336,7 @@ DWORDLONG rdtsc()
 //
 
 // Abstract the OS high perf counter/frequency, so other OSs can use the 
-// rdtsc_freq and timer_* code. These 2 are just wrappers around 
+// rdtsc_freq and timer_* code below. These 2 are just wrappers around 
 // QueryPerfCounter/Frequency
 
 LONGLONG oshpc()
@@ -402,25 +405,40 @@ DWORDLONG timer_value()
 //
 // COMMON TIMER CODE
 //
-// Assumes the timer conventions as defined by the above windows section.
+
+// !!!!Delete/modify this ifdef once other OSes have implemented similar fuctionality!!!
+#if defined(IOMTR_OSFAMILY_WINDOWS)
+// !!!!Delete/modify this ifdef once other OSes have implemented similar fuctionality!!!
+
+//
+// Please follow the timer conventions as defined by the above windows section.
+//
 // Summary:
 // 1. TimerType controls the runtime type of the timer. Each OS needs to instantiate 
 //    a TimerType of type timer_type and set its default. 
-// 2. timer_value and timer_frequency() (below) are top level routines that mind TimerType
+// 2. timer_value and timer_frequency() (below) then become the top level routines 
+//    that mind TimerType global.
 // 3. timer_type enum in iocommon.h and timer_value()/timer_frequeny() need to be 
-//    modified for any new timer added. 
+//    in sync for any new timer(s) defined
 // 4. Define a {timer_name}() and {timer_name}_freq() functions for a desired timer 
-// 5. oshpc() and oshpc_freq() are minimum no matter what counter they really expose
-// 6. rdtsc() becomes an optional timer, and rdtsc_freq (below) would use it 
+//    e.g. rtc() rtc_freq(), rdtsc_freq is the only exception -- see below
+// 5. oshpc() and oshpc_freq() are the minimum ones that need be defined, however they should
+//    not rely on rdtsc. i.e. use another type of timer. If rdtsc is not really using the real
+//    rdtsc, do not even define rdtsc and set the default timer_type accordingly
+// 6. rdtsc() becomes an optional timer, and rdtsc_freq (below) would calculate its frequency 
 //
+// Note, the function naming convention move to timer_value was done because some
+// implementations did not really use rdtsc, which was the original function name. So if your OS
+// defines timer_value, it really needs to be renamed to reflects its behavior. And for all 
+// timers besides rdtsc, you also need to define a corresponding frequency function.
 
-#if defined(IOMTR_OSFAMILY_WINDOWS)
 
-// __int64 rdtsc_freq()
+
+// LONGLONG rdtsc_freq()
 //
 // The main problem is that TSC/ITC frequency may not match the internal 
 // processor clock, so we derive it here based on another known counter--
-// oshpc() in this case. 
+// oshpc() in this case. The default counter required for all this to work.
 // While ding that, we can also detect speed stepping but not 100% reliably.
 //
 // Note: -assumes we are running on one processor; caller should affinitize. 

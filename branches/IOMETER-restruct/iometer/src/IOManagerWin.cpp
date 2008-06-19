@@ -52,6 +52,7 @@
 /* ##               - Rewrote adding support for volume mount point       ## */
 /* ##                 better raw disk and network share detection         ## */
 /* ##               - Added new TargetType for chaining disks in Iometer  ## */
+/* ##                 see comments in iotest.h                            ## */
 /* ##               2004-04-15 (lamontcranston41@yahoo.com)               ## */
 /* ##               - Moved Report_Disks() from IOManager.cpp to here.    ## */
 /* ##               - Initial drop.                                       ## */

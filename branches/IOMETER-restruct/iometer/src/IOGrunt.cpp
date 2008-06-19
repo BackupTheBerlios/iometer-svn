@@ -670,8 +670,9 @@ void Grunt::Set_Affinity()
 			// We have a match for our index, so set the affinity for the thread
 #if defined(IOMTR_OSFAMILY_WINDOWS)
 			SetThreadAffinityMask(GetCurrentThread(), effective_affinity);
-//#else if
-			// must do something here
+#else
+#error ===> ERROR: You have to add affinity code here
+
 #endif
 
 #ifdef _DETAILS
