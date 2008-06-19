@@ -17,9 +17,10 @@ MSC_WARNING_LEVEL=/W2
 #        |                |                          |
 INCLUDES=$(SDK_INC_PATH); $(SDK_INC_PATH)\crt\stl70; $(MSSDK)\INCLUDE; ..
 
-C_DEFINES=$(C_DEFINES) -D_GALILEO_ -D_WINDOWS -DDOSWIN32 -DUSE_NEW_DISCOVERY_MECHANISM
+C_DEFINES=$(C_DEFINES) -D_GALILEO_ -D_WINDOWS -DDOSWIN32 -DUSE_NEW_DISCOVERY_MECHANISM -DIOMTR_SETTING_CPU_AFFINITY -DFORCE_STRUCT_ALIGN 
 # -DUSE_NEW_DISCOVERY_MECHANISM (for new disk detect)
 # -DFORCE_STRUCT_ALIGN (structure member alignment)
+# -DIOMTR_SETTING_CPU_AFFINITY (turns on cpu affinity code
 # -D_DETAILS (for more verbosity)
 # -D_DEBUG (for normal debug)
 # -DDEBUG (for DEBUG_NEW only)
