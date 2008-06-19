@@ -53,7 +53,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -147,7 +147,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -241,7 +241,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -336,7 +336,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_DEBUG"
+				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\$(ConfigurationName)\obj\$(PlatformName)/IOmeter.pch"
@@ -428,7 +428,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_DEBUG"
+				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\$(ConfigurationName)\obj\$(PlatformName)/IOmeter.pch"
@@ -521,7 +521,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_DEBUG"
+				PreprocessorDefinitions="_GALILEO_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\$(ConfigurationName)\obj\$(PlatformName)/IOmeter.pch"
@@ -775,144 +775,12 @@
 				>
 			</File>
 			<File
-				RelativePath="..\IOCQ.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOCQAIO.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOCQVI.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOGrunt.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOManager.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOMessage.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOPerformance.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\IOPort.h"
 				>
 			</File>
 			<File
 				RelativePath="..\IOPortTCP.h"
 				>
-			</File>
-			<File
-				RelativePath="..\IOTarget.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOTargetDisk.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOTargetTCP.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\IOTargetVI.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\IOTest.h"
@@ -925,18 +793,6 @@
 			<File
 				RelativePath="..\IOVersion.h"
 				>
-			</File>
-			<File
-				RelativePath="..\IOVIPL.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\LegalBox.h"
@@ -961,42 +817,6 @@
 			<File
 				RelativePath="..\MeterCtrl.h"
 				>
-			</File>
-			<File
-				RelativePath="..\NetTCP.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\NetVI.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Network.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ostream64.h"
@@ -1031,18 +851,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PulsarRC.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\StdAfx.h"
 				>
 			</File>
@@ -1053,30 +861,6 @@
 			<File
 				RelativePath="..\unpack8.h"
 				>
-			</File>
-			<File
-				RelativePath="..\VINic.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\vipl.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\WaitingForManagers.h"

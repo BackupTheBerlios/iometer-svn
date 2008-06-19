@@ -50,7 +50,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\..\bin\ddk\6000.rtm\inc\api"
-				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;_DETAILS"
+				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;_DETAILS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)/Dynamo.pch"
@@ -140,7 +140,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\..\bin\ddk\6000.rtm\inc\api"
-				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;_DETAILS"
+				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;_DETAILS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)/Dynamo.pch"
@@ -231,7 +231,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\..\..\..\bin\ddk\6000.rtm\inc\api"
-				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;_DETAILS"
+				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_CONSOLE;_DETAILS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)/Dynamo.pch"
@@ -322,7 +322,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\..\..\..\bin\ddk\6000.rtm\inc\api"
-				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;IOMTR_SETTING_CPU_AFFINITY;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_CONSOLE"
+				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN32;IOMTR_CPU_I386;WINVER=0x0502;IOMTR_SETTING_CPU_AFFINITY;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -415,7 +415,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\..\..\..\bin\ddk\6000.rtm\inc\api"
-				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;IOMTR_SETTING_CPU_AFFINITY;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_CONSOLE"
+				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_IA64;WINVER=0x0502;IOMTR_SETTING_CPU_AFFINITY;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -507,7 +507,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\..\..\..\bin\ddk\6000.rtm\inc\api"
-				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;IOMTR_SETTING_CPU_AFFINITY;USE_NEW_DISCOVERY_MECHANISM;_CRT_SECURE_NO_DEPRECATE;_CONSOLE"
+				PreprocessorDefinitions="_PULSAR_;IOMTR_OSFAMILY_WINDOWS;IOMTR_OS_WIN64;IOMTR_CPU_X86_64;WINVER=0x0502;IOMTR_SETTING_CPU_AFFINITY;USE_NEW_DISCOVERY_MECHANISM;FORCE_STRUCT_ALIGN;_CRT_SECURE_NO_DEPRECATE;_CONSOLE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -674,138 +674,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\AccessDialog.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\AccessSpecList.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\BigMeter.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\GalileoApp.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\GalileoCmdLine.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\GalileoDefs.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\GalileoDoc.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\GalileoView.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\ICF_ifstream.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\ICFOpenDialog.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\ICFSaveDialog.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\IOAccess.h"
 				>
 			</File>
@@ -882,30 +750,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\LegalBox.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\MainFrm.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\Manager.h"
 				>
 			</File>
@@ -950,114 +794,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PageAccess.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\PageDisk.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\PageDisplay.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\PageNetwork.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\PageSetup.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\PageTarget.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\resource.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\StdAfx.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\TextDisplay.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\unpack8.h"
 				>
 			</File>
@@ -1070,32 +806,8 @@
 				>
 			</File>
 			<File
-				RelativePath="..\WaitingForManagers.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\Worker.h"
 				>
-			</File>
-			<File
-				RelativePath="..\WorkerView.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
