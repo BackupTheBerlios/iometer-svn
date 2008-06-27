@@ -3,6 +3,50 @@
 ----+----|----+----|----+----|----+----|----+----|----+----|----+----|----+----|
 
 
+ChangeLog (IOMETER2 - 2008.06.18rc1):
+==================================
+
+-All of the following changes pertain to Windows. Infrastructure is in place to
+ enable this for other OSes but some coding is still required
+ -The following defines must be turned on for successful compatibility with the
+  IOMeter GUI: USE_NEW_DISCOVERY_MECHANISM, FORCE_STRUCT_ALIGN (more info below)
+
+-New disk detection and common structure changes (USE_NEW_DISCOVERY_MECHANISM)
+ -volume mount point support
+ -improved raw disk detection and soft raid awareness
+ -improved networking detection
+ -backwards compatiblity for older versions of Windows
+ -new display names for disks in Iometer GUI (e.g. inquiry info for raw disks)
+ -display raw disks with partitions using /force_raw option in dynamo
+  -iometer hierarchically chains raw disks to corresponding volumes if any
+  -other OSes need to do some coding to enable this, else works as before
+
+-Abstracted timer code
+ -added speed step detection
+ -default timer for x86 is Windows high-perf counter (Intel)
+ -Win64 attempts the TSC first and falls back to high-perf counter
+  -use /no_rdtsc in dynamo to disable the use of TSC and force high-perf cntr
+ -other OSes need to do some coding to enable this, else works as before
+
+-CPU affinity (IOMTR_SETTING_CPU_AFFINITY)
+ -existing cmdline option trims the affinity set to whatever you specify
+ -each worker is now affinitized to a single CPU
+ -CPUs are round robined within a given affinity mask
+ -other OSes need to do some coding to enable, else default behavior
+
+-Full 64bit disk sizes supported 
+ -including specifying start offset in GUI
+
+-Structure packing (FORCE_STRUCT_ALIGN)
+ -structure are 8byte aligned with compiler directive
+ -should not need padding members for compatibility for other OSes
+
+-Project/solution files
+ -created new Visual Studio 2005 solution files in \msvc
+  -binaries get deposited within there
+ -ddk binaries will end up in \ddk once you run the first build
+
+
 
 ChangeLog (IOMETER2 - 200X.XX.XX):
 ==================================
