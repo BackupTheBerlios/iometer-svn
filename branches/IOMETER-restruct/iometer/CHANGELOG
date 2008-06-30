@@ -54,7 +54,11 @@ ChangeLog (IOMETER2 - 200X.XX.XX):
 - New features:
    - Added a simple INSTALL file about how to install iometer and dynamo on 
      various platforms.
-
+   - Patch by Kris Murray and Allen Wayne from Intel on randomizing the written
+     data. The previous implementation of writing 0's causes an un-desired side-effect 
+     on some media, especially flash-based devices. The writing of random data 
+     creates a realistic workload for these new devices. (Also data patten will have impact
+     on protocol like iSCSI as well).
 - Bug fixes:
    - Patch by Ming Zhang to fix the way to get CPU utilization statistics under
      Linux.

@@ -93,3 +93,8 @@ N: Ian Brown
 E: ian@zestysoft.com
 D: Provided a perl script to generate graphs.
 
+N: Kris Murray and Allen Wayne
+C: INTEL
+D: Added code to randomize the written data. Also initial drop
+   of the new timer code on Windows platform.
+
