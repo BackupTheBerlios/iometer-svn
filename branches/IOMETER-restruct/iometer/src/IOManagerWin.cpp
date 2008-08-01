@@ -1705,6 +1705,7 @@ bool SendIoControl( char *device, DWORD control, LPVOID in,  DWORD size_in,
 int GetDosDevices(LPSTR search, LPSTR *source)
 {
 	int srcSize = 0, bufSize = 65536;
+	DWORD errCode;
 	LPSTR dest;
 
 	while (TRUE)
@@ -1719,16 +1720,18 @@ int GetDosDevices(LPSTR search, LPSTR *source)
 
         srcSize = QueryDosDevice(search, dest, bufSize);
 
-		if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+		errCode = GetLastError();
+
+		if (errCode == ERROR_INSUFFICIENT_BUFFER || errCode == ERROR_MORE_DATA)
 		{
 			delete [] dest;
-        	bufSize = NULL;
+        	dest = NULL;
         	bufSize *= 2;
         	continue;
 		}
         else if (srcSize == 0) 
 		{
-			cerr << "Error querying dos devices, error=" << GetLastError() << endl;
+			cerr << "Error querying dos devices, error=" << errCode << endl;
 			return 0;
         }
 		else
