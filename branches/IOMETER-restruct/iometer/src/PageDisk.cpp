@@ -326,6 +326,7 @@ void CPageDisk::ShowTargets()
 
 		// set the icon associated with the disk
 		switch (disk->type) {
+#ifdef USE_NEW_DISCOVERY_MECHANISM
 		case PhysicalDiskTypeHasPartitions:
 			// If we know the physical disk has partitions, and the checkbox has not been
 			// selected, exclude this disk.
@@ -333,7 +334,7 @@ void CPageDisk::ShowTargets()
 			//	continue;
 
 			tvstruct.hParent = hLastLogicalParent; // continue on
-
+#endif
 		case PhysicalDiskType:
 			// If this is an orphaned disk, we can still have valueable data on
 			// unrecognized partitions, so check the checkbox here again.
@@ -350,11 +351,11 @@ void CPageDisk::ShowTargets()
 				ErrorMessage("InsertItem() failed in CPageDisk::ShowTargets() for physical disk");
 				return;
 			}
-
+#ifdef USE_NEW_DISCOVERY_MECHANISM
 			// Expand the items rooted at the prior
 			if (disk->type == PhysicalDiskTypeHasPartitions)
 				m_TTargets.Expand(hLastLogicalParent, TVE_EXPAND);
-
+#endif
 			break;
 
 		case LogicalDiskType:
@@ -1238,7 +1239,6 @@ void CPageDisk::OnSelchangingTTargets(NMHDR * pNMHDR, LRESULT * pResult)
 	*pResult = 1;
 }
 
-#ifdef USE_NEW_DISCOVERY_MECHANISM
 HTREEITEM CPageDisk::GetNextTreeObject(HTREEITEM hnode)
 {
 	HTREEITEM htemp;
@@ -1263,7 +1263,7 @@ HTREEITEM CPageDisk::GetNextTreeObject(HTREEITEM hnode)
 
 	return htemp;
 }
-#endif
+
 
 DWORDLONG CPageDisk::GetDlgItemInt64(int nID, BOOL* lpTrans, BOOL bSigned, int *lpRadix )
 {

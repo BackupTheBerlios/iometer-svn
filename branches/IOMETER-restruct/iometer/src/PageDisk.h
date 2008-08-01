@@ -117,9 +117,7 @@ class CPageDisk:public CPropertyPage {
 
 	void EditSetfocus(CEdit * edit);
 
-#ifdef USE_NEW_DISCOVERY_MECHANISM
 	HTREEITEM GetNextTreeObject(HTREEITEM hnode);
-#endif
 
 	// These do not exist in the mfc...
 	DWORDLONG GetDlgItemInt64(int nID, BOOL* lpTrans = NULL, BOOL bSigned = TRUE, int* lpRadix = NULL);
