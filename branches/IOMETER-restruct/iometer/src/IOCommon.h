@@ -338,8 +338,16 @@ using namespace std;
  #if defined(IOMTR_SETTING_GCC_M64)
   // DWORD is supposed to be an unsigned 32 bit number.
   typedef unsigned int	       DWORD;
- #else
-  typedef unsigned long	       DWORD;
+  typedef unsigned __int64     ULONG_PTR, *PULONG_PTR;
+  typedef ULONG_PTR            DWORD_PTR;
+  typedef __int64			   LONG_PTR;
+  #define IOMTR_FORMAT_SPEC_64BIT	"L" 
+#else
+  typedef unsigned long			DWORD;
+  typedef unsigned long			ULONG_PTR, *PULONG_PTR;
+  typedef ULONG_PTR				DWORD_PTR;
+  typedef int					LONG_PTR;
+  #define IOMTR_FORMAT_SPEC_64BIT	"l"
  #endif
  
  typedef int		       INT;
@@ -373,9 +381,7 @@ using namespace std;
  typedef BYTE		      *LPBYTE;
  typedef LPCSTR		       LPCTSTR;
 
- typedef unsigned long         ULONG_PTR, *PULONG_PTR;
- typedef ULONG_PTR             DWORD_PTR;
-#endif 
+ #endif 
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)
 #ifndef LONG_PTR
@@ -400,6 +406,8 @@ using namespace std;
  //  a new CONNECTION type allows me to separate the two different concepts
  //  cleanly.
  typedef ULONG_PTR CONNECTION;
+
+#define IOMTR_FORMAT_SPEC_64BIT	"I64"
 #endif 
 // ----------------------------------------------------------------------------
 
