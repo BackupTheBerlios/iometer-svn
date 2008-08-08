@@ -774,17 +774,13 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 			if (argv[I])
 			{
 				// Lets use sscanf below to support hex input
-				//param->cpu_affinity = (unsigned long)atol(argv[I]);
 				ULONG_PTR tempMask;
 				
-				//
-				// Always deposit to a 64bit variable. We will just truncate 
-				// in case of 32bit OS. Handle both hex and decimal values.
-				//
+				// Handle both hex and decimal values. Abstract format spec syntax (in iocommon.h)
 				if (argv[I][0] == '0' && argv[I][1] == 'x')
-					sscanf(argv[I],"0x%I64x", &tempMask);
+					sscanf(argv[I],"0x%" IOMTR_FORMAT_SPEC_64BIT "x", &tempMask);
 				else
-					sscanf(argv[I],"%I64d", &tempMask);
+					sscanf(argv[I],"%" IOMTR_FORMAT_SPEC_64BIT "d", &tempMask);
 
 #if defined (IOMTR_SETTING_CPU_AFFINITY)
 
