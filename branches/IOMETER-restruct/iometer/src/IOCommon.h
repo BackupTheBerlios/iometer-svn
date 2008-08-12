@@ -1020,7 +1020,7 @@ inline int IsBigEndian(void)
 // ----------------------------------------------------------------------------
 
 // Defines various timer types supported, see iotime.c
-typedef enum {TIMER_UNDEFINED=0, TIMER_OSHPC=1, TIMER_RDTSC=2,  TIMER_HPET=3, TIMER_MAX=3} timer_type;
+typedef enum {TIMER_UNDEFINED=0, TIMER_OSHPC=1, TIMER_RDTSC=2,  TIMER_HPET=3, TIMER_TYPE_MAX=3} timer_type;
 
 // #ifdef USE_NEW_DETECTION_MECHANISM
 // Controls the disk view options in the new disk detection code. Not ifdefed beuase it is tied
