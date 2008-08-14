@@ -79,8 +79,7 @@
 struct Thread_Info {
 	int id;			// Thread's identification.  Used by thread to
 	// determine what work it is to do, such as which disk to access.
-	//void *parent;		// Pointer used to get parent object.
-	DWORDLONG parent; // force this to always be 8bytes for x-architecture differences?
+	void *parent;		// Pointer used to get parent object.
 };
 
 //

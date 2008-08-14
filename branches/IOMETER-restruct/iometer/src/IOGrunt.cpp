@@ -724,7 +724,7 @@ BOOL Grunt::Prepare_Disks()
 
 	for (int i = 0; i < target_count; i++) {
 		if (IsType(targets[i]->spec.type, LogicalDiskType)) {
-			prepare_thread[i].parent = (DWORDLONG)this;
+			prepare_thread[i].parent = this;
 			prepare_thread[i].id = i;
 			cout << "   " << targets[i]->spec.name << " preparing." << endl;
 #if defined(IOMTR_OSFAMILY_NETWARE) || defined(IOMTR_OSFAMILY_UNIX)
