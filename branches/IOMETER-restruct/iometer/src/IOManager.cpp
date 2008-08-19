@@ -276,7 +276,7 @@ BOOL Manager::Login(char* port_name, int login_port_number)
 #if defined(IOMTR_OS_SOLARIS)
 	// Calculate processor_speed_to_nsecs for use in rdtsc.c
 	// Note that this works only for MHz CPUs. For GHz CPUs the divisor will change.
-	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].processor_speed / 1000000000;
+	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].timer_resolution / 1000000000;
 #else
 #warning ===> WARNING: You have to do some coding here to get the port done!
 #endif
@@ -286,7 +286,7 @@ BOOL Manager::Login(char* port_name, int login_port_number)
 	// Calculate processor_speed_to_nsecs for use in rdtsc.c
 	// This is multiplied by the timestamp in nanosecs
 	// That gives (time in ns) * (proc speed in HZ) / 1000000000 = time in cpu cycles
-	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].processor_speed / 1000000000;
+	processor_speed_to_nsecs = (double)perf_data[WHOLE_TEST_PERF].timer_resolution / 1000000000;
 #elif defined(IOMTR_OS_LINUX)
 	// nop
 #else
