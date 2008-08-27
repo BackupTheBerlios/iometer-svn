@@ -656,7 +656,7 @@ static void ParseParam(int argc, char *argv[], struct dynamo_param *param)
 				// directly access the TimerType global defines in IoTime.h. This should
 				// be cleaned up better.
 				//
-				if (param->timer_type != TIMER_UNDEFINED && param->timer_type < TIMER_MAX)
+				if (param->timer_type != TIMER_UNDEFINED && param->timer_type < TIMER_TYPE_MAX)
 					TimerType = (timer_type) param->timer_type;
 
 				continue;
