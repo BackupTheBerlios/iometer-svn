@@ -1700,43 +1700,44 @@ bool SendIoControl( char *device, DWORD control, LPVOID in,  DWORD size_in,
 // GetDosDevices()
 //
 // Wrapper around QueryDosDevice() which has a typical but painful buffer allocation rule.
-// Routine allocates all the required memory, but the caller needs to deallocate source. 
+// Routine allocates all the required memory, but the caller needs to deallocate source upon
+// last call. 
 // Arguments match the first 2 of QueryDosDevice()
 int GetDosDevices(LPSTR search, LPSTR *source)
 {
 	int srcSize = 0, bufSize = 65536;
 	DWORD errCode;
-	LPSTR dest;
+	//LPSTR dest;
 
 	while (TRUE)
 	{
-		dest = new char[bufSize];
+		if (*source == NULL) *source = new char[bufSize];
 
-		if (dest == NULL)
+		if (*source == NULL)
 		{
 			cerr << "Error allocating memory for dest, error=" << GetLastError() << endl;
 			return 0;
 		}
 
-        srcSize = QueryDosDevice(search, dest, bufSize);
-
+        srcSize = QueryDosDevice(search, *source, bufSize);
 		errCode = GetLastError();
 
 		if (errCode == ERROR_INSUFFICIENT_BUFFER || errCode == ERROR_MORE_DATA)
 		{
-			delete [] dest;
-        	dest = NULL;
+			delete [] *source;
+        	*source = NULL;
         	bufSize *= 2;
         	continue;
 		}
         else if (srcSize == 0) 
 		{
 			cerr << "Error querying dos devices, error=" << errCode << endl;
+			if (*source) delete [] *source;
 			return 0;
         }
 		else
 		{
-			*source = dest;
+			//*source = dest;
 			break;
 		}
 	}
@@ -1752,7 +1753,7 @@ int GetDosDevices(LPSTR search, LPSTR *source)
 // thoroughness, it reports the symbolic link target of the dos device
 // and allocates a buffer within the DosDeviceList structure. So,
 // caller must deallocate the DosDevicesList.list member at the end.
-// Argument search is any type of string that is matchee against the 
+// Argument search is any type of string that is matched against the 
 // symbolic link.
 DosDeviceList
 GetFilteredDosDevices(LPSTR search)
@@ -1782,7 +1783,7 @@ GetFilteredDosDevices(LPSTR search)
 	while (i--)
 	{
 		j = 0; // reset current item count
-		while(pos && ((pos-destBuffer) < len))
+		while(*pos && ((pos-destBuffer) < len))
 		{
 			if (strstr(pos, search))
 			{
