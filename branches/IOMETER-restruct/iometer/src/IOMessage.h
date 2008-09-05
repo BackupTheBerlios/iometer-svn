@@ -147,7 +147,7 @@ struct Message {
 
 struct Data_Message {
 	int count;		// Number of data items in the message.
-#ifdef FORCE_STRUCT_ALIGN
+#ifndef FORCE_STRUCT_ALIGN
 	char pad[4];		// coz of Solaris - NT differences
 #endif
 	Message_Data data;	// Detailed data sent with the data message.
