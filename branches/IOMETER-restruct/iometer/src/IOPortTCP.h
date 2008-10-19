@@ -154,7 +154,7 @@ class PortTCP:public Port {
 	static unsigned int sockets_in_use;
 
 	// private functions used only by PortTCP
-	BOOL CloseSocket(SOCKET * s, char *socket_name);	// utility function
+	BOOL CloseSocket(SOCKET * s, const char *socket_name);	// utility function
 	DWORDLONG SynchReceive(LPVOID data, DWORD size = MESSAGE_SIZE);
 	DWORDLONG SynchSend(LPVOID data, DWORD size = MESSAGE_SIZE);
 

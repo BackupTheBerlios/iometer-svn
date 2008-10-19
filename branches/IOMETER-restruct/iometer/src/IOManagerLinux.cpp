@@ -101,8 +101,6 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
-static char *mnttab;
-
 #define USED_DEVS_MAX_SIZE (4 * 1024)
 
 /**********************************************************************
@@ -120,6 +118,7 @@ int Manager::Report_Disks(Target_Spec * disk_spec)
 	TargetDisk d;
 	int count = 0;
 	char usedDevs[USED_DEVS_MAX_SIZE + 1];
+	const char *mnttab;
 
 	usedDevs[0] = '\0';
 

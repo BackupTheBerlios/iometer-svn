@@ -934,7 +934,7 @@ DWORD PortTCP::Peek()
 //
 // Utility function to close a socket.  socket_name parameter is used only for debugging outputs.
 //
-BOOL PortTCP::CloseSocket(SOCKET * s, char *socket_name)
+BOOL PortTCP::CloseSocket(SOCKET * s, const char *socket_name)
 {
 	if (*s == (int)INVALID_SOCKET) {
 #if PORT_DETAILS || _DETAILS

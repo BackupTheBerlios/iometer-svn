@@ -158,7 +158,7 @@ Performance::~Performance()
 int Performance::Get_Processor_Count(void)
 {
 	char buf[4096];
-	char *p = "processor\t:";
+	const char *p = "processor\t:";
 	int i = 0;
 	size_t res, j;
 	FILE *cpuinfo;
