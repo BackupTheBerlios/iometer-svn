@@ -536,6 +536,7 @@ void Syntax(const char *errmsg /*=NULL*/ )
 #elif defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
 	cout << "       [/c cpu_affinity] [/p login_port_number]" << endl;
+	cout << "       [force_raw] [no_rdtsc]" << endl;
 #elif defined(IOMTR_OS_NETWARE)
 	cout << "dynamo [/i iometer_computer_name /m manager_computer_name] [/n manager_name]" << endl;
 	cout << "       [/x excluded_volumes] [/c cpu_affinity] [/p login_port_number]" << endl;
@@ -597,6 +598,16 @@ void Syntax(const char *errmsg /*=NULL*/ )
 	cout << "      you want to bind to the third cpu, you should have value 4(00000100) here." << endl;
 	cout << "      If this parameter is not specified, dynamo will bind to the first CPU" << endl;
 	cout << "      in system by default." << endl;
+	cout << endl;
+#endif
+
+#if defined(IOMTR_OS_WIN32) || defined(IOMTR_OS_WIN64)
+	cout << "   force_raw - forces dynamo to report all raw disks regardless of partitions" << endl;
+	cout << "      contained within them. " << endl;
+	cout << endl;
+	cout << "   no_rdtsc - disables explicit rdtsc use in favor of QueryPeformanceCounter" << endl;
+	cout << "      for measuring I/O performance." << endl;
+	cout << "      Only applies to ia64. x86/x64 default to QueryPeformanceCounter."<< endl;
 	cout << endl;
 #endif
 

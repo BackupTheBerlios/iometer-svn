@@ -70,17 +70,14 @@
 // storage structure referenced.
 //
 
-#if 0
-// vista/w2k8 wdk adds this intrinsic?? not sure how to deal with it 
-#if (_WIN32_WINNT < 0x0600)
-#define __struct_bcount(x)
-#endif
-#endif
-
+#if 0	
+// All this is now covered in the winioctl.h -- assuming you have a recent one
+// Uncomment as necessary.
 #include <devioctl.h>
 #include <ntdddisk.h>
 #include <ntddstor.h>
 #include <ntddvol.h>
+#endif
 
 int Report_Disks_WinNT(Target_Spec * disk_spec)
 #else
@@ -186,20 +183,24 @@ extern struct dynamo_param param;
 
 /////////////////////////////////////////////DEFINES///////////////////////////////////////////////
 
-// #define USE_NEW_DISK_VIEW	TRUE
 // Enables the fanciest disk detection method and falls
 // back to older methods on older OSes (like win2k/nt).
 // FALSE will force the plain method always.
 //
 // Functionality moved to dynamo_param global member disk_control
+// #define USE_NEW_DISK_VIEW	TRUE
 
 
-#define NEST_ORPHAN_DISKS	FALSE
 // Inject dummy volume in disk wiew hierarchy 
 // as parent objects to unmounted/unknown disks that 
 // have valid partitions on them.
 // FALSE will not, but iometer will control the display of 
 // these additional physical disks.
+#define NEST_ORPHAN_DISKS	FALSE
+
+// Number of non-existant disks to scan before stopping for good.
+#define PHYS_DISK_HOLE_SIZE 512
+
 
 #define MINUS_ONE 0xffffffff
 #define LDSTRINGS_BUF_SIZE 256
@@ -212,11 +213,30 @@ extern struct dynamo_param param;
 #define GET_STORPROP_PRODUCT_STRINGS(_x) ((char *)_x + ((PSTORAGE_DEVICE_DESCRIPTOR)_x)->ProductIdOffset)
 #define GET_STORPROP_REVISION_STRINGS(_x) ((char *)_x + ((PSTORAGE_DEVICE_DESCRIPTOR)_x)->ProductRevisionOffset)
 
+//
+// Disk_Spec.disk_reserved is a 5-DWORD long structure that contains a STORAGE_DEVICE_NUMBER structure 
+// and a pointer tothe VOLUME_DISK_EXTENTS_STRUCTURE; This could be bad if the SDN stucture changes size;
 #define GET_SDN_PTR(_x) ((PSTORAGE_DEVICE_NUMBER) &_x.disk_reserved[0])
-#define GET_VDE_PTR(_x) ((PVOLUME_DISK_EXTENTS) &_x.disk_reserved[3])
+#define GET_VDE_PTR(_x) ((PVOLUME_DISK_EXTENTS *) &_x.disk_reserved[3])
 
-#define EQUAL_DEVICE_NUMBERS(_x, _y) (((_x)->DeviceType == (_y)->DeviceType) \
-							       && ((_x)->DeviceNumber == (_y)->DeviceNumber))
+#if 0
+// The above GET_VDE or GET_SDN should be been phrades like this
+#pragma pack(push, 1)
+struct _SDN_VDEPTR
+{
+	STORAGE_DEVICE_NUMBER sdn;
+	PVOLUME_DISK_EXTENTS pvde;
+};
+#pragma pack(pop)
+
+#define GET_SDN_PTR(_x) (&((struct _SDN_VDEPTR)_x.disk_reserved).sdn)
+#define GET_VDE_PTRPTR(_x) (&((struct _SDN_VDEPTR)_x.disk_reserved).pvde)
+#endif
+
+#define EQUAL_DEVICE_NUMBERS(_x, _y) ((((PSTORAGE_DEVICE_NUMBER)_x)->DeviceType == ((PSTORAGE_DEVICE_NUMBER)_y)->DeviceType) \
+							       && (((PSTORAGE_DEVICE_NUMBER)_x)->DeviceNumber == ((PSTORAGE_DEVICE_NUMBER)_y)->DeviceNumber))
+
+
 
 /////////////////////////////////////// GLOBAL FUNCTION PROTOTYPES//////////////////////////////
 
@@ -301,9 +321,6 @@ bool GetDeviceNumber(char *name, PSTORAGE_DEVICE_NUMBER sdn);
 bool GetDiskExtents(char *name, PVOID vde, PULONG size, bool allocate);
 bool GetStorageProperty(char *name, PVOID in, PULONG size, bool allocate);
 bool SendIoControl( char *device, DWORD control, LPVOID in,  DWORD size_in, LPVOID out, DWORD size_out);
-int  GetDosDevices(LPSTR search, LPSTR *source);
-DosDeviceList GetFilteredDosDevices(LPSTR search);
-
 int  MergeVolumesAndRawDisks(Target_Spec *dest, Target_Spec *source, ULONG mid_point, ULONG total, BOOL InsertUnknown);
 int __cdecl TS_Compare_BasicName(const void *elem1, const void *elem2);
 int __cdecl TS_Compare_DeviceNumberLogiFirst(const void *elem1, const void *elem2);
@@ -482,6 +499,8 @@ int Manager::Report_Disks( Target_Spec* disk_spec )
 			qsort( &disk_spec[device_count - net_count], net_count, sizeof(Target_Spec), TS_Compare_BasicName);
 
 #if _DETAILS
+		cout << "Target_Spec size=" << sizeof(Target_Spec) << endl; 
+		cout << "Data_Message size=" << sizeof(Data_Message) << endl;
 		cout << "Number of devices detected: " << device_count << endl;
 #endif
 		// Done
@@ -921,12 +940,15 @@ Report_Volumes2( Target_Spec* disk_spec, int start_count, bool force_all )
 			continue;
 		}
 
+		PVOLUME_DISK_EXTENTS *pvde = (PVOLUME_DISK_EXTENTS*) GET_VDE_PTR(d.spec.disk_info);
+		PSTORAGE_DEVICE_NUMBER psdn = GET_SDN_PTR(d.spec.disk_info);
+
 		// This allows use to get a unique device number to match against physical disks.
-		if (!GetDeviceNumber(volume_name, GET_SDN_PTR(d.spec.disk_info)))
+		if (!GetDeviceNumber(volume_name, psdn))
 		{
 			// if we failed getting a device number, we might have a dynamic sw volume set,
 			// so try to get disk extent info as well
-			if (!GetDiskExtents(volume_name, GET_VDE_PTR(d.spec.disk_info), 0, TRUE)) 
+			if (!GetDiskExtents(volume_name, pvde, 0, TRUE)) 
 			{
 				cerr << "ERROR retrieving device number or extents from " 
 					 << path_names << endl;
@@ -936,19 +958,27 @@ Report_Volumes2( Target_Spec* disk_spec, int start_count, bool force_all )
 			}
 			else
 			{
-				PVOLUME_DISK_EXTENTS pvde = (PVOLUME_DISK_EXTENTS) GET_VDE_PTR(d.spec.disk_info);
-				PSTORAGE_DEVICE_NUMBER psdn = GET_SDN_PTR(d.spec.disk_info);
+				//PVOLUME_DISK_EXTENTS pvde = (PVOLUME_DISK_EXTENTS) GET_VDE_PTR(d.spec.disk_info);
+				//PSTORAGE_DEVICE_NUMBER psdn = GET_SDN_PTR(d.spec.disk_info);
+
 				// If we have extents, populate the device_number structure
 				// with something useful for associating phys to logi disks
 				psdn->DeviceType = FILE_DEVICE_DISK;
 
 				// the first disk in the volume set will match this value
-				psdn->DeviceNumber = pvde->Extents[0].DiskNumber;
+				psdn->DeviceNumber = (*pvde)->Extents[0].DiskNumber;
 
 				// stash the number of physical disks in this sw volume as a negative partition number
-				psdn->PartitionNumber = (ULONG) (-1 * pvde->NumberOfDiskExtents);
+				psdn->PartitionNumber = (ULONG) (-1 * (*pvde)->NumberOfDiskExtents);
 			}
 		}
+
+#if _DETAILS2
+		cout << "d.spec.disk_info.disk_reserved array: ";
+		for (int i=0; i<5; i++)
+			cout << i << "=" << d.spec.disk_info.disk_reserved[i];
+		cout << endl;
+#endif
 
 		// once init_logical is called, we can overwrite the .name with our "friendly name" version
 		strcpy(d.spec.name, path_names);
@@ -1163,30 +1193,12 @@ int Report_RawDisks( Target_Spec *disk_spec, int start_count, int view_type )
 	int	drive_number = 0, number_skipped = 0;
 	int count = start_count;
 	TargetDisk d;
-	DosDeviceList dev_list;
+	DosDeviceList dev_list = {0,0};
 
 	cout << "Reporting raw disk information..." << endl;
 
-	// The following parses the DosDevice namespace in order to get the right number of
-	// raw disks. This deals with physicaldrives that may have holes in their numbering.
-	// As a result, we can know how many raw disks have been found in advance.
-	dev_list = GetFilteredDosDevices("PhysicalDrive");
-
-	for ( int i=0; i < dev_list.num_entries; i++ )
+	for (drive_number=0; count < MAX_TARGETS; drive_number++)
 	{
-		//printf(" %s==>%s\n", dev_list.list[i].link, dev_list.list[i].target);
-
-		if ( count >= MAX_TARGETS )
-		{
-			cerr << "Report_RawDisks: Reached max disk limit, skipping: " << dev_list.list[i].link << "." << endl;
-			continue;
-		}
-
-		memset(&d.spec, 0, sizeof(d.spec));
-
-		// The last chars in our dev_list link string are the physicaldrive number
-		drive_number = atoi(&dev_list.list[i].link[strlen("PhysicalDrive")]);
-
 		// We already have the string (but w/out \\.\, so regenerate is here.
 		sprintf( d.spec.name, "%s%i", PHYSICAL_DISK, drive_number );
 		strcpy( d.file_name, d.spec.name );
@@ -1195,8 +1207,11 @@ int Report_RawDisks( Target_Spec *disk_spec, int start_count, int view_type )
 		if ( !d.Open( NULL ) )
 		{
 			// we should not be here, since we know that all of the disks we are opening exist
-			cerr << "Failed opening device " << d.spec.name << "." << endl;
-			continue; 
+			if (number_skipped == 0)
+				cerr << "Failed opening device " << d.spec.name << "." << endl;
+
+			// if open fails, we will fail everything else, so just to a goto here, all else are ok to continue
+			goto DoHoleCheck;
 		}
 		d.Close( NULL );
 
@@ -1207,8 +1222,8 @@ int Report_RawDisks( Target_Spec *disk_spec, int start_count, int view_type )
 
 		// This is our basic method of associating physical and logical disks, we really
 		// need this to work on all disk devices!
-		PSTORAGE_DEVICE_NUMBER device_number = (PSTORAGE_DEVICE_NUMBER) &d.spec.disk_info.disk_reserved[0];
-		if (!GetDeviceNumber(d.spec.name, GET_SDN_PTR(d.spec.disk_info)))
+		PSTORAGE_DEVICE_NUMBER psdn = (PSTORAGE_DEVICE_NUMBER) &d.spec.disk_info.disk_reserved[0];
+		if (!GetDeviceNumber(d.spec.name, psdn)) //GET_SDN_PTR(d.spec.disk_info)))
 		{
 			cerr << "Failed retrieving device number for " << d.spec.name << "." << endl;
 			continue;
@@ -1265,6 +1280,11 @@ int Report_RawDisks( Target_Spec *disk_spec, int start_count, int view_type )
 	#endif
 
 		count++;
+		continue;
+
+DoHoleCheck:
+		if (++number_skipped == PHYS_DISK_HOLE_SIZE) 
+			break;
 	}
 
 	delete [] dev_list.list;
@@ -1696,141 +1716,6 @@ bool SendIoControl( char *device, DWORD control, LPVOID in,  DWORD size_in,
 	return TRUE;
 }
 
-// 
-// GetDosDevices()
-//
-// Wrapper around QueryDosDevice() which has a typical but painful buffer allocation rule.
-// Routine allocates all the required memory, but the caller needs to deallocate source upon
-// last call. 
-// Arguments match the first 2 of QueryDosDevice()
-int GetDosDevices(LPSTR search, LPSTR *source)
-{
-	int srcSize = 0, bufSize = 65536;
-	DWORD errCode;
-	//LPSTR dest;
-
-	while (TRUE)
-	{
-		if (*source == NULL) *source = new char[bufSize];
-
-		if (*source == NULL)
-		{
-			cerr << "Error allocating memory for dest, error=" << GetLastError() << endl;
-			return 0;
-		}
-
-        srcSize = QueryDosDevice(search, *source, bufSize);
-		errCode = GetLastError();
-
-		if (errCode == ERROR_INSUFFICIENT_BUFFER || errCode == ERROR_MORE_DATA)
-		{
-			delete [] *source;
-        	*source = NULL;
-        	bufSize *= 2;
-        	continue;
-		}
-        else if (srcSize == 0) 
-		{
-			cerr << "Error querying dos devices, error=" << errCode << endl;
-			if (*source) delete [] *source;
-			return 0;
-        }
-		else
-		{
-			//*source = dest;
-			break;
-		}
-	}
-
-	return srcSize;
-}
-
-//
-// GetFilteredDosDevices()
-//
-// Another wrapper, but around GetDosDevices. Returns a custom data 
-// structure that represents a filtered view of the dos devices. For
-// thoroughness, it reports the symbolic link target of the dos device
-// and allocates a buffer within the DosDeviceList structure. So,
-// caller must deallocate the DosDevicesList.list member at the end.
-// Argument search is any type of string that is matched against the 
-// symbolic link.
-DosDeviceList
-GetFilteredDosDevices(LPSTR search)
-{
-    int i, j, status = 1;
-	int devSize = 0, len = 0;
-    LPSTR destBuffer = NULL;
-	LPSTR targetBuffer = NULL;
-	char *pos, *pos_back;
-	DosDeviceList dev_list;
-
-	len = GetDosDevices(NULL, &destBuffer);
-
-	if (!len) 
-	{
-		status = 0;
-		goto cleanup;
-	}
-
-	pos = pos_back = destBuffer;
-	i = 2;
-	dev_list.num_entries = 0;
-
-	//
-	// Do 2 loops, one to count the number of entries, and the other to insert them
-	//
-	while (i--)
-	{
-		j = 0; // reset current item count
-		while(*pos && ((pos-destBuffer) < len))
-		{
-			if (strstr(pos, search))
-			{
-				GetDosDevices(pos, &targetBuffer);
-
-				//cout << "Symbolic link: " << pos << " targetted at: " << targetBuffer << "." << endl;
-
-				if (i==0)
-				{
-					strcpy(dev_list.list[j].link, pos);
-					strcpy(dev_list.list[j].target, targetBuffer);
-				}
-				j++;
-			}
-			while (*pos++);
-		}
-		if (i==1) // first iteration
-		{
-			dev_list.num_entries = j; // update the count
-			dev_list.list = new DosDeviceEntry[dev_list.num_entries];
-
-			if (dev_list.list == NULL)
-			{
-				cerr << "GetFilteredDosDevices: Error, failed to allocate memory for dev_list, error=" << GetLastError() << endl;
-				status = 0;
-				goto cleanup;
-			}
-		}
-		pos = pos_back;
-	}
-
-cleanup:
-
-	if (destBuffer) 
-		delete [] destBuffer;
-	if (targetBuffer) 
-		delete [] targetBuffer;
-
-	if (!status)
-	{	
-		cerr << "GetFilteredDosDevices: Errors found gathering dos devices matching string: " << search << "." << endl;
-		dev_list.num_entries = 0;
-	}
-		
-	return dev_list;
-}
-
 // Compares Target_Spec entries for use by qsort routine
 int
 __cdecl 
@@ -1845,9 +1730,18 @@ int MergeVolumesAndRawDisks(Target_Spec *dest, Target_Spec *source, ULONG mid_po
 
 	for (ULONG v = 0; v < mid_point; v++)
 	{
+
+#ifdef _DETAILS2 
+		cout << "Parsing " << source[v].name << endl;
+#endif
 		// skip over used volumes
 		if (source[v].type == 0)
+		{
+#ifdef _DETAILS2 
+		cout << " Skipping."  << endl;
+#endif
 			continue;
+		}
 
 		// copy over our volume
 		dest[++d] = source[v]; 
@@ -1857,59 +1751,160 @@ int MergeVolumesAndRawDisks(Target_Spec *dest, Target_Spec *source, ULONG mid_po
 		{
 			if (source[r].type == 0) // a cleared entry
 				continue;
-
+#ifdef _DETAILS2 
+			cout << " Looking for sibling volumes..." << endl;
+			cout << " Comparing " << GET_SDN_PTR(source[v].disk_info)->DeviceNumber << " " << GET_SDN_PTR(source[v].disk_info);
+			cout << "  to  " << GET_SDN_PTR(source[r].disk_info)->DeviceNumber << " " << GET_SDN_PTR(source[r].disk_info) << endl;
+#endif
 			if (EQUAL_DEVICE_NUMBERS(GET_SDN_PTR(source[v].disk_info), GET_SDN_PTR(source[r].disk_info)))
 			{
+#ifdef _DETAILS2 
+				cout << " Sibling volume " << source[v].name << endl;
+#endif
 				// just copy over another volume
 				dest[++d] = source[r];
 				source[r].type = (TargetType) 0; // null out this volume so we skip it above
 			}
 		}
 
-		// now search for physical disks matching the device_number structure
-		for (ULONG r = mid_point; r < total; r++)
+		// Optimization: we know the physical disks are sorted in increasing order; the only 
+		// problem is if there are holes. Could check for easy case first (plus extents) and 
+		// then fall back to slow search.
+
+		int quick_index = mid_point + GET_SDN_PTR(source[v].disk_info)->DeviceNumber;
+		if (EQUAL_DEVICE_NUMBERS(GET_SDN_PTR(source[v].disk_info), GET_SDN_PTR(source[quick_index].disk_info)))
 		{
-			// skip over used disks
-			if (source[r].type == 0)
-				continue;
+			PVOLUME_DISK_EXTENTS *pvde = GET_VDE_PTR(source[v].disk_info);				
+			PSTORAGE_DEVICE_NUMBER psdn = GET_SDN_PTR(source[v].disk_info);;
 
-			if (EQUAL_DEVICE_NUMBERS(GET_SDN_PTR(source[v].disk_info), GET_SDN_PTR(source[r].disk_info)))
+			// update our hierarchy indicator
+			source[quick_index].type = PhysicalDiskTypeHasPartitions;
+
+#ifdef _DETAILS2 
+		cout << " Quick-matched raw disk " << source[r].name << endl;
+#endif
+
+			dest[++d] = source[quick_index];
+			source[quick_index].type = (TargetType) 0;
+
+			if ( *pvde && ((*pvde)->NumberOfDiskExtents == (psdn->PartitionNumber * -1))) // we have multiple physical mappings
 			{
-				PVOLUME_DISK_EXTENTS pvde = GET_VDE_PTR(source[v].disk_info);				
-				PSTORAGE_DEVICE_NUMBER psdn;
+				//ASSERT(dest[d].disk_info.device_number.DeviceNumber == pvde->Extents[0].DiskNumber);
 
-				// update our hierarchy indicator
-				source[r].type = PhysicalDiskTypeHasPartitions;
-				
-				dest[++d] = source[r];
-				source[r].type = (TargetType) 0;
-
-				if (pvde->NumberOfDiskExtents) // we have multiple physical mappings
+				// re-scan the raw list for the rest of the extents
+				ULONG e=1;
+				for (ULONG rr = quick_index + 1; 
+					 (rr < total) && (e < (*pvde)->NumberOfDiskExtents);
+					 rr++)
 				{
-					//ASSERT(dest[d].disk_info.device_number.DeviceNumber == pvde->Extents[0].DiskNumber);
+					if (source[rr].type == 0)
+						continue;
 
-					// re-scan the raw list for the rest of the extents
-					for (ULONG rr = mid_point, e=1; 
-						 (rr < (total - mid_point)) || (e < pvde->NumberOfDiskExtents);
-						 rr++)
+					psdn = GET_SDN_PTR(source[rr].disk_info);
+					// this only works, becuase both raw and extents disk numbers ordered
+					if (psdn->DeviceType == FILE_DEVICE_DISK &&
+						(psdn->DeviceNumber == (*pvde)->Extents[e].DiskNumber))
 					{
-						if (source[rr].type == 0)
-							continue;
+#ifdef _DETAILS2 
+						cout << "  Quick matched raw disk extent " << source[rr].name << endl;
+#endif
 
-						psdn = GET_SDN_PTR(source[rr].disk_info);
-						// this only works, becuase both raw and extents disk numbers ordered
-						if (psdn->DeviceType == FILE_DEVICE_DISK &&
-							(psdn->DeviceNumber == pvde->Extents[e].DiskNumber))
-						{
-							source[rr].type = PhysicalDiskTypeHasPartitions;
-							dest[++d] = source[rr];
-							source[rr].type = (TargetType) 0;
-							e++; // increment e only if we found something, we had better hit all values of e!
-						}
+						source[rr].type = PhysicalDiskTypeHasPartitions;
+						dest[++d] = source[rr];
+						source[rr].type = (TargetType) 0;
+						e++; // increment e only if we found something, we had better hit all values of e!
 					}
-					// this delete matches the callee allocated buffer in GetDiskExtents()
-					// iometer does not need it
-					delete [] pvde;
+				}
+
+				if (e < (*pvde)->NumberOfDiskExtents)
+				{
+					cout << "WARNING: only found " << e << " disk extents out of " <<  (*pvde)->NumberOfDiskExtents << " for volume." << endl;
+					cout << " Extent disk numbers: ";
+					for (DWORD i=0; i< (*pvde)->NumberOfDiskExtents; i++)
+						cout << (*pvde)->Extents[i].DiskNumber << ", " ;
+					cout << endl;
+				}
+
+				// this delete matches the callee allocated buffer in GetDiskExtents()
+				// iometer does not need it
+				delete [] *pvde;
+			}
+		}
+		else
+		{
+
+			// now search for physical disks matching the device_number structure
+			for (ULONG r = mid_point; r < total; r++)
+			{
+				// skip over used disks
+				if (source[r].type == 0)
+					continue;
+
+	#ifdef _DETAILS2 
+				cout << " Looking for children raw disks..." << endl;
+				cout << " Comparing " << GET_SDN_PTR(source[v].disk_info)->DeviceNumber << " " << GET_SDN_PTR(source[v].disk_info);
+				cout << "  to  " << GET_SDN_PTR(source[r].disk_info)->DeviceNumber << " " << GET_SDN_PTR(source[r].disk_info) << endl;
+	#endif
+				if (EQUAL_DEVICE_NUMBERS(GET_SDN_PTR(source[v].disk_info), GET_SDN_PTR(source[r].disk_info)))
+				{
+					PVOLUME_DISK_EXTENTS *pvde = GET_VDE_PTR(source[v].disk_info);				
+					PSTORAGE_DEVICE_NUMBER psdn = GET_SDN_PTR(source[v].disk_info);;
+
+					// update our hierarchy indicator
+					source[r].type = PhysicalDiskTypeHasPartitions;
+
+	#ifdef _DETAILS2 
+			cout << " Matched raw disk " << source[r].name << endl;
+	#endif
+
+					dest[++d] = source[r];
+					source[r].type = (TargetType) 0;
+
+					if ( *pvde && ((*pvde)->NumberOfDiskExtents == (psdn->PartitionNumber * -1))) // we have multiple physical mappings
+					{
+						//ASSERT(dest[d].disk_info.device_number.DeviceNumber == pvde->Extents[0].DiskNumber);
+
+						// re-scan the raw list for the rest of the extents
+						ULONG e=1;
+						for (ULONG rr = mid_point; 
+							 (rr < (total - mid_point)) && (e < (*pvde)->NumberOfDiskExtents);
+							 rr++)
+						{
+							if (source[rr].type == 0)
+								continue;
+
+							psdn = GET_SDN_PTR(source[rr].disk_info);
+							// this only works, becuase both raw and extents disk numbers ordered
+							if (psdn->DeviceType == FILE_DEVICE_DISK &&
+								(psdn->DeviceNumber == (*pvde)->Extents[e].DiskNumber))
+							{
+	#ifdef _DETAILS2 
+								cout << "  Matched raw disk extent " << source[rr].name << endl;
+	#endif
+
+								source[rr].type = PhysicalDiskTypeHasPartitions;
+								dest[++d] = source[rr];
+								source[rr].type = (TargetType) 0;
+								e++; // increment e only if we found something, we had better hit all values of e!
+							}
+						}
+
+						if (e < (*pvde)->NumberOfDiskExtents)
+						{
+							cout << "WARNING: only found " << e << " disk extents out of " <<  (*pvde)->NumberOfDiskExtents << " for volume." << endl;
+							cout << " Extent disk numbers: ";
+							for (DWORD i=0; i< (*pvde)->NumberOfDiskExtents; i++)
+								cout << (*pvde)->Extents[i].DiskNumber << ", " ;
+							cout << endl;
+						}
+
+						// this delete matches the callee allocated buffer in GetDiskExtents()
+						// iometer does not need it
+						delete [] *pvde;
+					}
+
+					// if we found a raw disk, we'll have scanned extens, so its ok to break
+					break;
 				}
 			}
 		}
@@ -1937,6 +1932,9 @@ int MergeVolumesAndRawDisks(Target_Spec *dest, Target_Spec *source, ULONG mid_po
 					// Alter the disk type for iometer's tree view sturctures to work
 					source[a].type = PhysicalDiskTypeHasPartitions;
 				}
+#ifdef _DETAILS2 
+				cout << "Found unassociated disk " << source[a].name << endl;
+#endif
 				dest[++d] = source[a];
 			}
 		}

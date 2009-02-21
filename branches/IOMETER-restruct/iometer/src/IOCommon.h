@@ -202,8 +202,8 @@
 // (both, OS family based and common)
 // ----------------------------------------------------------------------------
 #if defined(IOMTR_OSFAMILY_WINDOWS)   // Only first, because it is needed here!
- #define VC_EXTRALEAN
- #pragma warning (disable: 4242)
+ //#define VC_EXTRALEAN
+ //#pragma warning (disable: 4242)
  #include <process.h>
  #include <io.h>
  #include <direct.h>
@@ -445,7 +445,7 @@ using namespace std;
                                    // the Solaris 2.6 man page for swapctl(2)
 #define	MAX_CPUS	      64
 #define	MAX_WORKERS	      128
-#define MAX_TARGETS	      512
+#define MAX_TARGETS	      2048
 #define MAX_NETWORK_NAME      128
 #define MAX_NUM_INTERFACES    64
 #define MAX_WORKER_NAME	      128
