@@ -1781,7 +1781,7 @@ int MergeVolumesAndRawDisks(Target_Spec *dest, Target_Spec *source, ULONG mid_po
 			source[quick_index].type = PhysicalDiskTypeHasPartitions;
 
 #ifdef _DETAILS2 
-		cout << " Quick-matched raw disk " << source[r].name << endl;
+		cout << " Quick-matched raw disk " << source[quick_index].name << endl;
 #endif
 
 			dest[++d] = source[quick_index];

@@ -132,6 +132,8 @@ BEGIN_MESSAGE_MAP(CPageDisk, CPropertyPage)
     ON_NOTIFY(NM_SETFOCUS, TTargets, OnSetfocusTTargets)
 ON_NOTIFY(TVN_SELCHANGING, TTargets, OnSelchangingTTargets)
     //}}AFX_MSG_MAP
+	ON_EN_CHANGE(EDiskSize, &CPageDisk::OnEnChangeEdisksize)
+	ON_EN_CHANGE(EDiskStart, &CPageDisk::OnEnChangeEdiskstart)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPageDisk message handlers
@@ -749,14 +751,14 @@ void CPageDisk::OnKillfocusEDiskSize()
 		case WORKER:
 			// Recording disk attributes.
 			worker = theApp.pView->m_pWorkerView->GetSelectedWorker();
-			worker->SetDiskSize(GetDlgItemInt(EDiskSize));
+			worker->SetDiskSize(GetDlgItemInt64(EDiskSize));
 			break;
 		case MANAGER:
 			manager = theApp.pView->m_pWorkerView->GetSelectedManager();
-			manager->SetDiskSize(GetDlgItemInt(EDiskSize));
+			manager->SetDiskSize(GetDlgItemInt64(EDiskSize));
 			break;
 		case ALL_MANAGERS:
-			theApp.manager_list.SetDiskSize(GetDlgItemInt(EDiskSize));
+			theApp.manager_list.SetDiskSize(GetDlgItemInt64(EDiskSize));
 			break;
 		}
 	}
@@ -1314,4 +1316,24 @@ void CPageDisk::SetDlgItemInt64(int nID, __int64 nValue, BOOL bSigned, int nRadi
 	
 	SetDlgItemText(nID, lpString);
 	dlgCString.ReleaseBuffer();
+}
+
+void CPageDisk::OnEnChangeEdisksize()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CPropertyPage::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+}
+
+void CPageDisk::OnEnChangeEdiskstart()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CPropertyPage::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
 }

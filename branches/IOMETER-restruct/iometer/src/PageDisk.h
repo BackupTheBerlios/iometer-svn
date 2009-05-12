@@ -148,6 +148,9 @@ class CPageDisk:public CPropertyPage {
 	//}}AFX_MSG
 	 DECLARE_MESSAGE_MAP()
 
+public:
+	afx_msg void OnEnChangeEdisksize();
+	afx_msg void OnEnChangeEdiskstart();
 };
 
 #endif
